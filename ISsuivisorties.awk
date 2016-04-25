@@ -46,11 +46,17 @@
 #  (utilisation de switch/case et du compteur d'occurences {} dans les expressions régulièresà
 #  OK avec la GNU Awk 4.1.3 fournie avec MSYS32/MSYS64
 
+# MODIF 11:19 lundi 25 avril 2016 : Affiche le nom du fichier d'entrée dans l'en-tête du fichier résultat
+# BUG 11:19 lundi 25 avril 2016 : Correction d'une erreur dans le code postal de SPC qui conduisait à une affectation en "undef" de sorties de "RMA"
+# BUG 11:49 lundi 25 avril 2016 : Correction des références à parser pour affectation à certaines familles
+# MODIF 11:59 lundi 25 avril 2016 : changement de l'ordre de l'examen des case afin de sortir par un break le plus vite possible => gain de 5 à 10 % en vitesse d'exécution
+
 BEGIN {
 	FS=";"
 	OFS=";"
 	IGNORECASE=1
 	
+	# Obligation de pré-définir les array afin de métriser l'ordre de présentation des résultats
 	types[1]="incident"
 	types[2]="demande"
 	types[3]="RMA"
@@ -75,7 +81,7 @@ BEGIN {
 	familles[16]="SERIALISE"
 	familles[17]="DIVERS"
 	
-	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0
+	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
 
 	}
 { #MAIN
@@ -101,16 +107,16 @@ BEGIN {
 	#		dem :	P3 (shipping) P4 (métier)
 	#		inc :	P2
 		switch (priorite) {
-			case /P2/ :
-			{
-				type="incident"
-				if (codep==94360) type="RMA"
-				break
-			}
 			case /P[3-4]/ : 
 			{
 				type="demande"
 				if (codep==91019||codep==94043) type="RMA"
+				break
+			}
+			case /P2/ :
+			{
+				type="incident"
+				if (codep==94360) type="RMA"
 				break
 			}
 			case /P5/ :
@@ -132,17 +138,17 @@ BEGIN {
 					}
 				}
 				if (type=="undef") switch (codep) {
-					case /91140/ :
+					case /91019/ : #SPC
 					{
 						type="RMA"
 						break;
 					}
-					case /94360/ :
+					case /94360/ : # ATHESI
 					{
 						type="RMA"
 						break;
 					}
-					case /94440/ :
+					case /9444[0-3]/ : # LVI
 					{
 						type="RMA"
 						break;
@@ -162,6 +168,31 @@ BEGIN {
 		
 		# détermination de la famille de produits
 		switch (reference) { # corriger les expressions régulières en fonction des critères précis
+			case /CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
+			{
+				famille="FINGERPRINT"
+				break
+			}
+			case /CHR34[N|R]S19M|CHR34[N|R].18[P|Q]/ : # pc43d ZPL et pm43c
+			{
+				famille="ZPL"
+				break
+			}
+			case /CLP34[N|R]S0CN|CLP34[N|R]S1A[4|H|N|P]|CLP34RS0E1|CLP34[N|R]S1B1/ : 
+			{
+				famille="COLPV"
+				break
+			}
+			case /^CHR10.[^S]1[A-C]/ : # inclut toutes les UC Lenovo M78/M79 mais pas les M73, et hors shipping - rajouter les dell
+			{
+				famille="CHRUC"
+				break
+			}
+			case /CHR10.S/ :
+			{
+				famille="UCSHIP"
+				break
+			}
 			case /CLP10.[F|P]/ : 
 			{
 				famille="COLUC"
@@ -170,11 +201,6 @@ BEGIN {
 			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]/ : 
 			{
 				famille="COLPORT"
-				break
-			}
-			case /CLP34[N|R]S0CN|CLP34[N|R]S1A[4|H|N|P]|CLP34RS0E1|CLP34[N|R]S1B1/ : 
-			{
-				famille="COLPV"
 				break
 			}
 			case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
@@ -187,14 +213,10 @@ BEGIN {
 				famille="PFMA"
 				break
 			}
-			case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC/ :
+			# case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC/ :
+			case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC|CLP34[N|R][F|P]13K/ :
 			{
 				famille="COLMET"
-				break
-			}
-			case /^CHR10.[^S]1[A-C]/ : # inclut toutes les UC Lenovo M78/M79 mais pas les M73, et hors shipping - rajouter les dell
-			{
-				famille="CHRUC"
 				break
 			}
 			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ :
@@ -207,7 +229,8 @@ BEGIN {
 				famille="WIFICISCO"
 				break
 			}
-			case /CHR11[N|R]F18[A|L|S|T]|CHR11[N|R]F19[S|T]|CHR11[N|R]F1B[B|C]/ : # - rajouter les dell
+			# case /CHR11[N|R]F18[A|L|S|T]|CHR11[N|R]F19[S|T]|CHR11[N|R]F1B[B|C]/ : # - rajouter les dell
+			case /CHR11[N|R][F|P]1../ : # - rajouter les dell
 			{
 				famille="CHRPORT"
 				break
@@ -222,21 +245,7 @@ BEGIN {
 				famille="PSMM3"
 				break
 			}
-			case /CHR10.S/ :
-			{
-				famille="UCSHIP"
-				break
-			}
-			case /CHR34[N|R]S19M|CHR34[N|R].18[P|Q]/ : # pc43d ZPL et pm43c
-			{
-				famille="ZPL"
-				break
-			}
-			case /CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
-			{
-				famille="FINGERPRINT"
-				break
-			}
+
 			default :
 			{
 				if (sn ~ /./) {
@@ -254,7 +263,7 @@ BEGIN {
 }
 
 END {
-	ligne= "Famille" 
+	ligne= FILENAME 
 	for (j=1;j<=5;j++) ligne= ligne OFS types[j] 
 	print ligne
 	for (i in familles) {
