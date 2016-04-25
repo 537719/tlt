@@ -1,46 +1,40 @@
+# ISsuivistocks.awk
+# 14:11 lundi 25 avril 2016
+# d'après
 # ISsuivisorties.awk
 # 07:27 21/04/2016
-# Sorties de stock I&S synthétisées par famille
+# Etat des stock I&S synthétisé par famille
 
-# Entrée : fichier csv d'export des produits expédiés par I&S
-#	1 GLPI
-#	2 Priorité
-#	3 Provenance
-#	4 DateCréation
-#	5 CentreCout
-#	6 Reference
-#	7 Description
-#	8 Date BL
-#	9 Dépot
-#	10 sDepot
-#	11 Num Serie
-#	12 Nom Client L
-#	13 Adr1 L
-#	14 Adr2 L
-#	15 Adr3 L
-#	16 CP L
-#	17 Dep
-#	18 Ville L
+# Entrée : fichier csv d'état des stocks I&S
+# 1 Projet
+# 2 Reference
+# 3 Designation
+# 4 OkDispo
+# 5 OkReserve
+# 6 SAV
+# 7 Maintenance
+# 8 Destruction
+# 9 A livrer
 
-# Sortie : Table ventilant pour chaque famille : incidents/demandes/rma/destruction
-# Famille;incident;demande;RMA;destruction;undef
-# COLPV;34;49;30;0;0
-# COLGV;7;2;3;0;0
-# COLMET;1;0;1;0;0
-# PFMA;0;0;0;0;0
-# COLUC;0;5;0;0;0
-# COLPORT;0;0;0;0;0
-# WIFICISCO;4;0;0;0;0
-# CHRRP;4;0;0;0;0
-# CHRUC;4;72;0;0;0
-# CHRPORT;0;9;0;0;0
-# SERVEURS;0;3;0;0;0
-# PSMM3;3;12;5;0;0
-# UCSHIP;8;8;0;0;0
-# ZPL;12;48;4;0;0
-# FINGERPRINT;15;11;30;0;0
-# SERIALISE;9;319;2;0;0
-# DIVERS;6;885;0;0;0
+# Sortie : Table ventilant pour chaque famille la quantité d'articles dans chacun des états suivants : OkDispo	OkReserve	SAV	Maintenance	Destruction	A livrer
+# stock\TEexport_20160424.csv;OKdispo;OKreserve;SAV;Maintenance;Destruction;aLivrer
+# COLPV;346;0;4;10;0;369
+# COLGV;126;0;0;0;0;4
+# COLMET;26;0;2;1;0;11
+# PFMA;4;0;0;0;0;3
+# COLUC;31;4;0;2;28;18
+# COLPORT;1;0;0;2;2;5
+# WIFICISCO;0;0;0;10;0;0
+# CHRRP;10;1;0;1;18;0
+# CHRUC;294;6;0;3;1;206
+# CHRPORT;4;4;3;0;1;162
+# SERVEURS;77;0;0;0;0;2
+# PSMM3;48;1;0;0;0;56
+# UCSHIP;25;0;0;21;80;50
+# ZPL;461;2;0;16;0;20
+# FINGERPRINT;860;0;0;17;95;0
+# SERIALISE;105;2;4;8;11;86
+# DIVERS;16011;571;12;70;307;3866
 
 
 # ATTENTION : Nécessite une version récente de GAWK pour fonctionner
@@ -53,17 +47,11 @@
 #	travaille sur une seule famille à la fois, spécifié en tant qu'option sur la ligne de commande
 #	fournit un résultat sous forme de texte séparé par tabulations (csv sur demande)
 #	ne fournit pas de compte d'éléments non catégorisés
-# ISsuivisorties.awk :
-#	ne travaille que sur les fichiers de sortie de stocks (d'autres scripts équivalents seront à faire pour traiter les entrées et les stocks), sans options sur la ligne de commande
+# ISsuivistocks.awk :
+#	ne travaille que sur les fichiers d'état des stocks (d'autres scripts équivalents seront à faire pour traiter les entrées et les sorties), sans options sur la ligne de commande
 #	fournit un résultat sous forme de csv
-#	comptabilise les éléments ne rentrant dans aucune catégorie, ainsi que le total d'éléments n'appartenant pas aux familles de produits suivies
+#	comptabilise le total d'éléments n'appartenant pas aux familles de produits suivies
 
-
-# MODIF 11:19 lundi 25 avril 2016 : Affiche le nom du fichier d'entrée dans l'en-tête du fichier résultat
-# BUG 11:19 lundi 25 avril 2016 : Correction d'une erreur dans le code postal de SPC qui conduisait à une affectation en "undef" de sorties de "RMA"
-# BUG 11:49 lundi 25 avril 2016 : Correction des références à parser pour affectation à certaines familles
-# MODIF 11:59 lundi 25 avril 2016 : changement de l'ordre de l'examen des case afin de sortir par un break le plus vite possible => gain de 5 à 10 % en vitesse d'exécution
-# BUG 15:44 lundi 25 avril 2016 : correction de la sélection d'UC "COL"
 
 BEGIN {
 	FS=";"
@@ -71,11 +59,13 @@ BEGIN {
 	IGNORECASE=1
 	
 	# Obligation de pré-définir les array afin de maitriser l'ordre de présentation des résultats
-	types[1]="incident"
-	types[2]="demande"
-	types[3]="RMA"
-	types[4]="destruction"
-	types[5]="undef"
+	# numérotation à partir de 4 afin de coller avec l'indexation des champs
+	types[4]="OKdispo"
+	types[5]="OKreserve"
+	types[6]="SAV"
+	types[7]="Maintenance"
+	types[8]="Destruction"
+	types[9]="aLivrer"
 	
 	familles[1]="COLPV"
 	familles[2]="COLGV"
@@ -100,86 +90,23 @@ BEGIN {
 	}
 { #MAIN
 	# définition des champs 
-	priorite=$2
-	reference=$6
-	dossier=$1
-	codep=$16
-	dest=$12
-	sn=$11
+	reference=$2
 	
 	if (NR==1) {
-		if (NF!=18) {
+		if (NF!=9) {
 			print "Ce fichier n'est pas du type requis car il contient " NF "champs."
 			exit NF
 		}
 	} else {
 		
-		# détermination du type de sortie
-	#	déterminer automatiquement si la sortie concerne un incident, une demande, une rma ou une destruction 
-	#		DEL :	P5 et premier champ contient "DESTRUCTION"
-	#		RMA : 	P5 "non DEL" ou (P4 et code postal = 91019 (SPC) ou 94043 (LVI)) ou (P2 et codepostal=94360 (Athesi))
-	#		dem :	P3 (shipping) P4 (métier)
-	#		inc :	P2
-		switch (priorite) {
-			case /P[3-4]/ : 
-			{
-				type="demande"
-				if (codep==91019||codep==94043) type="RMA"
-				break
-			}
-			case /P2/ :
-			{
-				type="incident"
-				if (codep==94360) type="RMA"
-				break
-			}
-			case /P5/ :
-			{
-				switch (dossier) {
-					case /NAVETTE|RMA|PSM|LVI|SPC/ :
-					{
-						type="RMA"
-						break;
-					}
-					case /DESTRUCT/ :
-					{
-						type="destruction"
-						break;
-					}
-					default :
-					{
-						type="undef"
-					}
-				}
-				if (type=="undef") switch (codep) {
-					case /91019/ : #SPC
-					{
-						type="RMA"
-						break;
-					}
-					case /94360/ : # ATHESI
-					{
-						type="RMA"
-						break;
-					}
-					case /9444[0-3]/ : # LVI
-					{
-						type="RMA"
-						break;
-					}
-					default :
-					{
-						type="undef"
-					}
-				}
-				break
-			}
-			default :
-			{
-				type="undef"
-			}
-		}
-		
+		# Ventilation selon l'état en stock
+		OKdispo=$4
+		OKreserve=$5
+		SAV=$6
+		Maint=$7
+		Destr=$8
+		Aliv=$9
+
 		# détermination de la famille de produits
 		switch (reference) { # corriger les expressions régulières en fonction des critères précis
 			case /CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
@@ -258,29 +185,34 @@ BEGIN {
 				break
 			}
 
+			case /...3[0-4].....|...4[3|5|9]......|...61...../ : # Imprimantes / Equipements réseau / Scanners
+			{
+				famille="SERIALISE"
+				break
+			}
 			default :
 			{
-				if (sn ~ /./) {
-					famille="SERIALISE"
-				} else {
-					famille="DIVERS"
-				}
+				famille="DIVERS"
 			}
 		}
 		# types[type]++
 		# familles[famille]++
-		nbsorties[famille type]++
+		# nbsorties[famille type]++
+		for (i in types) {
+			nbstock[famille i] = nbstock[famille i]+$i
+		}
 		# print NR OFS type OFS types[type] OFS famille OFS familles[famille]
 	}
 }
 
 END {
 	ligne= FILENAME 
-	for (j=1;j<=5;j++) ligne= ligne OFS types[j] 
+	for (j=4;j<=9;j++) ligne= ligne OFS types[j] 
 	print ligne
 	for (i in familles) {
 		ligne= familles[i] 
-		for (j=1;j<=5;j++) ligne=ligne OFS nbsorties[familles[i] types[j]]
+		# for (j=4;j<=9;j++) ligne=ligne OFS nbstock[familles[i] types[j]]
+		for (j in types) ligne = ligne OFS nbstock[familles[i] j]
 		print ligne
 	}
 }

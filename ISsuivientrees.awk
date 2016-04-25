@@ -1,28 +1,21 @@
+# ISsuivientrees.awk
+# 15:38 lundi 25 avril 2016
+# d'après
 # ISsuivisorties.awk
 # 07:27 21/04/2016
-# Sorties de stock I&S synthétisées par famille
+# Entrées en stock I&S synthétisées par famille
 
-# Entrée : fichier csv d'export des produits expédiés par I&S
-#	1 GLPI
-#	2 Priorité
-#	3 Provenance
-#	4 DateCréation
-#	5 CentreCout
-#	6 Reference
-#	7 Description
-#	8 Date BL
-#	9 Dépot
-#	10 sDepot
-#	11 Num Serie
-#	12 Nom Client L
-#	13 Adr1 L
-#	14 Adr2 L
-#	15 Adr3 L
-#	16 CP L
-#	17 Dep
-#	18 Ville L
+# Entrée : fichier csv d'export des produits reçus par I&S
+# 1 Projet
+# 2 Reference
+# 3 Numero Serie
+# 4 DateEntree
+# 5 APT
+# 6 Libellé
+# 7 BonTransport
+# 8 RefAppro
 
-# Sortie : Table ventilant pour chaque famille : incidents/demandes/rma/destruction
+# Sortie : Table ventilant pour chaque famille : Livraisons/retours cient/retours RMA/
 # Famille;incident;demande;RMA;destruction;undef
 # COLPV;34;49;30;0;0
 # COLGV;7;2;3;0;0
@@ -53,17 +46,11 @@
 #	travaille sur une seule famille à la fois, spécifié en tant qu'option sur la ligne de commande
 #	fournit un résultat sous forme de texte séparé par tabulations (csv sur demande)
 #	ne fournit pas de compte d'éléments non catégorisés
-# ISsuivisorties.awk :
-#	ne travaille que sur les fichiers de sortie de stocks (d'autres scripts équivalents seront à faire pour traiter les entrées et les stocks), sans options sur la ligne de commande
+# ISsuivientrees.awk :
+#	ne travaille que sur les fichiers d'entrée en stock (d'autres scripts équivalents traitent les sorties et les stocks), sans options sur la ligne de commande
 #	fournit un résultat sous forme de csv
 #	comptabilise les éléments ne rentrant dans aucune catégorie, ainsi que le total d'éléments n'appartenant pas aux familles de produits suivies
 
-
-# MODIF 11:19 lundi 25 avril 2016 : Affiche le nom du fichier d'entrée dans l'en-tête du fichier résultat
-# BUG 11:19 lundi 25 avril 2016 : Correction d'une erreur dans le code postal de SPC qui conduisait à une affectation en "undef" de sorties de "RMA"
-# BUG 11:49 lundi 25 avril 2016 : Correction des références à parser pour affectation à certaines familles
-# MODIF 11:59 lundi 25 avril 2016 : changement de l'ordre de l'examen des case afin de sortir par un break le plus vite possible => gain de 5 à 10 % en vitesse d'exécution
-# BUG 15:44 lundi 25 avril 2016 : correction de la sélection d'UC "COL"
 
 BEGIN {
 	FS=";"
@@ -71,11 +58,10 @@ BEGIN {
 	IGNORECASE=1
 	
 	# Obligation de pré-définir les array afin de maitriser l'ordre de présentation des résultats
-	types[1]="incident"
-	types[2]="demande"
+	types[1]="Livraison"
+	types[2]="Retour"
 	types[3]="RMA"
-	types[4]="destruction"
-	types[5]="undef"
+	types[4]="undef"
 	
 	familles[1]="COLPV"
 	familles[2]="COLGV"
@@ -95,88 +81,64 @@ BEGIN {
 	familles[16]="SERIALISE"
 	familles[17]="DIVERS"
 	
-	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
+	for (i in familles) for (j in types) nbentrees[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
 
 	}
 { #MAIN
 	# définition des champs 
-	priorite=$2
-	reference=$6
-	dossier=$1
-	codep=$16
-	dest=$12
-	sn=$11
+		reference=$2
+		apt=$5
+		lib=$6
+		status=""
+		type="undef"
 	
 	if (NR==1) {
-		if (NF!=18) {
+		if (NF!=8) {
 			print "Ce fichier n'est pas du type requis car il contient " NF "champs."
 			exit NF
 		}
 	} else {
 		
-		# détermination du type de sortie
-	#	déterminer automatiquement si la sortie concerne un incident, une demande, une rma ou une destruction 
-	#		DEL :	P5 et premier champ contient "DESTRUCTION"
-	#		RMA : 	P5 "non DEL" ou (P4 et code postal = 91019 (SPC) ou 94043 (LVI)) ou (P2 et codepostal=94360 (Athesi))
-	#		dem :	P3 (shipping) P4 (métier)
-	#		inc :	P2
-		switch (priorite) {
-			case /P[3-4]/ : 
-			{
-				type="demande"
-				if (codep==91019||codep==94043) type="RMA"
-				break
-			}
-			case /P2/ :
-			{
-				type="incident"
-				if (codep==94360) type="RMA"
-				break
-			}
-			case /P5/ :
-			{
-				switch (dossier) {
-					case /NAVETTE|RMA|PSM|LVI|SPC/ :
-					{
+		# détermination du type d'entrée 
+#	déterminer automatiquement si la réception concerne un appro, un retour client ou un retour de rma
+#		RMA : 	Retour de RMA ou transfert : $2 (référence) contient un R en 6° position et $5 (APT) n'est pas vide et $6 (libellé) ne commence pas par RETOUR et est différent de 10  chiffres
+#		RMA : 	Retour de RMA ou transfert : $2 (référence) contient un R en 6° position et $5 (APT) n'est pas vide et $6 (libellé) commence par RETOUR ou contient RMA ou SPC, ou est composé de 10  chiffres et contient  SPC
+#		CLI : 	Retour de RMA ou transfert : $2 (référence) contient un R en 6° position et $5 (APT) n'est pas vide et $6 (libellé) commence par RETOUR ou est composé de 10  chiffres et ne contient pas SPC ni RMA
+#		LIV :	Livraison de matériel neuf : $2 (référence) contient un N en 6° position et $5 (APT) n'est pas vide
+#		LIV :	Livraison de matériel neuf : $2 (référence) contient un N en 6° position et $5 (APT) est vide et $6 (libellé) ne commence pas par RETOUR et est différent de 10  chiffres
+#		CLI :	Retour client :              $2 (référence) contient un R en 6° position et $5 (APT) n'est pas est vide et $6 (libellé) commence par RETOUR ou est égal à 10  chiffres
+#		CLI :	Retour client :              $2 (référence) contient un N en 6° position et $5 (APT) est vide et $6 (libellé) commence par RETOUR ou est égal à 10  chiffres
+#		CLI :	Retour client :              $2 (référence) contient un R en 6° position et $5 (APT) est vide
+		if (reference ~ /^[A-Z][A-Z][A-Z][0-9][0-9]R/) {	# R en 6° position de la référence I&S
+			status="recond"
+			if (apt ~ /./) { # APT non vide
+				status = status OFS "avec apt"
+				if (lib ~ /^RETOUR|[0-9]{10}/) { # Libellé commence par RETOUR ou est composé de 10 chiffres
+					if (lib ~ /SPC|RMA/) {
 						type="RMA"
-						break;
+					} else {
+						type="Retour"
 					}
-					case /DESTRUCT/ :
-					{
-						type="destruction"
-						break;
-					}
-					default :
-					{
-						type="undef"
-					}
+				} else {
+					type="RMA"
+				}					
+			} else {
+				type="Retour"
+			}
+		}
+		if (reference ~ /^[A-Z]{3}[0-9][0-Z]N/) {	# N en 6° position de la référence I&S
+			if (apt ~ /./) { # APT non vide
+				if (lib ~ /^RETOUR|RMA|[0-9]{10}$/) { # Libellé commence par RETOUR, contient RMA ou  se termine par 10 chiffres
+					type="Retour"
+				} else {
+					type="Livraison"
 				}
-				if (type=="undef") switch (codep) {
-					case /91019/ : #SPC
-					{
-						type="RMA"
-						break;
-					}
-					case /94360/ : # ATHESI
-					{
-						type="RMA"
-						break;
-					}
-					case /9444[0-3]/ : # LVI
-					{
-						type="RMA"
-						break;
-					}
-					default :
-					{
-						type="undef"
-					}
+			} else {
+				if (lib ~ /^RETOUR|[0-9]{10}$/) { # Libellé commence par RETOUR ou se termine par 10 chiffres
+					type="Retour"
+				} else {
+					type="Livraison"
 				}
-				break
-			}
-			default :
-			{
-				type="undef"
 			}
 		}
 		
@@ -269,18 +231,18 @@ BEGIN {
 		}
 		# types[type]++
 		# familles[famille]++
-		nbsorties[famille type]++
+		nbentrees[famille type]++
 		# print NR OFS type OFS types[type] OFS famille OFS familles[famille]
 	}
 }
 
 END {
 	ligne= FILENAME 
-	for (j=1;j<=5;j++) ligne= ligne OFS types[j] 
+	for (j=1;j<=4;j++) ligne= ligne OFS types[j] 
 	print ligne
 	for (i in familles) {
 		ligne= familles[i] 
-		for (j=1;j<=5;j++) ligne=ligne OFS nbsorties[familles[i] types[j]]
+		for (j=1;j<=4;j++) ligne=ligne OFS nbentrees[familles[i] types[j]]
 		print ligne
 	}
 }
