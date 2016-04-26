@@ -17,7 +17,8 @@ set /p fichier=<%temp%\file.tmp
 call filtrestat.cmd %fichier%
 dir /s /b /od glpi*.txt|tail -1 >%temp%\file.tmp
 set /p fichier=<%temp%\file.tmp
-gawk -f ratioruptures.awk %fichier% |sort /R
+gawk -f statscoli.awk %fichier% >statscoli.csv
+REM statscoli.csv
 goto :eof
 set fichier=
 del %temp%\file.tmp
