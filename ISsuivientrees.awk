@@ -1,4 +1,4 @@
-# ISsuivientrees.awk
+is_in_# ISsuivientrees.awk
 # 15:38 lundi 25 avril 2016
 # d'après
 # ISsuivisorties.awk
@@ -14,6 +14,8 @@
 # 6 Libellé
 # 7 BonTransport
 # 8 RefAppro
+# 9 NumTag (à partir de 06/2016)
+#10 (vide) (dans la ligne d'en-tête uniquement)
 
 # Sortie : Table ventilant pour chaque famille : Livraisons/retours cient/retours RMA/
 # Famille;incident;demande;RMA;destruction;undef
@@ -51,11 +53,14 @@
 #	fournit un résultat sous forme de csv
 #	comptabilise les éléments ne rentrant dans aucune catégorie, ainsi que le total d'éléments n'appartenant pas aux familles de produits suivies
 
+# MODIF 10:44 jeudi 9 juin 2016 prise en compte de l'ajout du numéro de tag I&S dans le champ $9 NumTag (et prise en compte d'une erreur dans le fichier de données qui contient un 1° champ, vide)
+# BUG 11:17 lundi 13 juin 2016correction du fait que EXIT ne fonctionne pas au coeur de la section "MAIN" (mais ok dans END)
 
 BEGIN {
 	FS=";"
 	OFS=";"
 	IGNORECASE=1
+	codesortie=0
 	
 	# Obligation de pré-définir les array afin de maitriser l'ordre de présentation des résultats
 	types[1]="Livraison"
@@ -93,9 +98,13 @@ BEGIN {
 		type="undef"
 	
 	if (NR==1) {
-		if (NF!=8) {
-			print "Ce fichier n'est pas du type requis car il contient " NF "champs."
-			exit NF
+		if ( NF !=8 && NF != 9 && NF != 10 ) {
+			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			codesortie = NF
+		}
+		if ($10 ~ /./) {
+			print "Ce fichier n'est pas du type requis car il contient un champ " $10 "."
+			codesortie = NF
 		}
 	} else {
 		
@@ -237,6 +246,8 @@ BEGIN {
 }
 
 END {
+	if (codesortie !=0) exit codesortie
+	
 	ligne= FILENAME 
 	for (j=1;j<=4;j++) ligne= ligne OFS types[j] 
 	print ligne
