@@ -5,6 +5,8 @@
 # usage : gawk -f ventilSNPCdate.awk *.csv
 # avec les *.csv étant des fichiers de réception (8 champs) ou d'expédition (18 champs) mélangés
 
+# MODIF 14:02 lundi 13 juin 2016 adaptation à la nouvelle structure des fichiers d'export I&S (présence du TAGIS en 9° position (entrée) ou 19° position (sortie))
+
 # aide au choix de la destinée des pc et portables retournés à I&S
 # pc ayant moins de 3 ans => à restituer au loueur
 # pc de 3 ans et plus => à détruire
@@ -57,8 +59,8 @@ BEGINFILE {
 	# on passe ici à chaque début de lecture de nouveau fichier
 	
 	# règles :
-	# 15 ou 18 champs => sortie
-	# 8 champs => entrée
+	# 15, 18 ou 19 champs => sortie
+	# 8, 9 ou 10 champs => entrée
 	# autres => rejet
 		switch (NF) {
 			case /15/ :
@@ -71,6 +73,24 @@ BEGINFILE {
 			{
 				cas="18"
 				sens="sortie"
+				break
+			}
+			case /19/ :
+			{
+				cas="18"
+				sens="sortie"
+				break
+			}
+			case /^9$/ :
+			{
+				cas="8"
+				sens="entrée"
+				break
+			}
+			case /10$/ :
+			{
+				cas="8"
+				sens="entrée"
 				break
 			}
 			case /^8$/ :
