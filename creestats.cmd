@@ -11,6 +11,7 @@ REM ATTENTION 1 ceci n'est possible que parce que les deux fichiers ont le même 
 REM ATTENTION on se retrouve avec une colonne de titre en trop au milieu du fichier, à prendre en compte lors de la création du graphique
 REM MODIF 16:21 jeudi 19 mai 2016 ajoute aussi le seuil d'alerte
 REM MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web correspondant
+REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
 
 :sorties
 head -1 is-data.csv |ssed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
@@ -53,6 +54,7 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   REM génération de la page web affichant le graphique
   move %%I.* "%moisfin%"
   copy "%moisfin%\%%I.txt" .
+  copy "%moisfin%\%%I.csv" .
   REM move %%I.htm "%moisfin%"
 )
 wc -l is-seuil.csv >%temp%\wc-l.txt
@@ -65,4 +67,16 @@ REM génération de la page d'en-tête pour toutes les familles suivies
 move index.html %moisfin%
 
 set web=C:\Users\admin\Dropbox\EasyPHP-DevServer-14.1VC11\data\localweb\StatsIS
-move /y %moisfin% %web%
+REM move /y %moisfin% %web%
+rd /s /q "%web%\%moisfin%" 2>nul
+@echo Vérifier et corriger les commentaires texte dans le dossier %moisfin%
+msg %username% Vérifier et corriger les commentaires texte dans le dossier %moisfin%
+REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
+@echo on
+pushd %moisfin%
+for %%I in (*.txt *.png) do %%I
+pause
+xcopy /y /I . "%web%\%moisfin%"
+xcopy *.txt .. /y
+popd
+
