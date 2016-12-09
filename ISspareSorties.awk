@@ -1,6 +1,10 @@
-# ISsuivisorties.awk
-# 07:27 21/04/2016
-# Sorties de stock I&S synthétisées par famille
+# ISspareSorties.awk
+# 17:00 mardi 29 novembre 2016
+# d'après ISsuivisorties.awk 07:27 21/04/2016 MODIF 15:41 vendredi 4 novembre 2016
+# Sorties de stock I&S synthétisées par famille demandant un suivi de réappro des stocks de spare
+# à la date de création du script, concerne :
+# les sorties d'imprimantes expeditor vs le stock d'étiquettes colissimo
+# les sorties d'uc colissimp et chronopost reconditionnées vs les stocks respectifs de claviers et souris
 
 # Entrée : fichier csv d'export des produits expédiés par I&S
 #	1 GLPI
@@ -59,19 +63,6 @@
 #	comptabilise les éléments ne rentrant dans aucune catégorie, ainsi que le total d'éléments n'appartenant pas aux familles de produits suivies
 
 
-# MODIF 11:19 lundi 25 avril 2016 : Affiche le nom du fichier d'entrée dans l'en-tête du fichier résultat
-# BUG 11:19 lundi 25 avril 2016 : Correction d'une erreur dans le code postal de SPC qui conduisait à une affectation en "undef" de sorties de "RMA"
-# BUG 11:49 lundi 25 avril 2016 : Correction des références à parser pour affectation à certaines familles
-# MODIF 11:59 lundi 25 avril 2016 : changement de l'ordre de l'examen des case afin de sortir par un break le plus vite possible => gain de 5 à 10 % en vitesse d'exécution
-# BUG 15:44 lundi 25 avril 2016 : correction de la sélection d'UC "COL"
-# MODIF 11:15 lundi 13 juin 2016 prise en compte de l'ajout du numéro de tag I&S dans le champ $19 (dont le libellé NumTag n'apparait pas dans la ligne d'en-tête)
-# BUG 11:17 lundi 13 juin 2016correction du fait que EXIT ne fonctionne pas au coeur de la section "MAIN" (mais ok dans END)
-# MODIF 10:09 mardi 20 septembre 2016 rajoute la prise en compte des UC dites "développeur" (M73 i7 et M700) ainsi que des UC DELL
-#  la raison du rajout des uc dev est double
-#    d'une part des m73 i5 (non dev) ont été mis par erreur sous la ref des i7 (alors qu'il n'y en a plus en stock)
-#    d'autre part compte tenu de la nomenclature des référence et de l'ajout des nouveaux modèles, maintenir la distinction entretenait lourdeur et complexité, source de bugs
-# MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
-
 BEGIN {
 	FS=";"
 	OFS=";"
@@ -85,23 +76,26 @@ BEGIN {
 	types[4]="destruction"
 	types[5]="undef"
 	
-	familles[1]="COLPV"
-	familles[2]="COLGV"
-	familles[3]="COLMET"
-	familles[4]="PFMA"
-	familles[5]="COLUC"
-	familles[6]="COLPORT"
-	familles[7]="WIFICISCO"
-	familles[8]="CHRRP"
-	familles[9]="CHRUC"
-	familles[10]="CHRPORT"
-	familles[11]="SERVEURS"
-	familles[12]="PSMM3"
-	familles[13]="UCSHIP"
-	familles[14]="ZPL"
-	familles[15]="FINGERPRINT"
-	familles[16]="SERIALISE"
-	familles[17]="DIVERS"
+	# familles[1]="COLPV"
+	# familles[2]="COLGV"
+	# familles[3]="COLMET"
+	# familles[4]="PFMA"
+	# familles[5]="COLUC"
+	# familles[6]="COLPORT"
+	# familles[7]="WIFICISCO"
+	# familles[8]="CHRRP"
+	# familles[9]="CHRUC"
+	# familles[10]="CHRPORT"
+	# familles[11]="SERVEURS"
+	# familles[12]="PSMM3"
+	# familles[13]="UCSHIP"
+	# familles[14]="ZPL"
+	# familles[15]="FINGERPRINT"
+	# familles[16]="SERIALISE"
+	# familles[17]="DIVERS"
+	familles[18]="EXPEDITOR"
+	familles[19]="COLRECOND"
+	familles[20]="CHRRECOND"
 	
 	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
 
@@ -191,82 +185,22 @@ BEGIN {
 		
 		# détermination de la famille de produits
 		switch (reference) { # corriger les expressions régulières en fonction des critères précis
-			case /CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
+			case /^CLP34[N|R]S/ :
 			{
-				famille="FINGERPRINT"
+				famille="EXPEDITOR"
 				break
 			}
-			case /CHR34[N|R]S19M|CHR34[N|R].18[P|Q]/ : # pc43d ZPL et pm43c
+			case /^CLP10R/ :
 			{
-				famille="ZPL"
+				famille="COLRECOND"
 				break
 			}
-			case /CLP34[N|R]S0CN|CLP34[N|R]S1A[4|H|N|P]|CLP34RS0E1|CLP34[N|R]S1B1/ :  # Colissimp PV
+			case /^CHR10R[F|P|I]/ :
 			{
-				famille="COLPV"
+				famille="CHRRECOND"
 				break
 			}
-			case /^CHR10.[^S]1[A-D]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
-			{
-				famille="CHRUC"
-				break
-			}
-			case /CHR10.S/ : # UC Chronoship
-			{
-				famille="UCSHIP"
-				break
-			}
-			case /^CLP10/ : # UC Coli
-			{
-				famille="COLUC"
-				break
-			}
-			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]|CLP11[N|R][F|P]1D./ : 
-			{
-				famille="COLPORT"
-				break
-			}
-			case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
-			{
-				famille="COLGV"
-				break
-			}
-			case /CLP34[N|R][F|P]194|CLP34[N|R][F|P]1BD/ :
-			{
-				famille="PFMA"
-				break
-			}
-			case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC|CLP34[N|R][F|P]13K/ :
-			{
-				famille="COLMET"
-				break
-			}
-			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR RP
-			{
-				famille="CHRRP"
-				break
-			}
-			case /CHR47[N|R][F|P]0T7/ :
-			{
-				famille="WIFICISCO"
-				break
-			}
-			case /CHR11[N|R][F|P]1../ : # Portables CHR
-			{
-				famille="CHRPORT"
-				break
-			}
-			case /^CHR48/ :
-			{
-				famille="SERVEURS"
-				break
-			}
-			case /CHR63[N|R][P|F]1AD/ :
-			{
-				famille="PSMM3"
-				break
-			}
-
+			
 			default :
 			{
 				if (sn ~ /./) {
@@ -288,9 +222,10 @@ END {
 	
 	ligne= FILENAME 
 	for (j=1;j<=5;j++) ligne= ligne OFS types[j] 
-	print ligne
+	# print ligne
 	for (i in familles) {
 		ligne= familles[i] 
+		# ligne= FILENAME OFS familles[i] 
 		for (j=1;j<=5;j++) ligne=ligne OFS nbsorties[familles[i] types[j]]
 		print ligne
 	}

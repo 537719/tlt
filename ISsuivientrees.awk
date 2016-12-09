@@ -14,6 +14,8 @@
 # 6 Libellé
 # 7 BonTransport
 # 8 RefAppro
+# 9 NumTag (à partir de 06/2016)
+#10 (vide) (dans la ligne d'en-tête uniquement)
 
 # Sortie : Table ventilant pour chaque famille : Livraisons/retours cient/retours RMA/
 # Famille;incident;demande;RMA;destruction;undef
@@ -51,11 +53,20 @@
 #	fournit un résultat sous forme de csv
 #	comptabilise les éléments ne rentrant dans aucune catégorie, ainsi que le total d'éléments n'appartenant pas aux familles de produits suivies
 
+# MODIF 10:44 jeudi 9 juin 2016 prise en compte de l'ajout du numéro de tag I&S dans le champ $9 NumTag (et prise en compte d'une erreur dans le fichier de données qui contient un 1° champ, vide)
+# BUG 11:17 lundi 13 juin 2016correction du fait que EXIT ne fonctionne pas au coeur de la section "MAIN" (mais ok dans END)
+# MODIF 11:30 jeudi 23 juin 2016 (temporaire) sous ventilation rp5700/rp5800 pour étude de la pertinence de la réutilisation de tel ou tel modèle (incompatible avec la ventilation groupée de tous les RP)
+# MODIF 10:09 mardi 20 septembre 2016 rajoute la prise en compte des UC dites "développeur" (M73 i7 et M700) ainsi que des UC DELL
+#  la raison du rajout des uc dev est double
+#    d'une part des m73 i5 (non dev) ont été mis par erreur sous la ref des i7 (alors qu'il n'y en a plus en stock)
+#    d'autre part compte tenu de la nomenclature des référence et de l'ajout des nouveaux modèles, maintenir la distinction entretenait lourdeur et complexité, source de bugs
+# MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
 
 BEGIN {
 	FS=";"
 	OFS=";"
 	IGNORECASE=1
+	codesortie=0
 	
 	# Obligation de pré-définir les array afin de maitriser l'ordre de présentation des résultats
 	types[1]="Livraison"
@@ -80,6 +91,8 @@ BEGIN {
 	familles[15]="FINGERPRINT"
 	familles[16]="SERIALISE"
 	familles[17]="DIVERS"
+	familles[18]="RP5700"
+	familles[19]="RP5800"
 	
 	for (i in familles) for (j in types) nbentrees[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
 
@@ -93,10 +106,14 @@ BEGIN {
 		type="undef"
 	
 	if (NR==1) {
-		if (NF!=8) {
-			print "Ce fichier n'est pas du type requis car il contient " NF "champs."
-			exit NF
+		if ( NF !=8 && NF != 9 && NF != 10 ) {
+			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			codesortie = NF
 		}
+		# if ($10 ~ /./) {
+			# print "Ce fichier n'est pas du type requis car il contient un champ " $10 "."
+			# codesortie = NF
+		# }
 	} else {
 		
 		# détermination du type d'entrée 
@@ -159,7 +176,7 @@ BEGIN {
 				famille="COLPV"
 				break
 			}
-			case /^CHR10.[^S]1[A-C]/ : # inclut toutes les UC Lenovo M78/M79 mais pas les M73, et hors shipping - rajouter les dell
+			case /^CHR10.[^S]1[A-D]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
 			{
 				famille="CHRUC"
 				break
@@ -174,7 +191,7 @@ BEGIN {
 				famille="COLUC"
 				break
 			}
-			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]/ : 
+			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]|CLP11[N|R][F|P]1D./ : 
 			{
 				famille="COLPORT"
 				break
@@ -193,6 +210,16 @@ BEGIN {
 			{
 				famille="COLMET"
 				break
+			}
+			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]183|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ :
+			{
+				famille="RP5700"
+				# break
+			}
+			case /CHR10[N|R][F|I|P]18M/ :
+			{
+				famille="RP5800"
+				# break
 			}
 			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ :
 			{
@@ -237,6 +264,8 @@ BEGIN {
 }
 
 END {
+	if (codesortie !=0) exit codesortie
+	
 	ligne= FILENAME 
 	for (j=1;j<=4;j++) ligne= ligne OFS types[j] 
 	print ligne

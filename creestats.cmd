@@ -12,6 +12,8 @@ REM ATTENTION on se retrouve avec une colonne de titre en trop au milieu du fich
 REM MODIF 16:21 jeudi 19 mai 2016 ajoute aussi le seuil d'alerte
 REM MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web correspondant
 REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
+REM BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
+REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
 
 :sorties
 head -1 is-data.csv |ssed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
@@ -22,9 +24,12 @@ rd /s /q %moisfin% 2>nul
 md %moisfin%
 REM dossier ^^ où seront stockées les fichiers créés
 
+del %temp%\moisdeb.tmp 2>nul
+
 for /F "delims=;" %%I in (is-data.csv) do if exist %%I.csv (
 REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
-  head -1 %%I.csv |ssed "s/;/\t/g" > %%I.tab
+  head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
+  REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
   REM en-tête ^^
 
   REM cat %%I.csv |grep -v "%moisfin:~0,-3%" |tail -13 |ssed "s/;/\t/g" >> %%I.tab
@@ -43,7 +48,9 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   move /y %%I.tmp %%I.csv
 
   
-  gawk -F\t "{if (NR==2) print $1}" %%I.tab >%temp%\moisdeb.tmp
+  if not exist %temp%\moisdeb.tmp gawk -F\t "{if (NR==2) if ($1 ~/[0-9]{4}-[0-9]{2}-[0-9]{2}/) print $1}" %%I.tab >%temp%\moisdeb.tmp
+  REM ^^ BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
+
   set /p moisdeb=<%temp%\moisdeb.tmp
   REM détermination de la borne temporelle inférieure pour le graphique
   
@@ -61,7 +68,10 @@ wc -l is-seuil.csv >%temp%\wc-l.txt
 set /p nblgn=<%temp%\wc-l.txt
 set /a nblgn=nblgn-2
 REM élimination ^^ des deux dernières lignes, qui ne correspondent pas à de vrais produits
-head -%nblgn% is-seuil.csv |gawk -f genHTMLindex.awk -v statdate="%moisfin%" >index.html
+rem head -%nblgn% is-seuil.csv |gawk -f genHTMLindex.awk -v statdate="%moisfin%" >index.html
+REM Nouvelle formulation du 15:05 06/12/2016 car les lignes à éliminer ne sont plus les dernières
+rem mais sont les seules à contenir "matériel"
+cat is-seuil.csv |grep -v riel |gawk -f genHTMLindex.awk -v statdate="%moisfin%" >index.html
 REM génération de la page d'en-tête pour toutes les familles suivies
 
 move index.html %moisfin%
@@ -74,9 +84,12 @@ msg %username% Vérifier et corriger les commentaires texte dans le dossier %mois
 REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
 @echo on
 pushd %moisfin%
-for %%I in (*.txt *.png) do %%I
+for %%I in (*.txt *.png) do start %%I
 pause
 xcopy /y /I . "%web%\%moisfin%"
 xcopy *.txt .. /y
 popd
-
+REM élaboration de la liste des nouveautés pour le mail de reporting
+del whatsnew.txt
+for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.txt
+whatsnew.txt

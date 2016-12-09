@@ -12,6 +12,8 @@ MODIF 14:39 jeudi 28 avril 2016
 	modification des noms des fichiers de sortie
 	suppression de l'invocation des fichiers générés (inutile depuis qu'un import automatique dans excel évite de faire un copier-coller manuel depuis un éditeur de texte)
 	=> l'exécution est désormais 50 fois plus rapide qu'avant la modif du 16:30 lundi 25 avril 2016
+MODIF 15:03 vendredi 2 décembre 2016
+	rajout de la gestion des spares (impr expeditor vs rouleaux d'étiquettes, uc reconditionnées vs souris)
 
 :debut
 rem on prend 
@@ -27,6 +29,7 @@ del %outputfile% 2>nul
 REM for %%I in (pv gv clpmet pfma clpuc clptp cisco chrrp chruc chrtp serveur m3 ship zpl finger) do gawk -f test.awk -v materiel="%%I" %inputfile% >>%outputfile%
 rem ^^ formulation d'avant lundi 25 avril 2016
 gawk -f ISsuivisorties.awk %inputfile% >>%outputfile%
+gawk -f ISspareSorties.awk %inputfile% >>%outputfile%
 rem start %outputfile%
 
 rem stat des réceptions
@@ -38,6 +41,7 @@ del %outputfile% 2>nul
 REM for %%I in (pv gv clpmet pfma clpuc clptp cisco chrrp chruc chrtp serveur m3 ship zpl finger) do gawk -f test.awk -v materiel="%%I" %inputfile% >>%outputfile%
 rem ^^ formulation d'avant lundi 25 avril 2016
 gawk -f ISsuivientrees.awk %inputfile% >>%outputfile%
+REM gawk -f ISspareentrees.awk %inputfile% >>%outputfile% (ce script awk n'existe pas pour l'instant)
 rem start %outputfile%
 
 rem stat des stocks
@@ -50,4 +54,5 @@ del %outputfile% 2>nul
 REM for %%I in (pv gv clpmet pfma clpuc clptp cisco chrrp chruc chrtp serveur m3 ship zpl finger) do gawk -f test.awk -v materiel="%%I" %inputfile% >>%outputfile%
 rem ^^ formulation d'avant lundi 25 avril 2016
 gawk -f ISsuivistocks.awk %inputfile% >>%outputfile%
+gawk -f ISsparestocks.awk %inputfile% >>%outputfile%
 rem start %outputfile%
