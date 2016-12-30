@@ -14,6 +14,8 @@ REM MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier w
 REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
 REM BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
 REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
+  REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
+  REM ce qui peut arriver si on manipule le csv avec un tableur
 
 :sorties
 head -1 is-data.csv |ssed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
@@ -34,8 +36,11 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
 
   REM cat %%I.csv |grep -v "%moisfin:~0,-3%" |tail -13 |ssed "s/;/\t/g" >> %%I.tab
   REM élimination ^^ de l'occurence précédente pour le moisfin en cours et conservation des 12 mois précédents
-  cat %%I.csv |ssed -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
+  REM cat %%I.csv |ssed -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
+  cat %%I.csv |ssed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
   REM Maintenant que la date ne contient plus de "/" c'est plus simple et plus rapide de ne plus utiliser grep
+  REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
+  REM ce qui peut arriver si on manipule le csv avec un tableur
   
   gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
   REM Rajout de l'occurence actuelle pour le moisfin en cours
@@ -90,6 +95,6 @@ xcopy /y /I . "%web%\%moisfin%"
 xcopy *.txt .. /y
 popd
 REM élaboration de la liste des nouveautés pour le mail de reporting
-del whatsnew.txt
+@echo Modifications du %date% >> whatsnew.txt
 for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.txt
 whatsnew.txt
