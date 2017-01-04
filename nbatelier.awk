@@ -7,6 +7,8 @@
 #	imprimantes : tout sauf expeditor => $6 ~ /^[A-Z][A-Z][A-Z]3[0-4]/ et $10 !~ /COLIPOSTE SHIPPING/
 #	serveurs : tout => $6 ~ /^[A-Z][A-Z][A-Z]48/ 
 #	PSM : $6 ~/^CHR63.*1AD$/
+# MODIF 11:51 mardi 26 avril 2016 ajout d'un commentaire bidon pour test de git
+# MODIF 09:54 mercredi 15 juin 2016 Ajout d'un test sur le type de fichier
 
 BEGIN {
 	nbpc=0
@@ -16,17 +18,28 @@ BEGIN {
 	
 	FS=";"
 	OFS=";"
+	
+	codesortie=0
 }
 
 {	#MAIN
-	if ($2 !~ /^P5$/) {
-		if ($6 ~ /^[A-Z][A-Z][A-Z]1[0-2]/) if ($10 !~ /SHIPPING/) {nbpc++ ; if (debug) print}
-		if ($6 ~ /^[A-Z][A-Z][A-Z]3[0-4]/) if ($10 !~ /COLIPOSTE SHIPPING/) {nbimp++ ; if (debug) print}
-		if ($6 ~ /^[A-Z][A-Z][A-Z]48/) { nbsrv++ ; if (debug) print}
-		if ($6 ~ /^CHR63.*1AD$/) {nbpsm++ ; if (debug) print}
+	if (NR==1) {
+		if ( NF != 18 && NF != 19 ) {
+			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			codesortie=NF
+			# exit NF
+		}
+	} else {
+		if ($2 !~ /^P5$/) {
+			if ($6 ~ /^[A-Z][A-Z][A-Z]1[0-2]/) if ($10 !~ /SHIPPING/) {nbpc++ ; if (debug) print}
+			if ($6 ~ /^[A-Z][A-Z][A-Z]3[0-4]/) if ($10 !~ /COLIPOSTE SHIPPING/) {nbimp++ ; if (debug) print}
+			if ($6 ~ /^[A-Z][A-Z][A-Z]48/) { nbsrv++ ; if (debug) print}
+			if ($6 ~ /^CHR63.*1AD$/) {nbpsm++ ; if (debug) print}
+		}
 	}
 }
 END {
+	if (codesortie) exit codesortie
 	print "nb pc " nbpc
 	print "nb impr " nbimp
 	print "nb srv " nbsrv

@@ -1,5 +1,7 @@
-#ratioruptures.awk
-# calcule, pour chaque entité, le ratio du nombre de dossiers en achat_probleme parmi ceux qui sont passés chez I&S 
+#pbfootprints.awk
+# 15:26 jeudi 17 mars 2016
+#d'après ratioruptures.awk
+# produit les numéros de dossiers d'incidents ayant nécessité un déplacement de technicien et concernant footprints, netop ou la prise en main 
 # Source : fichier csv de calcul d'autonomie tel que produit par glpi
 # contrainte : certains champs contiennent des ruptures de lignes, le fichier dont donc être préprocessé auparavant pour les éliminer.
 # solution : batch effectuant un cat glpi.csv |tr \r \000 |tr \n \000 |ssed -e "s/;\d0\d34/\n\d34/g" -e "s/\d0/<crlf>/g" -e "s/\d34;\d34/\d34\d0\d34/g" -e "s/&gt;/>/g" >glpi.txt
@@ -10,22 +12,21 @@
 #	le zéro binaire sera donc le séparateur de champs en entrée
 #
 # MODIF 11:15 mardi 15 mars 2016
-#	tri de l'affichage en sortie de la même manière que ce qui est fait par statscoli.awk
-# BUG 16:18 vendredi 15 avril 2016
-#	force la création d'une entrée à zéro pour les entité n'ayant pas connu de rupture de stock
-#	faute de quoi on avait un décalage et des ruptures étaient imputées à des entités n'en ayant pas eu
+#   tri de l'affichage en sortie de la même manière que ce qui est fait par statscoli.awk
 
 
 BEGIN {
 	FS="\0"
 	OFS=";"
+	IGNORECASE=1 # spécifique à gawk
 }
 { #MAIN
 	if (NR==1) { #identification des champs (il arrive que la structure du fichier varie)
 		for (i=1;i<=NF;i++) {
 			# print i OFS $i
-			if ($i ~ /ntit/) fentit=i # Entité
+			# if ($i ~ /ntit/) fentit=i # Entité
 			if ($i ~ /istorique/) fhisto=i # Historique des attributions
+			if ($i ~ /ype$/) ftype=i # Type de dossier (incident/demande)
 	# print fentit OFS fhisto
 	# print NR
 		}
@@ -33,26 +34,26 @@ BEGIN {
 	# }
 
 	# {
-		if ($fhisto ~ /I&S/) { #comptabilise, pour chaque entité, le nombre de dossiers passés par I&S
-			is[$fentit]++
-			if ($fhisto ~ /ACHAT_PROBLEME/) hapb[$fentit]++ #comptabilise, pour chaque entité, le nombre de dossiers passés par I&S ayant connu un ACHAT_PROBLEME
-			# print NR OFS is[$fentit] OFS $fentit
+		if ($ftype~/ncident/) if ($fhisto ~ /PLANIF_MET/) { #comptabilise, pour chaque entité, le nombre de dossiers d'incident passés par la planif métier (et donc ayant nécessité un déplacement de technicien
+			# is[$fentit]++
+			if ($0 ~ /footprint|netop|prise en main/) { # dossiers ayant connu un pb de prise en main
+				print gensub(/\"/,"","g",$1) # numéro de dossier
+			}
 		}
 		# print NR OFS NF OFS $1 OFS $fhisto
 	}
 }
 END { # Affichage des résultats
-	print "Entite" OFS "HAPB" OFS "I&S" OFS "Ratio"
-	for (i in is) hapb[i]=hapb[i]+0
+#	print "Entite" OFS "HAPB" OFS "I&S" OFS "Ratio"
 	# n=asorti(ita,oita)
 	# for (i=1;i<=n;i++) print oita[i] OFS ita[oita[i]]
-	n=asorti(hapb,ohapb)
+#	n=asorti(hapb,ohapb)
 	# print n OFS "hapb"
 	# for (i=1;i<=n;i++) print ohapb[i] OFS hapb[ohapb[i]]
-	n=asorti(is,ois)
+#	n=asorti(is,ois)
 	# print n OFS "I&S"
-	for (i=1;i<=n;i++) {
-		entite=gensub(/\"(.*racine > )*/,"","g",ois[i]) # supprime les guillemets et le texte générique inutile dans le nom de l'entité
-		printf "%s" OFS "%3d" OFS "%3d" OFS "%4.2f%%\n", entite , hapb[ohapb[i]] , is[ois[i]], 100*hapb[ohapb[i]] / is[ois[i]]
-	}
+#	for (i=1;i<=n;i++) {
+#		entite=gensub(/\"(.*racine > )*/,"","g",ois[i]) # supprime les guillemets et le texte générique inutile dans le nom de l'entité
+#		printf "%s" OFS "%3d" OFS "%3d" OFS "%4.2f%%\n", entite , hapb[ohapb[i]] , is[ois[i]], 100*hapb[ohapb[i]] / is[ois[i]]
+#	}
 }

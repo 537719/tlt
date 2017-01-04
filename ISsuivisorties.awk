@@ -64,11 +64,14 @@
 # BUG 11:49 lundi 25 avril 2016 : Correction des références à parser pour affectation à certaines familles
 # MODIF 11:59 lundi 25 avril 2016 : changement de l'ordre de l'examen des case afin de sortir par un break le plus vite possible => gain de 5 à 10 % en vitesse d'exécution
 # BUG 15:44 lundi 25 avril 2016 : correction de la sélection d'UC "COL"
+# MODIF 11:15 lundi 13 juin 2016 prise en compte de l'ajout du numéro de tag I&S dans le champ $19 (dont le libellé NumTag n'apparait pas dans la ligne d'en-tête)
+# BUG 11:17 lundi 13 juin 2016correction du fait que EXIT ne fonctionne pas au coeur de la section "MAIN" (mais ok dans END)
 
 BEGIN {
 	FS=";"
 	OFS=";"
 	IGNORECASE=1
+	codesortie=0
 	
 	# Obligation de pré-définir les array afin de maitriser l'ordre de présentation des résultats
 	types[1]="incident"
@@ -97,7 +100,7 @@ BEGIN {
 	
 	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
 
-	}
+}
 { #MAIN
 	# définition des champs 
 	priorite=$2
@@ -108,9 +111,10 @@ BEGIN {
 	sn=$11
 	
 	if (NR==1) {
-		if (NF!=18) {
-			print "Ce fichier n'est pas du type requis car il contient " NF "champs."
-			exit NF
+		if ( NF != 18 && NF != 19 ) {
+			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			codesortie=NF
+			# exit NF
 		}
 	} else {
 		
@@ -275,6 +279,8 @@ BEGIN {
 }
 
 END {
+	if (codesortie !=0) exit codesortie
+	
 	ligne= FILENAME 
 	for (j=1;j<=5;j++) ligne= ligne OFS types[j] 
 	print ligne

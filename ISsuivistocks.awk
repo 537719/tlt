@@ -52,11 +52,14 @@
 #	fournit un résultat sous forme de csv
 #	comptabilise le total d'éléments n'appartenant pas aux familles de produits suivies
 
+# MODIF 11:08 lundi 13 juin 2016 prise en compte de l'ajout du numéro de tag I&S dans l'export des sorties, qui peut maintenant compter autant de champs que l'état des stocks
+# BUG 11:17 lundi 13 juin 2016correction du fait que EXIT ne fonctionne pas au coeur de la section "MAIN" (mais ok dans END)
 
 BEGIN {
 	FS=";"
 	OFS=";"
 	IGNORECASE=1
+	codesortie=0
 	
 	# Obligation de pré-définir les array afin de maitriser l'ordre de présentation des résultats
 	# numérotation à partir de 4 afin de coller avec l'indexation des champs
@@ -94,8 +97,14 @@ BEGIN {
 	
 	if (NR==1) {
 		if (NF!=9) {
-			print "Ce fichier n'est pas du type requis car il contient " NF "champs."
-			exit NF
+			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			# exit NF
+			codesortie = NF
+		} else {
+			if ($0 !~ /Ok/ ) {
+				print "Ce fichier n'est pas un état des stocks"
+				codesortie = NF
+			}
 		}
 	} else {
 		
@@ -206,6 +215,8 @@ BEGIN {
 }
 
 END {
+	if (codesortie !=0) exit codesortie
+	
 	ligne= FILENAME 
 	for (j=4;j<=9;j++) ligne= ligne OFS types[j] 
 	print ligne
