@@ -59,6 +59,7 @@
 #    d'une part des m73 i5 (non dev) ont été mis par erreur sous la ref des i7 (alors qu'il n'y en a plus en stock)
 #    d'autre part compte tenu de la nomenclature des référence et de l'ajout des nouveaux modèles, maintenir la distinction entretenait lourdeur et complexité, source de bugs
 # MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
+# MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
 
 BEGIN {
 	FS=";"
@@ -123,12 +124,12 @@ BEGIN {
 
 		# détermination de la famille de produits
 		switch (reference) { # corriger les expressions régulières en fonction des critères précis
-			case /CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
+			case /CHR34[N|R]S19M|CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
 			{
 				famille="FINGERPRINT"
 				break
 			}
-			case /CHR34[N|R]S19M|CHR34[N|R].18[P|Q]/ : # pc43d ZPL et pm43c
+			case /CHR34[N|R].18[P|Q]/ : # pc43d ZPL
 			{
 				famille="ZPL"
 				break
