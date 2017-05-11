@@ -1,0 +1,25 @@
+Ventilation S30
+===============
+A partir d'un fichier "tableaux [nom_du_mois] TELINTRANS.xlsx" fourni par S30
+Se placer dans l'onglet donnant le détail de facturation pour chaque intervention
+Modifier la ligne d'en-tête de manière à  :
+- remplacer les espaces et autres séparateurs par des underscore
+- remplacer les lettres accentuées par leur équivalent non accentué
+sauvegarder l'onglet au format .CSV
+
+Se connecter à  la base GLPI avec HeidiSQL et ouvrir une ligne de commande MYSQL
+Exécuter le script ventilationS30.cmd
+Lorsque le script en fait la demande, coller le contenu du presse-papier dans la ligne de commande MySQL
+On obtient au final un résultat du genre suivant :
+CHRONOPOST;21;2H;2310
+CHRONOPOST;2;3H;270
+CHRONOPOST;3;1/2 J;570
+CHRONOPOST;2;1 JOURNEE;540
+CHRONOPOST;4;30MN;200
+CHRONOPOST;6;1H;450
+COLISSIMO;10;2H;1100
+COLISSIMO;6;3H;810
+COLISSIMO;6;1 JOURNEE;1620
+COLISSIMO;4;3HNO+2H;1580
+COLISSIMO;2;30MN;100
+COLISSIMO;9;1H;675
