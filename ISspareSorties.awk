@@ -25,6 +25,10 @@
 #	16 CP L
 #	17 Dep
 #	18 Ville L
+# 19 Tagis
+# 20 Societe L
+# 21 NumeroOfl
+# 22  Pays de destination
 
 # Sortie : Table ventilant pour chaque famille : incidents/demandes/rma/destruction
 # Famille;incident;demande;RMA;destruction;undef
@@ -61,6 +65,7 @@
 #	ne travaille que sur les fichiers de sortie de stocks (d'autres scripts équivalents seront à faire pour traiter les entrées et les stocks), sans options sur la ligne de commande
 #	fournit un résultat sous forme de csv
 #	comptabilise les éléments ne rentrant dans aucune catégorie, ainsi que le total d'éléments n'appartenant pas aux familles de produits suivies
+# MODIF 29/01/2018 - 14:45:04 après crash disque : prise en compte des champs 20 à 22 dans le fichier d'entrée
 
 
 BEGIN {
@@ -110,7 +115,7 @@ BEGIN {
 	sn=$11
 	
 	if (NR==1) {
-		if ( NF != 18 && NF != 19 ) {
+		if ( NF != 18 && NF != 19  && NF != 22 ) {
 			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
 			codesortie=NF
 			# exit NF

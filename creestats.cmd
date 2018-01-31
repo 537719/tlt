@@ -16,21 +16,28 @@ REM BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si
 REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
   REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
   REM ce qui peut arriver si on manipule le csv avec un tableur
-
+REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque
+    REM remplacement de ssed par sed
 :sorties
-head -1 is-data.csv |ssed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
+head -1 is-data.csv |sed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
 REM MODIF 11:08 mardi 17 mai 2016 utilise un format de date aaaa-mm-jj au lieu de mm/aaaa
 set /p moisfin=<%temp%\moisfin.tmp
 
+pushd  StatsIS
+:: nouveauté ^^
+
 rd /s /q %moisfin% 2>nul
+
 md %moisfin%
 REM dossier ^^ où seront stockées les fichiers créés
 
 del %temp%\moisdeb.tmp 2>nul
 
 for /F "delims=;" %%I in (is-data.csv) do if exist %%I.csv (
+:: for /F "delims=;" %%I in (..\is-data.csv) do if exist %%I.csv (
 REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
   head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
+::  head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
   REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
   REM en-tête ^^
 
@@ -38,16 +45,19 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   REM élimination ^^ de l'occurence précédente pour le moisfin en cours et conservation des 12 mois précédents
   REM cat %%I.csv |ssed -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
   cat %%I.csv |ssed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
+::  cat %%I.csv |sed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
   REM Maintenant que la date ne contient plus de "/" c'est plus simple et plus rapide de ne plus utiliser grep
   REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
   REM ce qui peut arriver si on manipule le csv avec un tableur
   
   gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
+::  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" ..\is-data.csv >> %%I.tab
   REM Rajout de l'occurence actuelle pour le moisfin en cours
 
   REM Reconstitue un csv à jour
   cat %%I.csv |grep -v "%moisfin:~0,-3%" >%%I.tmp
   ssed -n "s/^%%I/%moisfin%/p" is-data.csv >>%%I.tmp
+::  sed -n "s/^%%I/%moisfin%/p" ..\is-data.csv >>%%I.tmp
 
   move /y %%I.csv %%I.bak.csv
   move /y %%I.tmp %%I.csv
@@ -58,7 +68,7 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
 
   set /p moisdeb=<%temp%\moisdeb.tmp
   REM détermination de la borne temporelle inférieure pour le graphique
-  
+:: set gnuplot=%programfiles%\gnuplot\bin\gnuplot/exe  
   gnuplot  -c genericplot.plt %%I.tab %moisdeb% %moisfin%
   REM Crée le graphique
   

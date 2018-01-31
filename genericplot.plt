@@ -18,9 +18,11 @@
 # MODIF 14:17 mardi 17 mai 2016 format d'entrée aaaa-mm-jj au lieu de mm/aaaa
 # MODIF 15:44 jeudi 19 mai 2016 adaptation des champs à la nouvelle structure des fichiers de données
 # FINGERPRINT	incident	demande	RMA	destruction	undef	stock\TEexport_20160512.csv	OKdispo	OKreserve	SAV	Maintenance	Destruction	aLivrer	Seuil
-# 2015-01-31	42	10	98	0	0	FINGERPRINT	393	0	0	0	0	0	170
+# 2015-01-31	42	10	9é8	0	0	FINGERPRINT	393	0	0	0	0	0	170
 # 2015-02-27	43	11	104	0	0	FINGERPRINT	460	0	0	0	0	0	170
 # 2015-03-31	56	36	64	0	0	FINGERPRINT	445	0	0	2	0	0	170
+# MODIF 30/01/2018 - 16:47:21 : adaptation à la nouvelle version (gnuplot 5.2 patchlevel 2) installée suite à crash disque
+#   ==> remplacement des $$ par des $ dans la ligne du plot
 
 # reste à faire : modifier éventuellement la palette de couleurs
 clear
@@ -81,7 +83,7 @@ set output filename . ".png"
 set title filename
 # set title ARG2 . "-" . ARG3
 
-plot ARG1 using 1:8:($$8+$$13) title columnhead(13) . "+" . columnhead(8) with filledcurves lt rgb "blue",ARG1 using 1:8 title columnhead(8) with filledcurves x1 lt rgb "dark-blue",  ARG1 using 1:2 title columnhead(2) with lines lt rgb "dark-red" lw 3, ARG1 using 1:($$2+$$3) title columnhead(3) . "+" . columnhead(2) with lines lt rgb "red" dashtype "." lw  2, ARG1 using 1:15 title columnhead(15) with lines lt rgb "green" dashtype "-" lw  2
+plot ARG1 using 1:8:($$8+$$13) title columnhead(13) . "+" . columnhead(8) with filledcurves lt rgb "blue",ARG1 using 1:8 title columnhead(8) with filledcurves x1 lt rgb "dark-blue",  ARG1 using 1:2 title columnhead(2) with lines lt rgb "dark-red" lw 3, ARG1 using 1:($$2+$$3) title columnhead(3) . "+" . columnhead(2) with lines lt rgb "dark-red" dashtype "." lw  2, ARG1 using 1:15 title columnhead(15) with lines lt rgb "green" dashtype "-" lw  2
 # trace la ligne correspondant au 1° champ et une ligne correspondant à la somme des 1° et 2° champs
 # ainsi qu'une surface correspondant au 6° champ et une autre à la somme des 6° et 11°
 # lt = linetype

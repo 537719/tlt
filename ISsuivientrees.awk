@@ -11,11 +11,11 @@
 # 3 Numero Serie
 # 4 DateEntree
 # 5 APT
-# 6 Libellé
+# 6 RefAppro
 # 7 BonTransport
-# 8 RefAppro
-# 9 NumTag (à partir de 06/2016)
-#10 (vide) (dans la ligne d'en-tête uniquement)
+# 8 Libellé
+# 9 TagIS
+# 10 NumTag
 
 # Sortie : Table ventilant pour chaque famille : Livraisons/retours cient/retours RMA/
 # Famille;incident;demande;RMA;destruction;undef
@@ -62,6 +62,7 @@
 #    d'autre part compte tenu de la nomenclature des référence et de l'ajout des nouveaux modèles, maintenir la distinction entretenait lourdeur et complexité, source de bugs
 # MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
 # MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
+# MODIF 29/01/2018 - 14:45:04 après crash disque : prise en compte de la nouvelle structure de fichiers
 
 BEGIN {
 	FS=";"
