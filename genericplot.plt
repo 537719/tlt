@@ -83,7 +83,8 @@ set output filename . ".png"
 set title filename
 # set title ARG2 . "-" . ARG3
 
-plot ARG1 using 1:8:($$8+$$13) title columnhead(13) . "+" . columnhead(8) with filledcurves lt rgb "blue",ARG1 using 1:8 title columnhead(8) with filledcurves x1 lt rgb "dark-blue",  ARG1 using 1:2 title columnhead(2) with lines lt rgb "dark-red" lw 3, ARG1 using 1:($$2+$$3) title columnhead(3) . "+" . columnhead(2) with lines lt rgb "dark-red" dashtype "." lw  2, ARG1 using 1:15 title columnhead(15) with lines lt rgb "green" dashtype "-" lw  2
+# plot ARG1 using 1:8:($$8+$$13) title columnhead(13) . "+" . columnhead(8) with filledcurves lt rgb "blue",ARG1 using 1:8 title columnhead(8) with filledcurves x1 lt rgb "dark-blue",  ARG1 using 1:2 title columnhead(2) with lines lt rgb "dark-red" lw 3, ARG1 using 1:($$2+$$3) title columnhead(3) . "+" . columnhead(2) with lines lt rgb "dark-red" dashtype "." lw  2, ARG1 using 1:15 title columnhead(15) with lines lt rgb "green" dashtype "-" lw  2
+plot ARG1 using 1:8:($8+$13) title columnhead(13) . "+" . columnhead(8) with filledcurves lt rgb "blue",ARG1 using 1:8 title columnhead(8) with filledcurves x1 lt rgb "dark-blue",  ARG1 using 1:2 title columnhead(2) with lines lt rgb "dark-red" lw 3, ARG1 using 1:($2+$3) title columnhead(3) . "+" . columnhead(2) with lines lt rgb "dark-red" dashtype "." lw  2, ARG1 using 1:15 title columnhead(15) with lines lt rgb "green" dashtype "-" lw  2
 # trace la ligne correspondant au 1° champ et une ligne correspondant à la somme des 1° et 2° champs
 # ainsi qu'une surface correspondant au 6° champ et une autre à la somme des 6° et 11°
 # lt = linetype

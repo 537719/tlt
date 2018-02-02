@@ -63,6 +63,7 @@
 # MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
 # MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
 # MODIF 29/01/2018 - 14:45:04 après crash disque : prise en compte de la nouvelle structure de fichiers
+# MODIF 02/02/2018 - 14:00:47 prend en compte les nouveaux modèles d'UC Chronopost
 
 BEGIN {
 	FS=";"
@@ -178,7 +179,7 @@ BEGIN {
 				famille="COLPV"
 				break
 			}
-			case /^CHR10.[^S]1[A-D]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
+			case /^CHR10.[^S]1[A-Z]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
 			{
 				famille="CHRUC"
 				break
@@ -186,6 +187,11 @@ BEGIN {
 			case /CHR10.S/ :
 			{
 				famille="UCSHIP"
+				break
+			}
+			case /CHR12.F/ :
+			{
+				famille="CHROMEBOOK"
 				break
 			}
 			case /^CLP10/ : 

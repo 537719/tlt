@@ -1,9 +1,20 @@
 ::creestats.cmd
 ::12/05/2016 11:41:59,27
 ::crée les stats de suivi I&S
+:debut
+REM @echo on
+if "@%isdir%@" NEQ "@@" goto isdirok
+if exist ..\bin\getisdir.cmd (
+call ..\bin\getisdir.cmd
+goto isdirok
+)
+msg /w %username% Impossible de trouver le dossier I^&S
+goto :eof
+:isdirok
 
-call ISstatloop.cmd
+call "%isdir%\bin\ISstatloop.cmd"
 REM génération préalable des fichiers de stats des familles de produits chez I&S
+pushd "%isdir%\StatsIS"
 
 REM agrège les deux stats en un seul fichier
 paste -d; is-out.csv is-stock.csv is-seuil.csv >is-data.csv
@@ -18,13 +29,13 @@ REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête
   REM ce qui peut arriver si on manipule le csv avec un tableur
 REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque
     REM remplacement de ssed par sed
+REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque : adaptation à une autre organisation disque (supprimer les :: pour activer les modifs et supprimer les anciens équivalents)
+REM MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la veille : suppression des :: et mise en :: des anciennes instructions
+    
 :sorties
 head -1 is-data.csv |sed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
 REM MODIF 11:08 mardi 17 mai 2016 utilise un format de date aaaa-mm-jj au lieu de mm/aaaa
 set /p moisfin=<%temp%\moisfin.tmp
-
-pushd  StatsIS
-:: nouveauté ^^
 
 rd /s /q %moisfin% 2>nul
 
@@ -33,31 +44,33 @@ REM dossier ^^ où seront stockées les fichiers créés
 
 del %temp%\moisdeb.tmp 2>nul
 
-for /F "delims=;" %%I in (is-data.csv) do if exist %%I.csv (
-:: for /F "delims=;" %%I in (..\is-data.csv) do if exist %%I.csv (
+set gnuplot=%programfiles%\gnuplot\bin\gnuplot.exe  
+
+:: for /F "delims=;" %%I in (is-data.csv) do if exist %%I.csv (
+for /F "delims=;" %%I in (..\is-data.csv) do if exist %%I.csv (
 REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
-  head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
-::  head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
+::   head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
+head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
   REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
   REM en-tête ^^
 
   REM cat %%I.csv |grep -v "%moisfin:~0,-3%" |tail -13 |ssed "s/;/\t/g" >> %%I.tab
   REM élimination ^^ de l'occurence précédente pour le moisfin en cours et conservation des 12 mois précédents
   REM cat %%I.csv |ssed -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
-  cat %%I.csv |ssed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
-::  cat %%I.csv |sed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
+::  cat %%I.csv |ssed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
+  cat %%I.csv |sed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
   REM Maintenant que la date ne contient plus de "/" c'est plus simple et plus rapide de ne plus utiliser grep
   REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
   REM ce qui peut arriver si on manipule le csv avec un tableur
   
+::  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
   gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
-::  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" ..\is-data.csv >> %%I.tab
   REM Rajout de l'occurence actuelle pour le moisfin en cours
 
   REM Reconstitue un csv à jour
   cat %%I.csv |grep -v "%moisfin:~0,-3%" >%%I.tmp
-  ssed -n "s/^%%I/%moisfin%/p" is-data.csv >>%%I.tmp
-::  sed -n "s/^%%I/%moisfin%/p" ..\is-data.csv >>%%I.tmp
+::  ssed -n "s/^%%I/%moisfin%/p" is-data.csv >>%%I.tmp
+  sed -n "s/^%%I/%moisfin%/p" is-data.csv >>%%I.tmp
 
   move /y %%I.csv %%I.bak.csv
   move /y %%I.tmp %%I.csv
@@ -68,11 +81,10 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
 
   set /p moisdeb=<%temp%\moisdeb.tmp
   REM détermination de la borne temporelle inférieure pour le graphique
-:: set gnuplot=%programfiles%\gnuplot\bin\gnuplot/exe  
-  gnuplot  -c genericplot.plt %%I.tab %moisdeb% %moisfin%
+  "%gnuplot%"  -c ..\bin\genericplot.plt %%I.tab %moisdeb% %moisfin%
   REM Crée le graphique
   
-  gawk -f genHTMLlink.awk %%I.png >%%I.htm
+  gawk -f ..\bin\genHTMLlink.awk %%I.png >%%I.htm
   REM génération de la page web affichant le graphique
   move %%I.* "%moisfin%"
   copy "%moisfin%\%%I.txt" .
@@ -86,12 +98,12 @@ REM élimination ^^ des deux dernières lignes, qui ne correspondent pas à de vrai
 rem head -%nblgn% is-seuil.csv |gawk -f genHTMLindex.awk -v statdate="%moisfin%" >index.html
 REM Nouvelle formulation du 15:05 06/12/2016 car les lignes à éliminer ne sont plus les dernières
 rem mais sont les seules à contenir "matériel"
-cat is-seuil.csv |grep -v riel |gawk -f genHTMLindex.awk -v statdate="%moisfin%" >index.html
+cat is-seuil.csv |grep -v riel |gawk -f ..\bin\genHTMLindex.awk -v statdate="%moisfin%" >index.html
 REM génération de la page d'en-tête pour toutes les familles suivies
 
 move index.html %moisfin%
 
-set web=C:\Users\admin\Dropbox\EasyPHP-DevServer-14.1VC11\data\localweb\StatsIS
+set web=%userprofile%\Dropbox\EasyPHP-DevServer-14.1VC11\data\localweb\StatsIS
 REM move /y %moisfin% %web%
 rd /s /q "%web%\%moisfin%" 2>nul
 @echo Vérifier et corriger les commentaires texte dans le dossier %moisfin%
@@ -108,3 +120,4 @@ REM élaboration de la liste des nouveautés pour le mail de reporting
 @echo Modifications du %date% >> whatsnew.txt
 for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.txt
 whatsnew.txt
+popd
