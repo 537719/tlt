@@ -1,0 +1,53 @@
+#git mémo
+#mes notes pour em dépatouiller avec git
+
+#pour lister les branches
+C:\Users\Utilisateur\Documents\TLT\I&S\bin>git branch
+  StatsIS
+  main
+* master
+
+#l'astérisque montre que la branche active est "master"
+
+#Pour changer de branche
+C:\Users\Utilisateur\Documents\TLT\I&S\bin>git checkout StatsIS
+Switched to branch 'StatsIS'
+
+#Pour pousser une branche vers le dépôt distant
+git push --set-upstream [url du projet] [nom de la branche]
+
+#pour intégrer les modifs d'une branche fille dans sa branche parente
+#mettre la branche fille dans un état propre
+git commit
+[statsmodifs 08d8140] BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+#revenir à la branche parente
+git checkout statsis
+Switched to branch 'statsis'
+M       ESIS.cmd
+
+#fusionner la branche courante avec sa fille
+git merge statsmodifs
+Updating f4db094..08d8140
+Fast-forward
+ ISstatloop.cmd     | 61 +++++++++++++++++++++++++++++++++---------------------
+ ISsuivientrees.awk |  8 ++++++-
+ creestats.cmd      | 53 ++++++++++++++++++++++++++++++-----------------
+ genericplot.plt    |  3 ++-
+ getISdir.cmd       | 13 ++++++++++++
+ gitAutoAdd.cmd     | 31 +++++++++++++++++++++++++++
+ 6 files changed, 124 insertions(+), 45 deletions(-)
+ create mode 100644 getISdir.cmd
+ create mode 100644 gitAutoAdd.cmd
+
+#pousser la branche fusionnée vers le dépôt distant
+git push --set-upstream https://github.com/537719/tlt statsis
+Counting objects: 3, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 422 bytes | 422.00 KiB/s, done.
+Total 3 (delta 2), reused 0 (delta 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/537719/tlt
+ * [new branch]      statsis -> statsis
+Branch 'statsis' set up to track remote branch 'statsis' from 'https://github.com/537719/tlt'.
