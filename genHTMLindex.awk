@@ -5,6 +5,9 @@
 # MODIF 15:05 vendredi 1 juillet 2016 Rend cliquable l'icone de chaque ligne d'index
 # MODIF 14:35 lundi 9 janvier 2017 réécriture presque totale
 # 	sortie sous la forme de page web 3 colonnes (une par ligne de produits : COLissimo / CHRonopost / chronoSHiP) au lieu d'une seule
+# BUG 09/02/2018 - 10:58:06 correction d'erreurs de calage des colonnes dans le code html généré
+# MODIF 09/02/2018 - 12:57:15 ajout de commentaires relatifs aux données contenues dans le code html généré
+# MODIF 09/02/2018 - 13:34:56 correction de l'indentation du code html généré et ajout d'autre commentaires
 #
 # génération de l'index de toutes les pages web générées
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
@@ -29,14 +32,14 @@ BEGIN {
 	print " <head>"
 	# print "<meta charset=\"utf-8\" />"
 	print "  <title>Statistiques I&S par famille de produit</title>"
-	print "<meta name=\"description\" content=\"statsindex\"/>"
-	print "<meta name=\"generator\" content=\"genHTMLindex.awk\" />"
+	print "  <meta name=\"description\" content=\"statsindex\"/>"
+	print "  <meta name=\"generator\" content=\"genHTMLindex.awk\" />"
 	print " </head>"
 	print " <body>"
-	print "<div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
-	print "  <table>"
-	print "   <tr><th colspan=\"6\">Statistiques I&S par famille de produit au " statdate " </th></tr>"
-	print "<tr><th colspan=\"6\"><hr></th></tr>"
+	print "  <div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
+	print "   <table><!--Statistiques I&S par famille de produit au " statdate " -->"
+	print "    <tr><th colspan=\"6\">Statistiques I&S par famille de produit au " statdate " </th></tr>"
+	print "    <tr><th colspan=\"6\"><hr></th></tr>"
 }
 
 { #MAIN
@@ -112,66 +115,78 @@ END {
 			shphtm=shp[i] ".htm"
 		}
 		
-		ligne="<tr>\r\n"
+		ligne="    <tr><!-- " col[i] " " chr[i] " " shp[i] " -->\r\n"
 		
 		# colissimo
-		ligne=ligne "\t<td valign=\"top\">\r\n"
+		ligne=ligne "     <td valign=\"top\"><!-- " col[i] " -->\r\n"
 		if (colpng) {
-		ligne=ligne "\t\t<a href=\"" colpng "\">\r\n"
-		ligne=ligne "\t\t\t<img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" colpng "\" alt=\"" colpng "\">\r\n"
-		ligne=ligne "\t\t</a>\r\n"
-		ligne=ligne "\t</td>\r\n"
-		ligne=ligne "\t<td>\r\n"
-		ligne=ligne "\t\t<a href=\"" colhtm "\">\r\n"
-		ligne=ligne "\t\t\t" collib[i] "\r\n"
-		ligne=ligne "\t\t</a>\r\n"
-		}
-		ligne=ligne "\t</td>\r\n"
+		ligne=ligne "      <a href=\"" colpng "\">\r\n"
+		ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" colpng "\" alt=\"" colpng "\">\r\n"
+		ligne=ligne "      </a>\r\n"
+		ligne=ligne "     </td>\r\n"
+		ligne=ligne "     <td>\r\n"
+		ligne=ligne "      <a href=\"" colhtm "\">\r\n"
+		ligne=ligne "       " collib[i] "\r\n"
+		ligne=ligne "      </a>\r\n"
+		} else {
+            ligne=ligne "     </td>\r\n"
+            ligne=ligne "     <td>\r\n"
+            ligne=ligne "      <!-- aucune donnée colissimo -->\r\n"
+        }
+		ligne=ligne "     </td>\r\n"
 		
 		#chronopost
-		ligne=ligne "\t<td valign=\"top\">\r\n"
+		ligne=ligne "     <td valign=\"top\"><!-- " chr[i] " -->\r\n"
 		if (chrpng) {
-		ligne=ligne "\t\t<a href=\"" chrpng "\">\r\n"
-		ligne=ligne "\t\t\t<img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" chrpng "\" alt=\"" chrpng "\">\r\n"
-		ligne=ligne "\t\t</a>\r\n"
-		ligne=ligne "\t</td>\r\n"
-		ligne=ligne "\t<td>\r\n"
-		ligne=ligne "\t\t<a href=\"" chrhtm "\">\r\n"
-		ligne=ligne "\t\t\t" chrlib[i] "\r\n"
-		ligne=ligne "\t\t</a>\r\n"
-		}
-		ligne=ligne "\t</td>\r\n"
+		ligne=ligne "      <a href=\"" chrpng "\">\r\n"
+		ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" chrpng "\" alt=\"" chrpng "\">\r\n"
+		ligne=ligne "      </a>\r\n"
+		ligne=ligne "     </td>\r\n"
+		ligne=ligne "     <td>\r\n"
+		ligne=ligne "      <a href=\"" chrhtm "\">\r\n"
+		ligne=ligne "       " chrlib[i] "\r\n"
+		ligne=ligne "      </a>\r\n"
+		} else {
+            ligne=ligne "     </td>\r\n"
+            ligne=ligne "     <td>\r\n"
+            ligne=ligne "      <!-- aucune donnée chronopost -->\r\n"
+        }
+		ligne=ligne "     </td>\r\n"
 		
 		#chronoship
-		ligne=ligne "\t<td valign=\"top\">\r\n"
+		ligne=ligne "     <td valign=\"top\"><!-- " shp[i] " -->\r\n"
 		if (shppng) {
-		ligne=ligne "\t\t<a href=\"" shppng "\">\r\n"
-		ligne=ligne "\t\t\t<img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" shppng "\" alt=\"" shppng "\">\r\n"
-		ligne=ligne "\t\t</a>\r\n"
-		ligne=ligne "\t</td>\r\n"
-		ligne=ligne "\t<td>\r\n"
-		ligne=ligne "\t\t<a href=\"" shphtm "\">\r\n"
-		ligne=ligne "\t\t\t" shplib[i] "\r\n"
-		ligne=ligne "\t\t</a>\r\n"
-		}
-		ligne=ligne "\t</td>\r\n"
+		ligne=ligne "      <a href=\"" shppng "\">\r\n"
+		ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" shppng "\" alt=\"" shppng "\">\r\n"
+		ligne=ligne "      </a>\r\n"
+		ligne=ligne "     </td>\r\n"
+		ligne=ligne "     <td>\r\n"
+		ligne=ligne "      <a href=\"" shphtm "\">\r\n"
+		ligne=ligne "       " shplib[i] "\r\n"
+		ligne=ligne "      </a>\r\n"
+		} else {
+            ligne=ligne "     </td>\r\n"
+            ligne=ligne "     <td>\r\n"
+            ligne=ligne "      <!-- aucune donnée chronoship -->\r\n"
+        }
+		ligne=ligne "     </td>\r\n"
 		
 		# fin de ligne
-		ligne=ligne "</tr>\r\n"
+		ligne=ligne "    </tr>"
 		
 		print ligne
 	}
 	
 	
-	print "<tr><th colspan=\"6\"><hr></th></tr>"
-	print "<tr><th colspan=\"6\">"
-	print "<a href=\""
-	print "..\\"
-	print "\">"
-	print "Index des Stats</a></th></tr>"
-	print "</table>"
-	print "</div>"
-	print ""
-	print "</body>"
+	print "    <tr><th colspan=\"6\"><hr></th></tr>"
+	print "    <tr><th colspan=\"6\">"
+	print "     <a href=\"" "..\\" "\">" "<!-- retour à l'index -->"
+	print "      Index des Stats"
+    print "     </a>"
+    print "    </th></tr>"
+	print "   </table>"
+	print "  </div>"
+	# print ""
+	print " </body>"
 	print "</html>"
 }
