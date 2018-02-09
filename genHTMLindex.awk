@@ -5,6 +5,7 @@
 # MODIF 15:05 vendredi 1 juillet 2016 Rend cliquable l'icone de chaque ligne d'index
 # MODIF 14:35 lundi 9 janvier 2017 réécriture presque totale
 # 	sortie sous la forme de page web 3 colonnes (une par ligne de produits : COLissimo / CHRonopost / chronoSHiP) au lieu d'une seule
+# BUG 09/02/2018 - 10:58:06 correction d'erreurs de calage des colonnes dans le code html généré
 #
 # génération de l'index de toutes les pages web générées
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
@@ -125,7 +126,11 @@ END {
 		ligne=ligne "\t\t<a href=\"" colhtm "\">\r\n"
 		ligne=ligne "\t\t\t" collib[i] "\r\n"
 		ligne=ligne "\t\t</a>\r\n"
-		}
+		} else {
+            ligne=ligne "      <td>\r\n"
+            ligne=ligne "       <!-- aucune donnée colissimo -->\r\n"
+            ligne=ligne "      </td>\r\n"
+        }
 		ligne=ligne "\t</td>\r\n"
 		
 		#chronopost
@@ -139,7 +144,11 @@ END {
 		ligne=ligne "\t\t<a href=\"" chrhtm "\">\r\n"
 		ligne=ligne "\t\t\t" chrlib[i] "\r\n"
 		ligne=ligne "\t\t</a>\r\n"
-		}
+		} else {
+            ligne=ligne "      <td>\r\n"
+            ligne=ligne "       <!-- aucune donnée chronopost -->\r\n"
+            ligne=ligne "      </td>\r\n"
+        }
 		ligne=ligne "\t</td>\r\n"
 		
 		#chronoship
@@ -153,8 +162,12 @@ END {
 		ligne=ligne "\t\t<a href=\"" shphtm "\">\r\n"
 		ligne=ligne "\t\t\t" shplib[i] "\r\n"
 		ligne=ligne "\t\t</a>\r\n"
-		}
-		ligne=ligne "\t</td>\r\n"
+		} else {
+            ligne=ligne "      <td>\r\n"
+            ligne=ligne "       <!-- aucune donnée chronoship -->\r\n"
+            ligne=ligne "      </td>\r\n"
+        }
+		ligne=ligne "\t</td>"
 		
 		# fin de ligne
 		ligne=ligne "</tr>\r\n"
