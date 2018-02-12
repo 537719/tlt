@@ -7,7 +7,11 @@ if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
 call ..\bin\getisdir.cmd
 goto isdirok
+) else if exist .\bin\getisdir.cmd (
+call ..\bin\getisdir.cmd
+goto isdirok
 )
+
 msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
@@ -48,7 +52,7 @@ del %temp%\moisdeb.tmp 2>nul
 set gnuplot=%programfiles%\gnuplot\bin\gnuplot.exe  
 
 :: for /F "delims=;" %%I in (is-data.csv) do if exist %%I.csv (
-for /F "delims=;" %%I in (..\is-data.csv) do if exist %%I.csv (
+for /F "delims=;" %%I in (.\is-data.csv) do if exist %%I.csv (
 REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
 ::   head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
 head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
