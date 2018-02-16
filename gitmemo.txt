@@ -13,6 +13,16 @@ C:\Users\Utilisateur\Documents\TLT\I&S\bin>git branch
 C:\Users\Utilisateur\Documents\TLT\I&S\bin>git checkout StatsIS
 Switched to branch 'StatsIS'
 
+#pour créer une nouvelle branche
+git branch [nomdenouvellebranche]
+#pour basculer vers cette nouvelle branche
+git checkout [nomdenouvellebranche]
+
+#pour créer nouvelle branche et basculer dessus 
+git checkout -b [nomdenouvellebranche]
+# équivalent à l'enchainement des deux instructions précédentes
+
+
 #Pour pousser une branche vers le dépôt distant
 git push --set-upstream [url du projet] [nom de la branche]
 

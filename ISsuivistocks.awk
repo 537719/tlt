@@ -60,7 +60,9 @@
 #    d'autre part compte tenu de la nomenclature des référence et de l'ajout des nouveaux modèles, maintenir la distinction entretenait lourdeur et complexité, source de bugs
 # MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
 # MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
+# MODIF 15/02/2018 - 15:33:53 exporte dans un module externe à inclure toutes les routines communes à la famille "ISstatsXXX"
 
+    @include "ISsuiviInclude.awk"
 BEGIN {
 	FS=";"
 	OFS=";"
@@ -76,35 +78,16 @@ BEGIN {
 	types[8]="Destruction"
 	types[9]="aLivrer"
 	
-	familles[1]="COLPV"
-	familles[2]="COLGV"
-	familles[3]="COLMET"
-	familles[4]="PFMA"
-	familles[5]="COLUC"
-	familles[6]="COLPORT"
-	familles[7]="WIFICISCO"
-	familles[8]="CHRRP"
-	familles[9]="CHRUC"
-	familles[10]="CHRPORT"
-	familles[11]="SERVEURS"
-	familles[12]="PSMM3"
-	familles[13]="UCSHIP"
-	familles[14]="ZPL"
-	familles[15]="FINGERPRINT"
-	familles[16]="SERIALISE"
-	familles[17]="DIVERS"
-	
-	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
-
-	}
+    initfamilles()
+    zerofamilles()
+}
 { #MAIN
 	# définition des champs 
 	reference=$2
 	
 	if (NR==1) {
 		if (NF!=9) {
-			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
-			# exit NF
+			erreurnf(NF)
 			codesortie = NF
 		} else {
 			if ($0 !~ /Ok/ ) {
@@ -122,97 +105,7 @@ BEGIN {
 		Destr=$8
 		Aliv=$9
 
-		# détermination de la famille de produits
-		switch (reference) { # corriger les expressions régulières en fonction des critères précis
-			case /CHR34[N|R]S19M|CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
-			{
-				famille="FINGERPRINT"
-				break
-			}
-			case /CHR34[N|R].18[P|Q]/ : # pc43d ZPL
-			{
-				famille="ZPL"
-				break
-			}
-			case /CLP34[N|R]S0CN|CLP34[N|R]S1A[4|H|N|P]|CLP34RS0E1|CLP34[N|R]S1B1/ : 
-			{
-				famille="COLPV"
-				break
-			}
-			case /^CHR10.[^S]1[A-D]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
-			{
-				famille="CHRUC"
-				break
-			}
-			case /CHR10.S/ :
-			{
-				famille="UCSHIP"
-				break
-			}
-			case /^CLP10/ : 
-			{
-				famille="COLUC"
-				break
-			}
-			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]|CLP11[N|R][F|P]1D./ : 
-			{
-				famille="COLPORT"
-				break
-			}
-			case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
-			{
-				famille="COLGV"
-				break
-			}
-			case /CLP34[N|R][F|P]194|CLP34[N|R][F|P]1BD/ :
-			{
-				famille="PFMA"
-				break
-			}
-			case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC|CLP34[N|R][F|P]13K/ :
-			{
-				famille="COLMET"
-				break
-			}
-			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ :
-			{
-				famille="CHRRP"
-				break
-			}
-			case /CHR47[N|R][F|P]0T7/ :
-			{
-				famille="WIFICISCO"
-				break
-			}
-			case /CHR11[N|R][F|P]1../ : # - rajouter les dell
-			{
-				famille="CHRPORT"
-				break
-			}
-			case /^CHR48/ :
-			{
-				famille="SERVEURS"
-				break
-			}
-			case /CHR63[N|R][P|F]1AD/ :
-			{
-				famille="PSMM3"
-				break
-			}
-
-			case /...3[0-4].....|...4[3|5|9]......|...61...../ : # Imprimantes / Equipements réseau / Scanners
-			{
-				famille="SERIALISE"
-				break
-			}
-			default :
-			{
-				famille="DIVERS"
-			}
-		}
-		# types[type]++
-		# familles[famille]++
-		# nbsorties[famille type]++
+        famille=selectfamille(reference) # détermination de la famille de produits, la référence du produit étant passée en paramètre
 		for (i in types) {
 			nbstock[famille i] = nbstock[famille i]+$i
 		}
@@ -223,7 +116,7 @@ BEGIN {
 END {
 	if (codesortie !=0) exit codesortie
 	
-	ligne= FILENAME 
+	ligne= "!" FILENAME 
 	for (j=4;j<=9;j++) ligne= ligne OFS types[j] 
 	print ligne
 	for (i in familles) {

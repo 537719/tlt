@@ -65,6 +65,7 @@
 # MODIF 29/01/2018 - 14:45:04 après crash disque : prise en compte de la nouvelle structure de fichiers
 # MODIF 02/02/2018 - 14:00:47 prend en compte les nouveaux modèles d'UC Chronopost
 
+    @include "ISsuiviInclude.awk"
 BEGIN {
 	FS=";"
 	OFS=";"
@@ -77,29 +78,9 @@ BEGIN {
 	types[3]="RMA"
 	types[4]="undef"
 	
-	familles[1]="COLPV"
-	familles[2]="COLGV"
-	familles[3]="COLMET"
-	familles[4]="PFMA"
-	familles[5]="COLUC"
-	familles[6]="COLPORT"
-	familles[7]="WIFICISCO"
-	familles[8]="CHRRP"
-	familles[9]="CHRUC"
-	familles[10]="CHRPORT"
-	familles[11]="SERVEURS"
-	familles[12]="PSMM3"
-	familles[13]="UCSHIP"
-	familles[14]="ZPL"
-	familles[15]="FINGERPRINT"
-	familles[16]="SERIALISE"
-	familles[17]="DIVERS"
-	familles[18]="RP5700"
-	familles[19]="RP5800"
-	
-	for (i in familles) for (j in types) nbentrees[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
-
-	}
+    initfamilles()
+    zerofamilles()
+}
 { #MAIN
 	# définition des champs 
 		reference=$2
@@ -110,7 +91,7 @@ BEGIN {
 	
 	if (NR==1) {
 		if ( NF !=8 && NF != 9 && NF != 10 ) {
-			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			erreurnf(NF)
 			codesortie = NF
 		}
 		# if ($10 ~ /./) {
@@ -162,110 +143,7 @@ BEGIN {
 			}
 		}
 		
-		# détermination de la famille de produits
-		switch (reference) { # corriger les expressions régulières en fonction des critères précis
-			case /CHR34[N|R]S19M|CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
-			{
-				famille="FINGERPRINT"
-				break
-			}
-			case /CHR34[N|R].18[P|Q]/ : # pc43d ZPL
-			{
-				famille="ZPL"
-				break
-			}
-			case /CLP34[N|R]S0CN|CLP34[N|R]S1A[4|H|N|P]|CLP34RS0E1|CLP34[N|R]S1B1/ : 
-			{
-				famille="COLPV"
-				break
-			}
-			case /^CHR10.[^S]1[A-Z]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
-			{
-				famille="CHRUC"
-				break
-			}
-			case /CHR10.S/ :
-			{
-				famille="UCSHIP"
-				break
-			}
-			case /CHR12.F/ :
-			{
-				famille="CHROMEBOOK"
-				break
-			}
-			case /^CLP10/ : 
-			{
-				famille="COLUC"
-				break
-			}
-			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]|CLP11[N|R][F|P]1D./ : 
-			{
-				famille="COLPORT"
-				break
-			}
-			case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
-			{
-				famille="COLGV"
-				break
-			}
-			case /CLP34[N|R][F|P]194|CLP34[N|R][F|P]1BD/ :
-			{
-				famille="PFMA"
-				break
-			}
-			case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC|CLP34[N|R][F|P]13K/ :
-			{
-				famille="COLMET"
-				break
-			}
-			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]183|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ :
-			{
-				famille="RP5700"
-				# break
-			}
-			case /CHR10[N|R][F|I|P]18M/ :
-			{
-				famille="RP5800"
-				# break
-			}
-			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ :
-			{
-				famille="CHRRP"
-				break
-			}
-			case /CHR47[N|R][F|P]0T7/ :
-			{
-				famille="WIFICISCO"
-				break
-			}
-			case /CHR11[N|R][F|P]1../ : # - rajouter les dell
-			{
-				famille="CHRPORT"
-				break
-			}
-			case /^CHR48/ :
-			{
-				famille="SERVEURS"
-				break
-			}
-			case /CHR63[N|R][P|F]1AD/ :
-			{
-				famille="PSMM3"
-				break
-			}
-
-			default :
-			{
-				if (sn ~ /./) {
-					famille="SERIALISE"
-				} else {
-					famille="DIVERS"
-				}
-			}
-		}
-		# types[type]++
-		# familles[famille]++
+        famille=selectfamille(reference) # détermination de la famille de produits, la référence du produit étant passée en paramètre
 		nbentrees[famille type]++
 		# print NR OFS type OFS types[type] OFS famille OFS familles[famille]
 	}
@@ -273,13 +151,6 @@ BEGIN {
 
 END {
 	if (codesortie !=0) exit codesortie
-	
-	ligne= FILENAME 
-	for (j=1;j<=4;j++) ligne= ligne OFS types[j] 
-	print ligne
-	for (i in familles) {
-		ligne= familles[i] 
-		for (j=1;j<=4;j++) ligne=ligne OFS nbentrees[familles[i] types[j]]
-		print ligne
-	}
-}
+	affiche(1,4,types,familles,nbentrees)
+}	
+

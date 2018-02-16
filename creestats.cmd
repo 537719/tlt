@@ -36,6 +36,7 @@ REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque
 REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque : adaptation à une autre organisation disque (supprimer les :: pour activer les modifs et supprimer les anciens équivalents)
 REM MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la veille : suppression des :: et mise en :: des anciennes instructions
 REM BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
+REM BUG 16/02/2018 - 14:25:51 élimine la répétition de la ligne d'en-tête dans les données à tracer
     
 :sorties
 head -1 is-data.csv |sed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
@@ -55,7 +56,7 @@ set gnuplot=%programfiles%\gnuplot\bin\gnuplot.exe
 for /F "delims=;" %%I in (.\is-data.csv) do if exist %%I.csv (
 REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
 ::   head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
-head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
+  head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
   REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
   REM en-tête ^^
 
@@ -63,7 +64,7 @@ head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
   REM élimination ^^ de l'occurence précédente pour le moisfin en cours et conservation des 12 mois précédents
   REM cat %%I.csv |ssed -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
 ::  cat %%I.csv |ssed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
-  cat %%I.csv |sed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g"|usort -u |tail -13 >> %%I.tab
+  cat %%I.csv |sed -e "/^[A-z]/d" -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g"|usort -u |tail -13 >> %%I.tab
   REM Maintenant que la date ne contient plus de "/" c'est plus simple et plus rapide de ne plus utiliser grep
   REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
   REM ce qui peut arriver si on manipule le csv avec un tableur

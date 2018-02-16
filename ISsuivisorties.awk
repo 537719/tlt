@@ -77,7 +77,9 @@
 # MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
 # MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
 # MODIF 29/01/2018 - 14:45:04 après crash disque : prise en compte des champs 20 à 22 dans le fichier d'entrée
+# MODIF 12/02/2018 - 16:06:19 exporte dans un module externe à inclure toutes les routines communes à la famille "ISstatsXXX"
 
+    @include "ISsuiviInclude.awk"
 BEGIN {
 	FS=";"
 	OFS=";"
@@ -91,26 +93,8 @@ BEGIN {
 	types[4]="destruction"
 	types[5]="undef"
 	
-	familles[1]="COLPV"
-	familles[2]="COLGV"
-	familles[3]="COLMET"
-	familles[4]="PFMA"
-	familles[5]="COLUC"
-	familles[6]="COLPORT"
-	familles[7]="WIFICISCO"
-	familles[8]="CHRRP"
-	familles[9]="CHRUC"
-	familles[10]="CHRPORT"
-	familles[11]="SERVEURS"
-	familles[12]="PSMM3"
-	familles[13]="UCSHIP"
-	familles[14]="ZPL"
-	familles[15]="FINGERPRINT"
-	familles[16]="SERIALISE"
-	familles[17]="DIVERS"
-	
-	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
-
+    initfamilles()
+    zerofamilles()
 }
 { #MAIN
 	# définition des champs 
@@ -123,19 +107,16 @@ BEGIN {
 	
 	if (NR==1) {
 		if ( NF != 18 && NF != 19  && NF != 22 ) {
-			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
-			codesortie=NF
-			# exit NF
+			erreurnf(NF)
+            codesortie=NF
 		}
 	} else {
-		
-		# détermination du type de sortie
+		switch (priorite) { # détermination du type de sortie
 	#	déterminer automatiquement si la sortie concerne un incident, une demande, une rma ou une destruction 
 	#		DEL :	P5 et premier champ contient "DESTRUCTION"
 	#		RMA : 	P5 "non DEL" ou (P4 et code postal = 91019 (SPC) ou 94043 (LVI)) ou (P2 et codepostal=94360 (Athesi))
 	#		dem :	P3 (shipping) P4 (métier)
 	#		inc :	P2
-		switch (priorite) {
 			case /P[3-4]/ : 
 			{
 				type="demande"
@@ -194,110 +175,12 @@ BEGIN {
 				type="undef"
 			}
 		}
-		
-		# détermination de la famille de produits
-		switch (reference) { # corriger les expressions régulières en fonction des critères précis
-			case /CHR34[N|R]S19M|CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
-			{
-				famille="FINGERPRINT"
-				break
-			}
-			case /CHR34[N|R].18[P|Q]/ : # pc43d ZPL
-			{
-				famille="ZPL"
-				break
-			}
-			case /CLP34[N|R]S0CN|CLP34[N|R]S1A[4|H|N|P]|CLP34RS0E1|CLP34[N|R]S1B1/ :  # Colissimp PV
-			{
-				famille="COLPV"
-				break
-			}
-			case /^CHR10.[^S]1[A-D]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
-			{
-				famille="CHRUC"
-				break
-			}
-			case /CHR10.S/ : # UC Chronoship
-			{
-				famille="UCSHIP"
-				break
-			}
-			case /^CLP10/ : # UC Coli
-			{
-				famille="COLUC"
-				break
-			}
-			case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]|CLP11[N|R][F|P]1D./ : 
-			{
-				famille="COLPORT"
-				break
-			}
-			case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
-			{
-				famille="COLGV"
-				break
-			}
-			case /CLP34[N|R][F|P]194|CLP34[N|R][F|P]1BD/ :
-			{
-				famille="PFMA"
-				break
-			}
-			case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC|CLP34[N|R][F|P]13K/ :
-			{
-				famille="COLMET"
-				break
-			}
-			case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR RP
-			{
-				famille="CHRRP"
-				break
-			}
-			case /CHR47[N|R][F|P]0T7/ :
-			{
-				famille="WIFICISCO"
-				break
-			}
-			case /CHR11[N|R][F|P]1../ : # Portables CHR
-			{
-				famille="CHRPORT"
-				break
-			}
-			case /^CHR48/ :
-			{
-				famille="SERVEURS"
-				break
-			}
-			case /CHR63[N|R][P|F]1AD/ :
-			{
-				famille="PSMM3"
-				break
-			}
-
-			default :
-			{
-				if (sn ~ /./) {
-					famille="SERIALISE"
-				} else {
-					famille="DIVERS"
-				}
-			}
-		}
-		# types[type]++
-		# familles[famille]++
+        famille=selectfamille(reference) # détermination de la famille de produits, la référence du produit étant passée en paramètre
 		nbsorties[famille type]++
-		# print NR OFS type OFS types[type] OFS famille OFS familles[famille]
 	}
 }
 
 END {
 	if (codesortie !=0) exit codesortie
-	
-	ligne= FILENAME 
-	for (j=1;j<=5;j++) ligne= ligne OFS types[j] 
-	print ligne
-	for (i in familles) {
-		ligne= familles[i] 
-		for (j=1;j<=5;j++) ligne=ligne OFS nbsorties[familles[i] types[j]]
-		print ligne
-	}
+	affiche(1,5,types,familles,nbsorties)
 }
