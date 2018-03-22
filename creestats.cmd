@@ -37,6 +37,8 @@ REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque : adaptation à une au
 REM MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la veille : suppression des :: et mise en :: des anciennes instructions
 REM BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
 REM BUG 16/02/2018 - 14:25:51 élimine la répétition de la ligne d'en-tête dans les données à tracer
+REM MODIF 20/02/2018 - 16:37:34 change l'invocation de la génération de page web de manière à prendre des infos dans le ficier de seuil
+REM MODIF 20/02/2018 - 17:22:20 transmet également la date concernée lors de la génératon de page web
     
 :sorties
 head -1 is-data.csv |sed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
@@ -45,7 +47,7 @@ set /p moisfin=<%temp%\moisfin.tmp
 
 rd /s /q %moisfin% 2>nul
 
-md %moisfin%
+md %moisfin% 2>nul
 REM dossier ^^ où seront stockées les fichiers créés
 
 del %temp%\moisdeb.tmp 2>nul
@@ -91,7 +93,9 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   "%gnuplot%"  -c ..\bin\genericplot.plt %%I.tab %moisdeb% %moisfin%
   REM Crée le graphique
   
-  gawk -f ..\bin\genHTMLlink.awk %%I.png >%%I.htm
+@echo   gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" is-seuil.csv >%%I.htm
+  gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" is-seuil.csv >%%I.htm
+  REM pause
   REM génération de la page web affichant le graphique
   move %%I.* "%moisfin%"
   copy "%moisfin%\%%I.txt" .

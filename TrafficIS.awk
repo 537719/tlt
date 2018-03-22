@@ -1,24 +1,27 @@
-#ExportIS.awk
-# Détermine si le flot d'entrée provient d'un export des produits expédiés ou reçus par I&S, et détermine les dates extremales concernées
-# en sortie :
-# si le fichier n'est pas un export I&S, ne fait rien
-# si le fichier est un export des produits expédiés, renomme le fichier avec le préfixe is_out_
-# si le fichier est un export des produits reçus, renomme le fichier avec le préfixe is_in_
-# si un seul jour est concerné par le fichier, rajoute le suffixe aaaammjj
-# si un seul mois est concerné par le fichier, rajoute le suffixe aaaamm
-# si une seul année est concerné par le fichier, rajoute le suffixe aaaa
-# dans tous les autres cas de fourchette de date, rajoute le suffixe <datedeb>-<datefin>
-# puis reprend l'extension .csv
+#TrafficIS.awk
+# 21/02/2018 - 15:39:52
+# Mesure l'activité I&S sur une période donnée
+# Selon que le fichier fourni soit un export des produits expédiés ou réceptionnés :
+#   détermine le nombre de produits neufs/reconitionnés concernés, par BU et par famille
+#   les familles étant :
+#       uc buro/métier
+#       pc portables
+#       imprimantes métier thermiques
+#       imprimantes métier autres
+#       écrans
+#       imprimantes shipping
+#       serveurs
+#       autre matériel sérialisé
+#       matériel non sérialisé
 
-# BUG 26/01/2018 13:38 : oubliait de prendre en compte l'espace comme séparateur entre la date et l'heure
-# MODIF 16/03/2018 - 15:44:14 le dossier "Historique" est renommé en "Data"
+# travaille d'après ExportIS.awk du 26/01/2018 13:38
+
 
 BEGIN {
     FS=";"
     OFS=FS
     # outputdir="C:\\Us\\Documents\\TLT\\I&S\\Historique\\"
     # outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Historique/" # emplacement relatif constant quelque soit le compte utilisateur
-    outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Data/" # emplacement relatif constant quelque soit le compte utilisateur
    hzero="00 00 00"
     
 }
@@ -38,14 +41,35 @@ BEGINFILE {
             case 22 : # fichier des produits expédiés (jusqu'à Pays de destination inclus)
                 typefich="out"
                 champdate=8
+                
+                reference=$6
+                tagis=$19
+                numserie=$11
+                stock=$10
+                
+                prior=$2
+                codep=$16
                 break
             case 19 : # fichier des produits expédiés ancienne structure (jusqu'à Tagis inclus)
                 typefich="out"
                 champdate=8
+                
+                reference=$6
+                tagis=$19
+                numserie=$11
+                stock=$10
+                
+                prior=$2
+                codep=$16
                 break
             case 10 : # fichier des produits reçus (jusqu'à NumTag inclus)
                 typefich="in"
                 champdate=4
+                
+                reference=$2
+                tagis=$9
+                numserie=$3
+                stock=$1
                 break
             default : #indéterminé, on ne fait rien
                 print FILENAME " n'est pas un export I&S des produits expédiés ou reçus"
@@ -63,6 +87,97 @@ BEGINFILE {
             if (datenum<datemin) datemin=datenum
         } # else print $champdate OFS datestring
         # print datenum
+        
+        #exploitation de la référence
+        splitref=gensub(/^(...)(..)(.)(.)(...)$/,"\\1 \\2 \\3 \\4 \\5","1",reference)
+        split(splitref,arref," ")
+        bu=arref[1]) # 3 caractères, code de la BU
+        switch(bu) { #traitement des cas particuliers où la référence n'est pas suffisante (divers, génériques, etc)
+            case /CHR|CLP|TLT/ :
+            {
+                break
+            }
+            
+            default :
+            {
+                switch(stock) {
+                    case /CHR/ :
+                    {
+                        bu="CHR"
+                        break
+                    }
+                    
+                    case /COL/ :
+                    {
+                        bu="CLP"
+                        break
+                    }
+                    
+                    default :
+                    {
+                        bu="TLT"
+                    }
+                }
+            }
+        }
+        
+        famille=arref[2] # 2 chiffres, famille et sous-famille de produit
+        stock=arref[4]) # F fil de l'eau, P projet, S shipping
+        switch(famille) { # documentation du champ "famille" en fonction de sa valeur
+            case /10/ :
+            {
+                famille="UC"
+                break
+            }
+            
+            case /11/ :
+            {
+                famille="Portable"
+                break
+            }
+            
+            case /2./:
+            {
+                famille="Ecran"
+                break
+            }
+            
+            case /34/:
+            {
+                if (stock ~ /S/) {
+                    famille="Imp Ship"
+                } else {
+                    famille="Imp Met"
+                }
+                break
+            }
+            
+            case /3[1-3]/:
+            {
+                famille="Imprimante"
+                break
+            }
+            
+            case /48/:
+            {
+                famille="Serveur"
+                break
+            }
+            
+            default :
+            {
+                if (sn ~ /./) {
+                    famille="Serialise"
+                } else {
+                    famille="Divers"
+                }
+            }
+        }
+        
+        etat=arref[3])# N neuf, R reconditionné
+        produit=arref[5]) # 3 caractères spécifiant le produit en particulier
+        
+        
     }
     # if (datenum>systime()) { # pour debug uniquement
         # print

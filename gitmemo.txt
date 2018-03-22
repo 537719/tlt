@@ -25,6 +25,7 @@ git checkout -b [nomdenouvellebranche]
 
 #Pour pousser une branche vers le dépôt distant
 git push --set-upstream [url du projet] [nom de la branche]
+git push --set-upstream https://github.com/537719/tlt statsis
 
 #pour intégrer les modifs d'une branche fille dans sa branche parente
 #mettre la branche fille dans un état propre

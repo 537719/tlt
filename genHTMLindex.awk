@@ -8,6 +8,7 @@
 # BUG 09/02/2018 - 10:58:06 correction d'erreurs de calage des colonnes dans le code html généré
 # MODIF 09/02/2018 - 12:57:15 ajout de commentaires relatifs aux données contenues dans le code html généré
 # MODIF 09/02/2018 - 13:34:56 correction de l'indentation du code html généré et ajout d'autre commentaires
+# MODIF 16/03/2018 - 15:47:05 - prise en compte de l'UTF-8 et rajout de la date de génération dans le header
 #
 # génération de l'index de toutes les pages web générées
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
@@ -32,8 +33,10 @@ BEGIN {
 	print " <head>"
 	# print "<meta charset=\"utf-8\" />"
 	print "  <title>Statistiques I&S par famille de produit</title>"
+	print "  <meta charset=\"UTF-8\" />"
 	print "  <meta name=\"description\" content=\"statsindex\"/>"
 	print "  <meta name=\"generator\" content=\"genHTMLindex.awk\" />"
+	print "  <meta name=\"date\" content=\"" strftime("%F %T",systime()) "\" />"
 	print " </head>"
 	print " <body>"
 	print "  <div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
