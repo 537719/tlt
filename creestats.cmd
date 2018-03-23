@@ -1,8 +1,26 @@
 ::creestats.cmd
 ::12/05/2016 11:41:59,27
 ::crée les stats de suivi I&S
+goto :debut
+MODIF 16:21 jeudi 19 mai 2016 ajoute aussi le seuil d'alerte
+MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web correspondant
+MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
+BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
+BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
+  BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
+  ce qui peut arriver si on manipule le csv avec un tableur
+MODIF 30/01/2018 - 11:12:00 reprise après crash disque
+    remplacement de ssed par sed
+MODIF 30/01/2018 - 11:12:00 reprise après crash disque : adaptation à une autre organisation disque (supprimer les :: pour activer les modifs et supprimer les anciens équivalents)
+MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la veille : suppression des :: et mise en :: des anciennes instructions
+BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
+BUG 16/02/2018 - 14:25:51 élimine la répétition de la ligne d'en-tête dans les données à tracer
+MODIF 20/02/2018 - 16:37:34 change l'invocation de la génération de page web de manière à prendre des infos dans le ficier de seuil
+MODIF 20/02/2018 - 17:22:20 transmet également la date concernée lors de la génératon de page web
+MODIF 22/03/2018 - 17:19:31 déplace les données produites vers le dossier quipo qui sert de repository web
+MODIF 23/03/2018 - 13:28:43 vérifie que le dossier en cours a bien été déplacé et lance le transfert vers le repository
 :debut
-REM @echo on
+@echo off
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
 call ..\bin\getisdir.cmd
@@ -24,21 +42,7 @@ REM agrège les deux stats en un seul fichier
 paste -d; is-out.csv is-stock.csv is-seuil.csv >is-data.csv
 REM ATTENTION 1 ceci n'est possible que parce que les deux fichiers ont le même nombre de lignes, dans le même ordre. Sinon il faut trier puis utiliser join
 REM ATTENTION on se retrouve avec une colonne de titre en trop au milieu du fichier, à prendre en compte lors de la création du graphique
-REM MODIF 16:21 jeudi 19 mai 2016 ajoute aussi le seuil d'alerte
-REM MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web correspondant
-REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
-REM BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
-REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
-  REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
-  REM ce qui peut arriver si on manipule le csv avec un tableur
-REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque
-    REM remplacement de ssed par sed
-REM MODIF 30/01/2018 - 11:12:00 reprise après crash disque : adaptation à une autre organisation disque (supprimer les :: pour activer les modifs et supprimer les anciens équivalents)
-REM MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la veille : suppression des :: et mise en :: des anciennes instructions
-REM BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
-REM BUG 16/02/2018 - 14:25:51 élimine la répétition de la ligne d'en-tête dans les données à tracer
-REM MODIF 20/02/2018 - 16:37:34 change l'invocation de la génération de page web de manière à prendre des infos dans le ficier de seuil
-REM MODIF 20/02/2018 - 17:22:20 transmet également la date concernée lors de la génératon de page web
+
     
 :sorties
 head -1 is-data.csv |sed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
@@ -120,13 +124,29 @@ rd /s /q "%web%\%moisfin%" 2>nul
 @echo Vérifier et corriger les commentaires texte dans le dossier %moisfin%
 msg %username% Vérifier et corriger les commentaires texte dans le dossier %moisfin%
 REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
-@echo on
+REM @echo on
 pushd %moisfin%
 for %%I in (*.txt *.png) do start %%I
 pause
 xcopy /y /I . "%web%\%moisfin%"
 xcopy *.txt .. /y
 popd
+
+rem déplacement des données produites vers le dossier web
+:movedata
+@echo on
+del %temp%\erreur.txt 2>nul
+move /y %moisfin% quipo 2>%temp%\erreur.txt
+if not exist %temp%\erreur.txt goto :quipoput
+if exist quipo\%moisfin%\nul goto :quipoput
+@echo Libérer le dossier "%cd%\%moisfin%" >>%temp%\erreur.txt
+cat %temp%\erreur.txt |msg /W %username% 
+pause
+goto :movedata
+:quipoput
+call ..\bin\quipoput.cmd
+if exist %moisfin%\nul @echo Libérer le dossier "%cd%\%moisfin%"
+
 REM élaboration de la liste des nouveautés pour le mail de reporting
 @echo Modifications du %date% >> whatsnew.txt
 for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.txt

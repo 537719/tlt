@@ -1,0 +1,19 @@
+#chpwrebond.scp 
+#23/03/2018 - 17:37:47,05 
+#change mon mot de passe sur le serveur de rebond 
+# 
+echo #1 ouverture de la session 
+open sftp://gmetais:LueurMontagneEnsemblePart23-03-2018@rebond.tlt 
+echo #2 copie le fichier contenant le nouveau mot de passe 
+call rm -r test 2>nul.tmp 
+mkdir test
+put .\temp\*.* ./test/*.* 
+ls ./test
+echo #3 exécute l'instruction de changement de mot de passe 
+call passwd <test/toto.txt 
+echo #4 purge les données temporaires 
+call rm test/t*.txt 
+call rmdir test 
+call rm nul.tmp 
+exit 
+# new LettreVoisinTypeAspect23-03-2018 

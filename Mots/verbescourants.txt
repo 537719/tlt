@@ -1,0 +1,24 @@
+# triplets.awk
+# dresse une table des suites de 3 caractères consécutifs dans le flot d'entrée
+
+BEGIN {
+	FS=""
+	OFS="@"
+}
+{ #MAIN
+	for (i=1; i<=NF; i++) {
+		# print NR OFS i OFS $i $(i+1) $(i+2) OFS
+		triplet=$i $(i+1) $(i+2)
+		triplets[triplet] ++
+	}
+}
+END {
+	# n=asort(triplets,resultat)
+	# for (i=1;i<=n;i++) {
+		# print i OFS triplets[i] OFS resultat[i]
+	# }
+	for (i in triplets) {
+		print i OFS triplets[i]
+	}
+	print "fini"
+}

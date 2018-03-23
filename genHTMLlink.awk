@@ -73,7 +73,7 @@ END {
 	print "\t\t\t\t\t</td>"
 	print "\t\t\t\t\t<td style=\"align: center;\">"
 	print "\t\t\t\t\t\t<a href=\"../webresources/" fichier ".jpg\">"
-	print "\t\t\t\t\t\t\t<img style=\"border: 0px solid ; width: 320px;\" src=\"../webresources/" fichier ".jpg\" alt=\"PC portable Chronopost\">"
+	print "\t\t\t\t\t\t\t<img style=\"border: 0px solid ; width: 320px;\" src=\"../webresources/" fichier ".jpg\" alt=\"illustration de " fichier "\">"
 	print "\t\t\t\t\t\t</a>"
 	print "\t\t\t\t\t</td>"
 	print "\t\t\t\t\t<td>"

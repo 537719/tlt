@@ -1,0 +1,74 @@
+Mot	Type	Genre
+bleu 	  	Adjectif	masculin feminin
+super 	  	Adjectif	masculin feminin
+autre 	  	Adjectif	masculin feminin
+bizarre 	  	Adjectif	masculin feminin
+difficile 	  	Adjectif	masculin feminin
+drôle 	  	Adjectif	masculin feminin
+étrange 	  	Adjectif	masculin feminin
+facile 	  	Adjectif	masculin feminin
+grave 	  	Adjectif	masculin feminin
+impossible 	  	Adjectif	masculin feminin
+jeune 	  	Adjectif	masculin feminin
+juste 	  	Adjectif	masculin feminin
+libre 	  	Adjectif	masculin feminin
+malade 	  	Adjectif	masculin feminin
+même 	  	Adjectif	masculin feminin
+pauvre 	  	Adjectif	masculin feminin
+possible 	  	Adjectif	masculin feminin
+propre 	  	Adjectif	masculin feminin
+rouge 	  	Adjectif	masculin feminin
+sale 	  	Adjectif	masculin feminin
+simple 	  	Adjectif	masculin feminin
+tranquille 	  	Adjectif	masculin feminin
+triste 	  	Adjectif	masculin feminin
+vide 	  	Adjectif	masculin feminin
+bonne 	  	Adjectif	féminin
+toute 	  	Adjectif	féminin
+doux 	  	Adjectif	masculin
+faux 	  	Adjectif	masculin
+français 	  	Adjectif	masculin
+gros 	  	Adjectif	masculin
+heureux 	  	Adjectif	masculin
+mauvais 	  	Adjectif	masculin
+sérieux 	  	Adjectif	masculin
+vieux 	  	Adjectif	masculin
+vrai 	  	Adjectif	masculin
+ancien 	  	Adjectif	masculin
+beau 	  	Adjectif	masculin
+blanc 	  	Adjectif	masculin
+certain 	  	Adjectif	masculin
+chaud 	  	Adjectif	masculin
+cher 	  	Adjectif	masculin
+clair 	  	Adjectif	masculin
+content 	  	Adjectif	masculin
+dernier 	  	Adjectif	masculin
+désolé 	  	Adjectif	masculin
+différent 	  	Adjectif	masculin
+droit 	  	Adjectif	masculin
+entier 	  	Adjectif	masculin
+fort 	  	Adjectif	masculin
+froid 	  	Adjectif	masculin
+gentil 	  	Adjectif	masculin
+grand 	  	Adjectif	masculin
+haut 	  	Adjectif	masculin
+humain 	  	Adjectif	masculin
+important 	  	Adjectif	masculin
+joli 	  	Adjectif	masculin
+léger 	  	Adjectif	masculin
+long 	  	Adjectif	masculin
+meilleur 	  	Adjectif	masculin
+mort 	  	Adjectif	masculin
+noir 	  	Adjectif	masculin
+nouveau 	  	Adjectif	masculin
+pareil 	  	Adjectif	masculin
+petit 	  	Adjectif	masculin
+plein 	  	Adjectif	masculin
+premier 	  	Adjectif	masculin
+prêt 	  	Adjectif	masculin
+prochain 	  	Adjectif	masculin
+quoi 	  	Adjectif	masculin
+seul 	  	Adjectif	masculin
+tout 	  	Adjectif	masculin
+vert 	  	Adjectif	masculin
+vivant 	  	Adjectif	masculin
