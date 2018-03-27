@@ -9,6 +9,7 @@
 # MODIF 09/02/2018 - 12:57:15 ajout de commentaires relatifs aux données contenues dans le code html généré
 # MODIF 09/02/2018 - 13:34:56 correction de l'indentation du code html généré et ajout d'autre commentaires
 # MODIF 16/03/2018 - 15:47:05 - prise en compte de l'UTF-8 et rajout de la date de génération dans le header
+# MODIF 26/03/2018 - 17:02:50 - Affichage d'un logo en tête de chaque colonne dans la page générée
 #
 # génération de l'index de toutes les pages web générées
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
@@ -43,20 +44,21 @@ BEGIN {
 	print "   <table><!--Statistiques I&S par famille de produit au " statdate " -->"
 	print "    <tr><th colspan=\"6\">Statistiques I&S par famille de produit au " statdate " </th></tr>"
 	print "    <tr><th colspan=\"6\"><hr></th></tr>"
+	print "    <tr>"
+    print "      <th colspan=\"2\">"
+	print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/COL.png\" alt=\"logo Colissimo\">"
+    print "      </th>"
+    print "      <th colspan=\"2\">"
+	print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/CHR.png\" alt=\"logo Chronopost\">"
+    print "      </th>"
+    print "      <th colspan=\"2\">"
+	print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/SHP.png\" alt=\"logo Chronoship\">"
+    print "      </th>"
+    print "    </tr>"
 }
 
 { #MAIN
 	if (NR >1) { # pas de génération de lien pour la ligne d'en-tête
-		# print "<tr><td valign=\"top\"><a href=\""
-		# print $1 ".png"
-		# print "\">"
-		# print "<img style=\"border: 0px solid ; width: 64px; height: 48px;\""
-		# print "<img src=\"" $1 ".png\""
-		# print "alt=\"[IMG]\"></a></td><td><a href=\""
-		# print $1 ".htm"
-		# print "\">"
-		# print $3
-		# print "</a></td></tr>"
 		BU=$3
 		switch (BU) {
 			case /Colissimo/ :

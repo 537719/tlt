@@ -819,3 +819,292 @@ passwd: all authentication tokens updated successfully.
 . 2018-03-23 17:37:50.368 [Shell] Closing connection.
 . 2018-03-23 17:37:50.368 [Shell] Sending special code: 12
 . 2018-03-23 17:37:50.368 [Shell] Sent EOF message
+. 2018-03-26 14:10:08.753 --------------------------------------------------------------------------
+. 2018-03-26 14:10:08.754 WinSCP Version 5.13 (Compilation 8172) (OS 10.0.15063 - Windows 10 Pro)
+. 2018-03-26 14:10:08.754 Configuration: HKCU\Software\Martin Prikryl\WinSCP 2\
+. 2018-03-26 14:10:08.754 Log level: Normal
+. 2018-03-26 14:10:08.754 Local account: PMI01716\Utilisateur
+. 2018-03-26 14:10:08.754 Working directory: C:\Users\Utilisateur\Documents\TLT\I&S\bin
+. 2018-03-26 14:10:08.754 Process ID: 19532
+. 2018-03-26 14:10:08.755 Command-line: "C:\Program Files (x86)\WinSCP\WinSCP.exe" /console=5.13.0 /consoleinstance=_13612_72 "/script=chpwrebond.scp" "/log=chpwrebond.log" 
+. 2018-03-26 14:10:08.755 Time zone: Current: GMT+2, Standard: GMT+1 (Paris, Madrid), DST: GMT+2 (Paris, Madrid (heure d’été)), DST Start: 25/03/2018, DST End: 28/10/2018
+. 2018-03-26 14:10:08.755 Login time: lundi 26 mars 2018 14:10:08
+. 2018-03-26 14:10:08.755 --------------------------------------------------------------------------
+. 2018-03-26 14:10:08.755 Script: Retrospectively logging previous script records:
+> 2018-03-26 14:10:08.755 Script: echo #1 ouverture de la session 
+< 2018-03-26 14:10:08.755 Script: #1 ouverture de la session 
+> 2018-03-26 14:10:08.755 Script: open sftp://gmetais:***@rebond.tlt
+. 2018-03-26 14:10:08.755 --------------------------------------------------------------------------
+. 2018-03-26 14:10:08.755 Session name: gmetais@rebond.tlt (Ad-Hoc site)
+. 2018-03-26 14:10:08.755 Host name: rebond.tlt (Port: 22)
+. 2018-03-26 14:10:08.755 User name: gmetais (Password: Yes, Key file: No, Passphrase: No)
+. 2018-03-26 14:10:08.755 Tunnel: No
+. 2018-03-26 14:10:08.755 Transfer Protocol: SFTP
+. 2018-03-26 14:10:08.755 Ping type: Off, Ping interval: 30 sec; Timeout: 15 sec
+. 2018-03-26 14:10:08.755 Disable Nagle: No
+. 2018-03-26 14:10:08.755 Proxy: None
+. 2018-03-26 14:10:08.755 Send buffer: 262144
+. 2018-03-26 14:10:08.755 SSH protocol version: 2; Compression: No
+. 2018-03-26 14:10:08.756 Bypass authentication: No
+. 2018-03-26 14:10:08.756 Try agent: Yes; Agent forwarding: No; TIS/CryptoCard: No; KI: Yes; GSSAPI: Yes
+. 2018-03-26 14:10:08.756 GSSAPI: Forwarding: No; Libs: gssapi32,sspi,custom; Custom: 
+. 2018-03-26 14:10:08.756 Ciphers: aes,chacha20,blowfish,3des,WARN,arcfour,des; Ssh2DES: No
+. 2018-03-26 14:10:08.756 KEX: ecdh,dh-gex-sha1,dh-group14-sha1,rsa,WARN,dh-group1-sha1
+. 2018-03-26 14:10:08.756 SSH Bugs: Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto
+. 2018-03-26 14:10:08.756 Simple channel: Yes
+. 2018-03-26 14:10:08.756 Return code variable: Autodetect; Lookup user groups: Auto
+. 2018-03-26 14:10:08.756 Shell: default
+. 2018-03-26 14:10:08.756 EOL: LF, UTF: Auto
+. 2018-03-26 14:10:08.756 Clear aliases: Yes, Unset nat.vars: Yes, Resolve symlinks: Yes; Follow directory symlinks: No
+. 2018-03-26 14:10:08.756 LS: ls -la, Ign LS warn: Yes, Scp1 Comp: No
+. 2018-03-26 14:10:08.756 SFTP Bugs: Auto,Auto
+. 2018-03-26 14:10:08.756 SFTP Server: default
+. 2018-03-26 14:10:08.756 Local directory: default, Remote directory: home, Update: Yes, Cache: Yes
+. 2018-03-26 14:10:08.756 Cache directory changes: Yes, Permanent: Yes
+. 2018-03-26 14:10:08.756 Recycle bin: Delete to: No, Overwritten to: No, Bin path: 
+. 2018-03-26 14:10:08.757 DST mode: Unix
+. 2018-03-26 14:10:08.757 --------------------------------------------------------------------------
+. 2018-03-26 14:10:08.758 Looking up host "rebond.tlt" for SSH connection
+. 2018-03-26 14:10:08.776 Connecting to 10.34.52.28 port 22
+. 2018-03-26 14:10:08.779 We claim version: SSH-2.0-WinSCP_release_5.13
+. 2018-03-26 14:10:08.787 Server version: SSH-2.0-OpenSSH_5.3
+. 2018-03-26 14:10:08.788 We believe remote version has SSH-2 channel request bug
+. 2018-03-26 14:10:08.788 Using SSH protocol version 2
+. 2018-03-26 14:10:08.789 Have a known host key of type rsa2
+. 2018-03-26 14:10:08.793 Doing Diffie-Hellman group exchange
+. 2018-03-26 14:10:08.796 Doing Diffie-Hellman key exchange with hash SHA-256
+. 2018-03-26 14:10:09.347 Server also has ssh-dss host key, but we don't know it
+. 2018-03-26 14:10:09.351 Host key fingerprint is:
+. 2018-03-26 14:10:09.351 ssh-rsa 2048 0c:40:b4:7a:5c:ea:95:58:fc:7d:95:9c:3a:83:8b:d4 BnPkO62piI9OLsBDGbJ6qXTQiju9hrldbnQSVhgp2wI=
+. 2018-03-26 14:10:09.352 Host key matches cached key
+. 2018-03-26 14:10:09.353 Initialised AES-256 SDCTR client->server encryption
+. 2018-03-26 14:10:09.353 Initialised HMAC-SHA-256 client->server MAC algorithm
+. 2018-03-26 14:10:09.353 Initialised AES-256 SDCTR server->client encryption
+. 2018-03-26 14:10:09.353 Initialised HMAC-SHA-256 server->client MAC algorithm
+! 2018-03-26 14:10:09.395 Using username "gmetais".
+. 2018-03-26 14:10:09.399 Server offered these authentication methods: publickey,gssapi-keyex,gssapi-with-mic,password
+. 2018-03-26 14:10:09.399 Using SSPI from SECUR32.DLL
+. 2018-03-26 14:10:09.399 Attempting GSSAPI authentication
+. 2018-03-26 14:10:09.402 GSSAPI authentication request refused
+. 2018-03-26 14:10:09.402 Server offered these authentication methods: publickey,gssapi-keyex,gssapi-with-mic,password
+. 2018-03-26 14:10:09.402 Prompt (password, "SSH password", <no instructions>, "Mot de passe :")
+. 2018-03-26 14:10:09.402 Using stored password.
+. 2018-03-26 14:10:09.402 Sent password
+. 2018-03-26 14:10:09.420 Access granted
+. 2018-03-26 14:10:09.420 Opening session as main channel
+. 2018-03-26 14:10:09.425 Opened main channel
+. 2018-03-26 14:10:09.470 Started a shell/command
+. 2018-03-26 14:10:09.470 --------------------------------------------------------------------------
+. 2018-03-26 14:10:09.475 Using SFTP protocol.
+. 2018-03-26 14:10:09.476 Doing startup conversation with host.
+> 2018-03-26 14:10:09.478 Type: SSH_FXP_INIT, Size: 5, Number: -1
+< 2018-03-26 14:10:09.482 Type: SSH_FXP_VERSION, Size: 95, Number: -1
+. 2018-03-26 14:10:09.483 SFTP version 3 negotiated.
+. 2018-03-26 14:10:09.483 Unknown server extension posix-rename@openssh.com="1"
+. 2018-03-26 14:10:09.483 Supports statvfs@openssh.com extension version "2"
+. 2018-03-26 14:10:09.483 Unknown server extension fstatvfs@openssh.com="2"
+. 2018-03-26 14:10:09.483 We believe the server has signed timestamps bug
+. 2018-03-26 14:10:09.483 We will use UTF-8 strings until server sends an invalid UTF-8 string as with SFTP version 3 and older UTF-8 strings are not mandatory
+. 2018-03-26 14:10:09.484 Limiting packet size to OpenSSH sftp-server limit of 262148 bytes
+. 2018-03-26 14:10:09.485 Getting current directory name.
+. 2018-03-26 14:10:09.486 Getting real path for '.'
+> 2018-03-26 14:10:09.487 Type: SSH_FXP_REALPATH, Size: 10, Number: 16
+< 2018-03-26 14:10:09.489 Type: SSH_FXP_NAME, Size: 47, Number: 16
+. 2018-03-26 14:10:09.489 Real path is '/home/gmetais'
+. 2018-03-26 14:10:09.489 Startup conversation with host finished.
+< 2018-03-26 14:10:09.490 Script: Session active : [1] gmetais@rebond.tlt
+> 2018-03-26 14:10:09.501 Script: echo #2 copie le fichier contenant le nouveau mot de passe 
+< 2018-03-26 14:10:09.501 Script: #2 copie le fichier contenant le nouveau mot de passe 
+> 2018-03-26 14:10:09.505 Script: call rm -r test 2>nul.tmp 
+< 2018-03-26 14:10:09.506 Script: Recherche de l'hôte...
+. 2018-03-26 14:10:09.508 [Shell] Looking up host "rebond.tlt" for SSH connection
+. 2018-03-26 14:10:09.510 [Shell] Connecting to 10.34.52.28 port 22
+. 2018-03-26 14:10:09.513 [Shell] We claim version: SSH-2.0-WinSCP_release_5.13
+< 2018-03-26 14:10:09.514 Script: Connexion à l'hôte...
+. 2018-03-26 14:10:09.519 [Shell] Server version: SSH-2.0-OpenSSH_5.3
+. 2018-03-26 14:10:09.519 [Shell] We believe remote version has SSH-2 channel request bug
+. 2018-03-26 14:10:09.520 [Shell] Using SSH protocol version 2
+. 2018-03-26 14:10:09.521 [Shell] Have a known host key of type rsa2
+. 2018-03-26 14:10:09.525 [Shell] Doing Diffie-Hellman group exchange
+. 2018-03-26 14:10:09.528 [Shell] Doing Diffie-Hellman key exchange with hash SHA-256
+. 2018-03-26 14:10:10.105 [Shell] Server also has ssh-dss host key, but we don't know it
+. 2018-03-26 14:10:10.105 [Shell] Host key fingerprint is:
+. 2018-03-26 14:10:10.105 [Shell] ssh-rsa 2048 0c:40:b4:7a:5c:ea:95:58:fc:7d:95:9c:3a:83:8b:d4 BnPkO62piI9OLsBDGbJ6qXTQiju9hrldbnQSVhgp2wI=
+< 2018-03-26 14:10:10.105 Script: Authentification...
+. 2018-03-26 14:10:10.105 [Shell] Host key matches cached key
+. 2018-03-26 14:10:10.106 [Shell] Initialised AES-256 SDCTR client->server encryption
+. 2018-03-26 14:10:10.106 [Shell] Initialised HMAC-SHA-256 client->server MAC algorithm
+. 2018-03-26 14:10:10.106 [Shell] Initialised AES-256 SDCTR server->client encryption
+. 2018-03-26 14:10:10.107 [Shell] Initialised HMAC-SHA-256 server->client MAC algorithm
+! 2018-03-26 14:10:10.148 [Shell] Using username "gmetais".
+< 2018-03-26 14:10:10.148 Script: Utilisation du nom d'utilisateur "gmetais".
+. 2018-03-26 14:10:10.152 [Shell] Server offered these authentication methods: publickey,gssapi-keyex,gssapi-with-mic,password
+. 2018-03-26 14:10:10.152 [Shell] Using SSPI from SECUR32.DLL
+. 2018-03-26 14:10:10.153 [Shell] Attempting GSSAPI authentication
+. 2018-03-26 14:10:10.155 [Shell] GSSAPI authentication request refused
+. 2018-03-26 14:10:10.155 [Shell] Server offered these authentication methods: publickey,gssapi-keyex,gssapi-with-mic,password
+. 2018-03-26 14:10:10.155 [Shell] Prompt (password, "SSH password", <no instructions>, "Mot de passe :")
+. 2018-03-26 14:10:10.155 [Shell] Using stored password.
+< 2018-03-26 14:10:10.155 Script: Authentification avec le mot de passe pré-entré.
+. 2018-03-26 14:10:10.156 [Shell] Sent password
+. 2018-03-26 14:10:10.173 [Shell] Access granted
+. 2018-03-26 14:10:10.173 [Shell] Opening session as main channel
+. 2018-03-26 14:10:10.177 [Shell] Opened main channel
+. 2018-03-26 14:10:10.222 [Shell] Started a shell/command
+< 2018-03-26 14:10:10.222 Script: Authentifié.
+. 2018-03-26 14:10:10.223 [Shell] --------------------------------------------------------------------------
+. 2018-03-26 14:10:10.227 [Shell] Using SCP protocol.
+. 2018-03-26 14:10:10.227 [Shell] Doing startup conversation with host.
+< 2018-03-26 14:10:10.227 Script: Démarrage de la session...
+. 2018-03-26 14:10:10.227 [Shell] Skipping host startup message (if any).
+> 2018-03-26 14:10:10.227 [Shell] echo "WinSCP: this is end-of-file:0"
+< 2018-03-26 14:10:10.237 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.237 [Shell] Detecting variable containing return code of last command.
+. 2018-03-26 14:10:10.237 [Shell] Trying "$status".
+> 2018-03-26 14:10:10.238 [Shell] echo "$status" ; echo "WinSCP: this is end-of-file:0"
+< 2018-03-26 14:10:10.239 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.240 [Shell] The response is not numerical exit code
+. 2018-03-26 14:10:10.240 [Shell] Trying "$?".
+> 2018-03-26 14:10:10.240 [Shell] echo "$?" ; echo "WinSCP: this is end-of-file:0"
+< 2018-03-26 14:10:10.242 [Shell] 0
+< 2018-03-26 14:10:10.242 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.242 [Shell] Return code variable "$?" selected.
+> 2018-03-26 14:10:10.242 [Shell] printenv LANG ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.246 [Shell] en_US.UTF-8
+< 2018-03-26 14:10:10.246 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.247 [Shell] We will use UTF-8
+. 2018-03-26 14:10:10.247 [Shell] Changing directory to "/home/gmetais".
+> 2018-03-26 14:10:10.247 [Shell] cd "/home/gmetais" ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.249 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.249 [Shell] Getting current directory name.
+> 2018-03-26 14:10:10.249 [Shell] pwd ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.251 [Shell] /home/gmetais
+< 2018-03-26 14:10:10.251 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.251 [Shell] Startup conversation with host finished.
+< 2018-03-26 14:10:10.251 Script: Session démarrée.
+. 2018-03-26 14:10:10.252 Executing user defined command on command session.
+> 2018-03-26 14:10:10.252 [Shell] rm -r test 2>nul.tmp  ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.255 [Shell] WinSCP: this is end-of-file:1
+> 2018-03-26 14:10:10.255 [Shell] pwd ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.257 [Shell] /home/gmetais
+< 2018-03-26 14:10:10.257 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.257 Cached directory change via "/home/gmetais" to "/home/gmetais".
+. 2018-03-26 14:10:10.257 Getting current directory name.
+. 2018-03-26 14:10:10.257 Getting current directory name.
+> 2018-03-26 14:10:10.257 Script: mkdir test
+. 2018-03-26 14:10:10.258 Creating directory "test".
+. 2018-03-26 14:10:10.258 Canonifying: "test"
+. 2018-03-26 14:10:10.258 Getting real path for '/home/gmetais/test'
+> 2018-03-26 14:10:10.258 Type: SSH_FXP_REALPATH, Size: 27, Number: 528
+< 2018-03-26 14:10:10.260 Type: SSH_FXP_STATUS, Size: 29, Number: 528
+< 2018-03-26 14:10:10.260 Status code: 2, Message: 528, Server: No such file, Language:  
+. 2018-03-26 14:10:10.260 Getting real path for '/home/gmetais/'
+> 2018-03-26 14:10:10.260 Type: SSH_FXP_REALPATH, Size: 23, Number: 784
+< 2018-03-26 14:10:10.262 Type: SSH_FXP_NAME, Size: 47, Number: 784
+. 2018-03-26 14:10:10.262 Real path is '/home/gmetais'
+. 2018-03-26 14:10:10.262 Canonified: "/home/gmetais/test"
+> 2018-03-26 14:10:10.262 Type: SSH_FXP_MKDIR, Size: 31, Number: 270
+< 2018-03-26 14:10:10.265 Type: SSH_FXP_STATUS, Size: 24, Number: 270
+< 2018-03-26 14:10:10.265 Status code: 0
+> 2018-03-26 14:10:10.265 Script: put .\temp\*.* ./test/*.* 
+. 2018-03-26 14:10:10.267 Copying 1 files/directories to remote directory "./test/" - total size: 97
+. 2018-03-26 14:10:10.267   PrTime: Yes; PrRO: No; Rght: rw-r--r--; PrR: No (No); FnCs: N; RIC: 0100; Resume: S (102400); CalcS: No; Mask: *.*
+. 2018-03-26 14:10:10.267   TM: B; ClAr: No; RemEOF: No; RemBOM: No; CPS: 0; NewerOnly: No; InclM: ; ResumeL: 0
+. 2018-03-26 14:10:10.267   AscM: *.*html; *.htm; *.txt; *.php; *.php3; *.cgi; *.c; *.cpp; *.h; *.pas; *.bas; *.tex; *.pl; *.js; .htaccess; *.xtml; *.css; *.cfg; *.ini; *.sh; *.xml
+. 2018-03-26 14:10:10.268 Getting real path for '/home/gmetais/./test/'
+> 2018-03-26 14:10:10.268 Type: SSH_FXP_REALPATH, Size: 30, Number: 1040
+< 2018-03-26 14:10:10.270 Type: SSH_FXP_NAME, Size: 57, Number: 1040
+. 2018-03-26 14:10:10.270 Real path is '/home/gmetais/test'
+. 2018-03-26 14:10:10.271 File: '.\temp\toto.txt' [2018-03-26T12:10:08.018Z] [97]
+. 2018-03-26 14:10:10.272 Copying ".\temp\toto.txt" to remote directory started.
+. 2018-03-26 14:10:10.272 Binary transfer mode selected.
+. 2018-03-26 14:10:10.272 Opening remote file.
+> 2018-03-26 14:10:10.272 Type: SSH_FXP_OPEN, Size: 52, Number: 1283
+< 2018-03-26 14:10:10.274 Type: SSH_FXP_HANDLE, Size: 13, Number: 1283
+> 2018-03-26 14:10:10.274 Type: SSH_FXP_WRITE, Size: 122, Number: 1798
+> 2018-03-26 14:10:10.274 Type: SSH_FXP_CLOSE, Size: 13, Number: 2052
+> 2018-03-26 14:10:10.274 Type: SSH_FXP_SETSTAT, Size: 48, Number: 1545
+< 2018-03-26 14:10:10.276 Type: SSH_FXP_STATUS, Size: 24, Number: 1798
+< 2018-03-26 14:10:10.276 Status code: 0
+< 2018-03-26 14:10:10.278 Type: SSH_FXP_STATUS, Size: 24, Number: 2052
+< 2018-03-26 14:10:10.278 Status code: 0
+. 2018-03-26 14:10:10.278 Preserving timestamp [2018-03-26T12:10:08.000Z]
+< 2018-03-26 14:10:10.278 Type: SSH_FXP_STATUS, Size: 24, Number: 1545
+< 2018-03-26 14:10:10.278 Status code: 0
+. 2018-03-26 14:10:10.278 Transfer done: '.\temp\toto.txt' => '/home/gmetais/test/toto.txt' [97]
+. 2018-03-26 14:10:10.278 Copying finished: Transferred: 97, Elapsed: 0:00:00, CPS: 0/s
+> 2018-03-26 14:10:10.278 Script: ls ./test
+. 2018-03-26 14:10:10.278 Listing directory "/home/gmetais/test".
+> 2018-03-26 14:10:10.278 Type: SSH_FXP_OPENDIR, Size: 27, Number: 2315
+< 2018-03-26 14:10:10.280 Type: SSH_FXP_HANDLE, Size: 13, Number: 2315
+> 2018-03-26 14:10:10.281 Type: SSH_FXP_READDIR, Size: 13, Number: 2572
+< 2018-03-26 14:10:10.283 Type: SSH_FXP_NAME, Size: 319, Number: 2572
+> 2018-03-26 14:10:10.283 Type: SSH_FXP_READDIR, Size: 13, Number: 2828
+< 2018-03-26 14:10:10.285 Type: SSH_FXP_STATUS, Size: 28, Number: 2828
+< 2018-03-26 14:10:10.285 Status code: 1
+> 2018-03-26 14:10:10.286 Type: SSH_FXP_CLOSE, Size: 13, Number: 3076
+. 2018-03-26 14:10:10.286 .;d;0;2018-03-26T12:10:01.000Z;3;"gmetais" [3233];"gmetais" [3242];rwxrwxr-x;0
+. 2018-03-26 14:10:10.286 ..;d;0;2018-03-26T12:10:01.000Z;3;"gmetais" [3233];"gmetais" [3242];rwx------;0
+. 2018-03-26 14:10:10.286 toto.txt;-;97;2018-03-26T12:10:08.000Z;3;"gmetais" [3233];"gmetais" [3242];rw-rw-r--;0
+< 2018-03-26 14:10:10.286 Script: drwxrwxr-x   2 gmetais  gmetais       4096 Mar 26 14:10:01 2018 .
+< 2018-03-26 14:10:10.286 Script: drwx------  10 gmetais  gmetais       4096 Mar 26 14:10:01 2018 ..
+< 2018-03-26 14:10:10.287 Script: -rw-rw-r--   1 gmetais  gmetais         97 Mar 26 14:10:08 2018 toto.txt
+> 2018-03-26 14:10:10.289 Script: echo #3 exécute l'instruction de changement de mot de passe 
+< 2018-03-26 14:10:10.289 Script: #3 exécute l'instruction de changement de mot de passe 
+> 2018-03-26 14:10:10.292 Script: call passwd <test/toto.txt 
+. 2018-03-26 14:10:10.292 Executing user defined command on command session.
+> 2018-03-26 14:10:10.292 [Shell] passwd <test/toto.txt  ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.371 Script: Changing password for user gmetais.
+< 2018-03-26 14:10:10.371 [Shell] Changing password for user gmetais.
+< 2018-03-26 14:10:10.371 Script: Changing password for gmetais.
+< 2018-03-26 14:10:10.373 [Shell] Changing password for gmetais.
+< 2018-03-26 14:10:10.373 Script: passwd: all authentication tokens updated successfully.
+< 2018-03-26 14:10:10.374 [Shell] passwd: all authentication tokens updated successfully.
+< 2018-03-26 14:10:10.374 [Shell] WinSCP: this is end-of-file:0
+! 2018-03-26 14:10:10.374 [Shell] (current) UNIX password: New password: Retype new password: 
+> 2018-03-26 14:10:10.374 [Shell] pwd ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.376 [Shell] /home/gmetais
+< 2018-03-26 14:10:10.376 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.376 Cached directory change via "/home/gmetais" to "/home/gmetais".
+. 2018-03-26 14:10:10.376 Getting current directory name.
+. 2018-03-26 14:10:10.376 Getting current directory name.
+> 2018-03-26 14:10:10.377 Script: echo #4 purge les données temporaires 
+< 2018-03-26 14:10:10.377 Script: #4 purge les données temporaires 
+> 2018-03-26 14:10:10.378 Script: call rm test/t*.txt 
+. 2018-03-26 14:10:10.378 Executing user defined command on command session.
+> 2018-03-26 14:10:10.378 [Shell] rm test/t*.txt  ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.382 [Shell] WinSCP: this is end-of-file:0
+> 2018-03-26 14:10:10.382 [Shell] pwd ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.384 [Shell] /home/gmetais
+< 2018-03-26 14:10:10.384 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.384 Cached directory change via "/home/gmetais" to "/home/gmetais".
+. 2018-03-26 14:10:10.384 Getting current directory name.
+. 2018-03-26 14:10:10.384 Getting current directory name.
+> 2018-03-26 14:10:10.384 Script: call rmdir test 
+. 2018-03-26 14:10:10.384 Executing user defined command on command session.
+> 2018-03-26 14:10:10.384 [Shell] rmdir test  ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.389 [Shell] WinSCP: this is end-of-file:0
+> 2018-03-26 14:10:10.390 [Shell] pwd ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.391 [Shell] /home/gmetais
+< 2018-03-26 14:10:10.392 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.392 Cached directory change via "/home/gmetais" to "/home/gmetais".
+. 2018-03-26 14:10:10.392 Getting current directory name.
+. 2018-03-26 14:10:10.392 Getting current directory name.
+> 2018-03-26 14:10:10.392 Script: call rm nul.tmp 
+. 2018-03-26 14:10:10.392 Executing user defined command on command session.
+> 2018-03-26 14:10:10.392 [Shell] rm nul.tmp  ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.396 [Shell] WinSCP: this is end-of-file:0
+> 2018-03-26 14:10:10.396 [Shell] pwd ; echo "WinSCP: this is end-of-file:$?"
+< 2018-03-26 14:10:10.398 [Shell] /home/gmetais
+< 2018-03-26 14:10:10.398 [Shell] WinSCP: this is end-of-file:0
+. 2018-03-26 14:10:10.398 Cached directory change via "/home/gmetais" to "/home/gmetais".
+. 2018-03-26 14:10:10.399 Getting current directory name.
+. 2018-03-26 14:10:10.399 Getting current directory name.
+> 2018-03-26 14:10:10.399 Script: exit 
+. 2018-03-26 14:10:10.399 Script: Exit code: 0
+. 2018-03-26 14:10:10.399 Closing connection.
+. 2018-03-26 14:10:10.399 Sending special code: 12
+. 2018-03-26 14:10:10.399 Sent EOF message
+. 2018-03-26 14:10:10.399 [Shell] Closing connection.
+. 2018-03-26 14:10:10.399 [Shell] Sending special code: 12
+. 2018-03-26 14:10:10.400 [Shell] Sent EOF message

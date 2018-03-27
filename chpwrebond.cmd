@@ -12,14 +12,29 @@ PREREQUIS :
 MODIF 22/03/2018 - 13:08:35 conserve un historique des mdp utilisés et vérifie que le nouveau mdp n'y figure pas
 MODIF 22/03/2018 - 15:57:39 remplace le dossier "test" local par "temp" sans toucher au nom du dossier distant, et le purge après usage
 MODIF 23/03/2018 - 15:28:52 exploite les logs pour pointer les éventuelles erreurs d'exécution
+MODIF 26/03/2018 - 14:10:10 utilise la même méthode de récupération du mdp que dans quipoput.cmd, plus robuste
 
 :debut
 if exist %temp%\errrebond.pwd goto :errpwd
 REM vestige d'une précédente erreur de mdp à corriger avant de griller le mdp
 
+goto :loop test de la manière dont quipoput.cmp importe l'ancien mdp, plus robuste
 rem remise en mémoire de l'ancien mot de passe
 if not exist %temp%\oldrebond.pwd goto :noold
 set /p pwdold=<%temp%\oldrebond.pwd
+
+:loop
+rem recherche du mdp de connexion au serveur de rebond
+rem celui-ci se trouve dans 3 localisations différentes :
+rem - %temp%\oldrebond.pwd
+rem - en tant que dernière ligne de %temp%\history.pwd
+rem - après la mention # new dans le script chpwrebond.scp (usage déprécié)
+set /p pwd1=<%temp%\oldrebond.pwd
+tail -1 %temp%\history.pwd>%temp%\tmp.pwd
+set /p pwd2=<%temp%\tmp.pwd
+if not @%pwd1%@==@%pwd2%@ goto :pwddiff
+
+set pwdold=%pwd1%
 
 rem génération d'un nouveau mot de passe
 :gennewpw
@@ -127,4 +142,8 @@ goto :eof
 
 :errpwd
 msg %username% <%temp%\errrebond.pwd
+goto :eof
+
+:pwddiff
+@echo il y a une anomalie dans la sauvegarde du mdp
 goto :eof
