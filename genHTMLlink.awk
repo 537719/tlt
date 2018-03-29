@@ -8,7 +8,8 @@
 # MODIF 20/02/2018 - 10:24:51 ajoute un panneau avec l'image et la description du matériel concerné
 # MODIF 20/02/2018 - 16:33:51 prend le fichier de seuil en tant que fichier d'entrée et le nom de l'item de stat en tant que variable
 # BUG 20/02/2018 - 17:22:20 - correction d'une mauvaise génération de lien image (doubles quotes oubliées)
-# MODIF 
+# MODIF 29/03/2018 - 16:20:59 - utilise un format plus convivial pour afficher la date de valeur des stats
+
 BEGIN {
 	OFS="@"
     FS=";"
@@ -18,6 +19,9 @@ BEGIN {
     if (moisfin !~ /./) { # si on ne fournit pas la date concernée, on considère que c'est celle du jour
         moisfin=strftime("%F",systime())
     }
+
+    split(moisfin,jjmmaa,"-")
+
 }
 $1 ~ fichier {
     seuil=$2
@@ -48,7 +52,7 @@ END {
 	print "\t</head>"
 	print "\t<body>"
 	print "\t\t<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"960px\">"
-	print "\t\t\t<caption><b>Statistiques " fichier " au " moisfin "</b></caption>"
+	print "\t\t\t<caption><b>Statistiques " fichier " au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1] "</b></caption>"
 	print "\t\t\t<colgroup>"
 	print "\t\t\t\t<col width=\"640px\">"
 	print "\t\t\t\t<col width=\"320px\">"

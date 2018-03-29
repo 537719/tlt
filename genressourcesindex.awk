@@ -5,6 +5,8 @@
 # d'après genHTMLlink.awk 12:55 vendredi 20 mai 2016
 #
 # génération de l'index des produits monitorés
+# afin d'avoir un affichage plus convivial que la simple liste des dossiers si jamais on vient en browser le dosser
+
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
 # 1 Produit
 # 2 Seuil

@@ -9,6 +9,8 @@ Concatène les exports d'expédition et réception chez I&S en un seul fichier d
 	head
 #entree : fichiers d'export de l'extranet I&S (un pour l'export des expéditions, l'autre pour l'export des réceptions)
 #sortie : concaténation des deux fichiers d'entrée, en respectant les champs
+
+#modif 27/03/2018 - 10:28:03 simple re-sauvegarde du script sans aucune autre modif que cette ligne de commentaire, pour forcer la màj dans git
 :debut
 REM Contrôle d'existence des noms de fichiers
 @echo  Contrôle d'existence des noms de fichiers

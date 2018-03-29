@@ -13,6 +13,7 @@ MODIF 22/03/2018 - 13:08:35 conserve un historique des mdp utilisés et vérifie
 MODIF 22/03/2018 - 15:57:39 remplace le dossier "test" local par "temp" sans toucher au nom du dossier distant, et le purge après usage
 MODIF 23/03/2018 - 15:28:52 exploite les logs pour pointer les éventuelles erreurs d'exécution
 MODIF 26/03/2018 - 14:10:10 utilise la même méthode de récupération du mdp que dans quipoput.cmd, plus robuste
+BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation des mdp n'est pas trouvée
 
 :debut
 if exist %temp%\errrebond.pwd goto :errpwd
@@ -33,6 +34,7 @@ set /p pwd1=<%temp%\oldrebond.pwd
 tail -1 %temp%\history.pwd>%temp%\tmp.pwd
 set /p pwd2=<%temp%\tmp.pwd
 if not @%pwd1%@==@%pwd2%@ goto :pwddiff
+if @%pwd1%@==@@ goto :pwdnull
 
 set pwdold=%pwd1%
 
@@ -146,4 +148,9 @@ goto :eof
 
 :pwddiff
 @echo il y a une anomalie dans la sauvegarde du mdp
+goto :eof
+
+:pwdnull
+@echo mot de passe non trouvé
+@echo mot de passe non trouvé >>%temp%\errrebond.pwd
 goto :eof

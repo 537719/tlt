@@ -6,6 +6,7 @@
 # MODIF 15/02/2018  14:43 rajoute l'index de départ comme premier paramètre de la fonction "affiche"
 # MODIF 16/02/2018 - 15:28:17 COLPORT et WIFICISCO ne sont plus monitorés
 # MODIF 16/02/2018 - 15:31:00 rajoute les uc "deloc" prémasterisées au pool CHRUC
+# MODIF 27/03/2018 - 10:28:03 remplace la famille des uc hp rp 5700/5800 (chrrp) par la famille des uc xp (CHRXP), identique sauf qu'elle inclut aussi les Lenovo compatibles W7 (donc XP), plus difficile à calculer
 
 function initfamilles() # initialise un tableau avec le nom des familles de produits suivies
 {
@@ -18,7 +19,8 @@ function initfamilles() # initialise un tableau avec le nom des familles de prod
     # familles[7]="WIFICISCO"
     familles[06]="C11"
     familles[07]="CHROMEBOOK"
-    familles[8]="CHRRP"
+    # familles[8]="CHRRP"
+    familles[8]="CHRXP"
     familles[9]="CHRUC"
     familles[10]="CHRPORT"
     familles[11]="SERVEURS"
@@ -49,6 +51,7 @@ function selectfamille(entree)    # détermination de la famille de produits, la
             sortie="FINGERPRINT"
             break
         }
+        
         case /CHR34[N|R].18[P|Q]/ : # pc43d ZPL
         {
             sortie="ZPL"
@@ -59,10 +62,29 @@ function selectfamille(entree)    # détermination de la famille de produits, la
             sortie="COLPV"
             break
         }
-        case /^CHR10.[^S]1[A-Z]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
-        #MODIF 12/02/2018 - 16:35:15 prise en compte des nouveaux modèles d'uc HP -1ER et -1F4 ainsi que les éventuels ultérieurs 
-        #VERIF 16/02/2018 - voir si possible d'extraire facilement les uc non compatibles w8/10 (ie -1AS
+        
+        # case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR RP remplacé par UC CHR XP depuis le 27/03/2018
+        # {
+            # sortie="CHRRP"
+            # break
+        # }
+        case /CHR10[N|R][F|P]1A[4|S]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR XP - remplace UC CHR RP depuis le 27/03/2018 = idem plus références -1A4 et -1AS
+        #IMPORTANT 28/03/2018 - 16:16:23 il faut que cette section soit placée avant celle des CHRUC de manière à sortir avant en cas de détection de -1A4 ou -1AS
         {
+            sortie="CHRXP"
+            break
+        }
+        
+        case /CHR10.[^S]1[A-Z]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
+        #MODIF 12/02/2018 - 16:35:15 prise en compte des nouveaux modèles d'uc HP -1ER et -1F4 ainsi que les éventuels ultérieurs 
+        #VERIF 16/02/2018 - voir si possible d'extraire facilement les uc non compatibles w8/10 (ie -1AS et -1A4)
+        #IMPORTANT 28/03/2018 - 16:16:23 il faut que cette section soit placée après celle des CHRXP de manière à sortir avant en cas de détection de -1A4 ou -1AS
+        {
+            if (entree ~ /1A[4|S]$/) {
+                # normalement on ne passe jamais par ici, si le test CHRUC a bien été fait auparavant
+                sortie="CHRXP"
+                break
+            }
             sortie="CHRUC"
             break
         }
@@ -72,63 +94,69 @@ function selectfamille(entree)    # détermination de la famille de produits, la
             sortie="CHRUC"
             break
         }
+        
         case /CHR10.S/ : # UC Chronoship
         {
             sortie="UCSHIP"
             break
         }
+        
         case /^CLP10/ : # UC Coli
         {
             sortie="COLUC"
             break
         }
+        
         # COLPORT n'est plus monitoré depuis début 2018
         # case /CLP11[N|R][F|P]189|CLP11[N|R]F18K|CLP11[N|R][F|P]1[8|9]T|CLP11[N|R][F|P]19[0|R|S]|CLP11[N|R][F|P]1D./ : 
         # {
             # sortie="COLPORT"
             # break
         # }
+        
         case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
         {
             sortie="COLGV"
             break
         }
+        
         case /CLP34[N|R][F|P]194|CLP34[N|R][F|P]1BD/ :
         {
             sortie="PFMA"
             break
         }
+        
         case /CLP34[N|R][F|S|P]0E2|CLP34[N|R][F|P|S]15P|CLP34[N|R][F|P]1BC|CLP34[N|R][F|P]13K/ :
         {
             sortie="COLMET"
             break
         }
-        case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR RP
-        {
-            sortie="CHRRP"
-            break
-        }
+        
         # WIFICISCO n'est plus monitoré depuis début 2018
         # case /CHR47[N|R][F|P]0T7/ :
         # {
             # sortie="WIFICISCO"
             # break
         # }
+        
         case /CHR11[N|R][F|P]1../ : # Portables CHR
         {
             sortie="CHRPORT"
             break
         }
+        
         case /^CHR48/ :
         {
             sortie="SERVEURS"
             break
         }
+        
         case /^CHR12/ :
         {
             sortie="CHROMEBOOK"
             break
         }
+        
         case /^CHR32[N|R][F|P]1A2$/ :
         {
             sortie="C11"

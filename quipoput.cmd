@@ -10,7 +10,9 @@ PREREQUIS :
     accès SSH au serveur de rebond.TLT
     
 
-BUG 23/03/2018 - 17:18:29 rajoute une vérification de bon positionnement des répertoires avant invocation => dans le répertoire des stats I&S et présence du repository quipo
+BUG   23/03/2018 - 17:18:29 rajoute une vérification de bon positionnement des répertoires avant invocation => dans le répertoire des stats I&S et présence du repository quipo
+BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation des mdp n'est pas trouvée
+
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
@@ -36,6 +38,7 @@ set /p pwd1=<%temp%\oldrebond.pwd
 tail -1 %temp%\history.pwd>%temp%\tmp.pwd
 set /p pwd2=<%temp%\tmp.pwd
 if not @%pwd1%@==@%pwd2%@ goto :pwddiff
+if @%pwd1%@==@@ goto :pwdnull
 
 set pwdold=%pwd1%
 
@@ -129,4 +132,9 @@ goto :eof
 
 :errrep
 @echo Le dossier "%isdir%\StatsIS\quipo" n'existe pas
+goto :eof
+
+:pwdnull
+@echo mot de passe non trouvé
+@echo mot de passe non trouvé >>%temp%\errrebond.pwd
 goto :eof

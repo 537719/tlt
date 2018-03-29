@@ -10,6 +10,7 @@
 # MODIF 09/02/2018 - 13:34:56 correction de l'indentation du code html généré et ajout d'autre commentaires
 # MODIF 16/03/2018 - 15:47:05 - prise en compte de l'UTF-8 et rajout de la date de génération dans le header
 # MODIF 26/03/2018 - 17:02:50 - Affichage d'un logo en tête de chaque colonne dans la page générée
+# MODIF 29/03/2018 - 16:20:59 - utilise un format plus convivial pour afficher la date de valeur des stats
 #
 # génération de l'index de toutes les pages web générées
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
@@ -25,8 +26,10 @@ BEGIN {
 	ixshp=0
 	
 	if (statdate=="") {
-		statdate=strftime("%d %m %Y ",systime())
+		statdate=strftime("%d-%m-%Y ",systime())
 	}
+	
+	split(statdate,jjmmaa,"-")
 	
 	# génération de la première partie de l'index
 	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">"
@@ -42,7 +45,7 @@ BEGIN {
 	print " <body>"
 	print "  <div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
 	print "   <table><!--Statistiques I&S par famille de produit au " statdate " -->"
-	print "    <tr><th colspan=\"6\">Statistiques I&S par famille de produit au " statdate " </th></tr>"
+	print "    <tr><th colspan=\"6\">Statistiques I&S par famille de produit au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1] "</th></tr>"
 	print "    <tr><th colspan=\"6\"><hr></th></tr>"
 	print "    <tr>"
     print "      <th colspan=\"2\">"

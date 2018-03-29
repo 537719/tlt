@@ -1,6 +1,7 @@
 ::creestats.cmd
 ::12/05/2016 11:41:59,27
 ::crée les stats de suivi I&S
+@echo off
 goto :debut
 MODIF 16:21 jeudi 19 mai 2016 ajoute aussi le seuil d'alerte
 MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web correspondant
@@ -19,8 +20,10 @@ MODIF 20/02/2018 - 16:37:34 change l'invocation de la génération de page web de 
 MODIF 20/02/2018 - 17:22:20 transmet également la date concernée lors de la génératon de page web
 MODIF 22/03/2018 - 17:19:31 déplace les données produites vers le dossier quipo qui sert de repository web
 MODIF 23/03/2018 - 13:28:43 vérifie que le dossier en cours a bien été déplacé et lance le transfert vers le repository
+MODIF 29/03/2018 - 15:54:01 génère un index pour les webresources et met le dossier à jour dans le repository
+MODIF 29/03/2018 - 16:38:56 renomme le whatsnews.txt en *.log afin de ne pas l'auto-référencer
+
 :debut
-@echo off
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
 call ..\bin\getisdir.cmd
@@ -114,9 +117,16 @@ rem head -%nblgn% is-seuil.csv |gawk -f genHTMLindex.awk -v statdate="%moisfin%"
 REM Nouvelle formulation du 15:05 06/12/2016 car les lignes à éliminer ne sont plus les dernières
 rem mais sont les seules à contenir "matériel"
 cat is-seuil.csv |grep -v riel |gawk -f ..\bin\genHTMLindex.awk -v statdate="%moisfin%" >index.html
+md webresources 2>nul :: crée le dossier webresources s'il a disparu entre temps
+cat is-seuil.csv |grep -v riel |gawk -f ..\bin\genressourcesindex.awk >webresources\index.html
 REM génération de la page d'en-tête pour toutes les familles suivies
 
 move index.html %moisfin%
+
+REM mise à jour des webresources
+pushd webresources
+xcopy /s /c /h /e /m /y *.* ..\quipo\webresources\*.* 
+popd
 
 set web=%userprofile%\Dropbox\EasyPHP-DevServer-14.1VC11\data\localweb\StatsIS
 REM move /y %moisfin% %web%
@@ -148,7 +158,7 @@ call ..\bin\quipoput.cmd
 if exist %moisfin%\nul @echo Libérer le dossier "%cd%\%moisfin%"
 
 REM élaboration de la liste des nouveautés pour le mail de reporting
-@echo Modifications du %date% >> whatsnew.txt
-for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.txt
-whatsnew.txt
+@echo Modifications du %date% >> whatsnew.log
+for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.log
+"C:\Program Files\Notepad++\notepad++.exe" whatsnew.log
 popd
