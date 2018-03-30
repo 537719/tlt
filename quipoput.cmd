@@ -8,10 +8,12 @@ PREREQUIS :
     utilitaires GNU sous WIndows (inclus dans GIT)
     WinSCP (accessible dans le %path%)
     accès SSH au serveur de rebond.TLT
+    script getpwrebond.cmd dans le même dossier que le présent script
     
 
 BUG   23/03/2018 - 17:18:29 rajoute une vérification de bon positionnement des répertoires avant invocation => dans le répertoire des stats I&S et présence du repository quipo
 BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation des mdp n'est pas trouvée
+MODIF 30/03/2018 - 15:12:30 exporte la récupération du mdp de connexion au serveur de rebond dans le script getpwrebond.cmd
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -30,17 +32,10 @@ if not exist "%isdir%\StatsIS\quipo" goto :errrep
 cd /d "%isdir%\StatsIS"
 
 rem recherche du mdp de connexion au serveur de rebond
-rem celui-ci se trouve dans 3 localisations différentes :
-rem - %temp%\oldrebond.pwd
-rem - en tant que dernière ligne de %temp%\history.pwd
-rem - après la mention # new dans le script chpwrebond.scp (usage déprécié)
-set /p pwd1=<%temp%\oldrebond.pwd
-tail -1 %temp%\history.pwd>%temp%\tmp.pwd
-set /p pwd2=<%temp%\tmp.pwd
-if not @%pwd1%@==@%pwd2%@ goto :pwddiff
-if @%pwd1%@==@@ goto :pwdnull
-
-set pwdold=%pwd1%
+set pwdold=
+call "%~p0getpwrebond.cmd"
+:: %~p0 donne le répertoire où se situe le présent script, et les doubles quotes protègent la présence du signe & dans le chemin d'accès
+if @%pwdold%@==@@ goto :pwdnull
 
 rem génération du script winscp
 @echo #%~n0.scp >%~n0.scp
@@ -136,5 +131,5 @@ goto :eof
 
 :pwdnull
 @echo mot de passe non trouvé
-@echo mot de passe non trouvé >>%temp%\errrebond.pwd
+@echo %date% - %time% : mot de passe non trouvé >>%temp%\errrebond.pwd
 goto :eof

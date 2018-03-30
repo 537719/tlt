@@ -8,12 +8,14 @@ PREREQUIS :
     WinSCP (accessible dans le %path%)
     accès SSH au serveur de rebond.TLT
     script NEWPASSWORD.CMD et ses dépendances
+    script getpwrebond.cmd dans le même dossier que le présent script
     
 MODIF 22/03/2018 - 13:08:35 conserve un historique des mdp utilisés et vérifie que le nouveau mdp n'y figure pas
 MODIF 22/03/2018 - 15:57:39 remplace le dossier "test" local par "temp" sans toucher au nom du dossier distant, et le purge après usage
 MODIF 23/03/2018 - 15:28:52 exploite les logs pour pointer les éventuelles erreurs d'exécution
 MODIF 26/03/2018 - 14:10:10 utilise la même méthode de récupération du mdp que dans quipoput.cmd, plus robuste
 BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation des mdp n'est pas trouvée
+MODIF 30/03/2018 - 15:12:30 exporte la récupération du mdp de connexion au serveur de rebond dans le script getpwrebond.cmd
 
 :debut
 if exist %temp%\errrebond.pwd goto :errpwd
@@ -26,17 +28,10 @@ set /p pwdold=<%temp%\oldrebond.pwd
 
 :loop
 rem recherche du mdp de connexion au serveur de rebond
-rem celui-ci se trouve dans 3 localisations différentes :
-rem - %temp%\oldrebond.pwd
-rem - en tant que dernière ligne de %temp%\history.pwd
-rem - après la mention # new dans le script chpwrebond.scp (usage déprécié)
-set /p pwd1=<%temp%\oldrebond.pwd
-tail -1 %temp%\history.pwd>%temp%\tmp.pwd
-set /p pwd2=<%temp%\tmp.pwd
-if not @%pwd1%@==@%pwd2%@ goto :pwddiff
-if @%pwd1%@==@@ goto :pwdnull
-
-set pwdold=%pwd1%
+set pwdold=
+call "%~p0getpwrebond.cmd"
+:: %~p0 donne le répertoire où se situe le présent script, et les doubles quotes protègent la présence du signe & dans le chemin d'accès
+if @%pwdold%@==@@ goto :pwdnull
 
 rem génération d'un nouveau mot de passe
 :gennewpw
