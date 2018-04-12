@@ -18,6 +18,7 @@ MODIF 30/01/2018 - 11:12:00 reprise après crash disque : adaptation à une autr
 MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la veille : suppression des :: et mise en :: des anciennes instructions
 TESTE 01/02/2018 - 16:33:58 semble OK, aucun bug détecté sur des données réelles
 MODIF 13/02/2018 - 11:54:22 modification des positionnements dans l'arborescence afin de gérer les bibliothèques de fonction via @include
+BUG   06/04/2018 - 15:04:21 rajoute un filtre sed lors des recherches des fichiers à utiliser afin d'être certain que leurs noms corresponde à la nomenclature
 :debut
 REM @echo on
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -37,7 +38,8 @@ rem		le dernier des is_out_*.csv
 
 rem stat des sorties
 :: dir /od /b is_out_*.csv|tail -1 >%temp%\file.tmp
-dir /o /s /b ..\is_out_??????.csv |tail -1>%temp%\file.tmp
+dir /o /s /b ..\is_out_??????.csv|sed -n "/is_out_[0-9]\{6\}\.csv$/Ip"|tail -1>%temp%\file.tmp
+REM rajout du SED pour être certain d'avoir un fichier dont le nom correspond à la nomenclature
 
 set /p inputfile=<%temp%\file.tmp
 REM set outputfile=isflux.txt
@@ -57,7 +59,8 @@ rem start %outputfile%
 
 rem stat des réceptions
 :: dir /od /b is_in_*.csv|tail -1 >%temp%\file.tmp
-dir /o /b /s ..\is_in_*.csv|tail -1 >%temp%\file.tmp
+dir /o /b /s ..\is_in_*.csv|sed -n "/is_in_[0-9]\{6\}\.csv$/Ip"|tail -1 >%temp%\file.tmp
+REM rajout du SED pour être certain d'avoir un fichier dont le nom correspond à la nomenclature
 set /p inputfile=<%temp%\file.tmp
 REM set outputfile=isrecep.txt
 set outputfile="%isdir%\StatsIS\is-in.csv"

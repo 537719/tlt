@@ -22,6 +22,7 @@ MODIF 22/03/2018 - 17:19:31 déplace les données produites vers le dossier quipo 
 MODIF 23/03/2018 - 13:28:43 vérifie que le dossier en cours a bien été déplacé et lance le transfert vers le repository
 MODIF 29/03/2018 - 15:54:01 génère un index pour les webresources et met le dossier à jour dans le repository
 MODIF 29/03/2018 - 16:38:56 renomme le whatsnews.txt en *.log afin de ne pas l'auto-référencer
+BUG   05/04/2018 - 16:54:21 corrige un commentaire mal défini qui créait des dossiers vides inutiles
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -78,6 +79,7 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
   REM ce qui peut arriver si on manipule le csv avec un tableur
   REM BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
+  REM MODIF 06/04/2018 - 14:36:49 centralisation de fonctions dans un module à inclure dans les scripts de génération de page HTML et création d'une page d'index général pour visu de l'historique
   
 ::  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
   gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
@@ -100,8 +102,11 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   "%gnuplot%"  -c ..\bin\genericplot.plt %%I.tab %moisdeb% %moisfin%
   REM Crée le graphique
   
-@echo   gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" is-seuil.csv >%%I.htm
-  gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" is-seuil.csv >%%I.htm
+REM @echo   gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" is-seuil.csv >%%I.htm
+pushd ..\bin
+rem repositionnemnt nécessaire sans quoi le script awk ne trouve pas le module à inclure
+  gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" ..\StatsIS\is-seuil.csv >..\StatsIS\%%I.htm
+popd
   REM pause
   REM génération de la page web affichant le graphique
   move %%I.* "%moisfin%"
@@ -116,17 +121,25 @@ REM élimination ^^ des deux dernières lignes, qui ne correspondent pas à de vrai
 rem head -%nblgn% is-seuil.csv |gawk -f genHTMLindex.awk -v statdate="%moisfin%" >index.html
 REM Nouvelle formulation du 15:05 06/12/2016 car les lignes à éliminer ne sont plus les dernières
 rem mais sont les seules à contenir "matériel"
-cat is-seuil.csv |grep -v riel |gawk -f ..\bin\genHTMLindex.awk -v statdate="%moisfin%" >index.html
-md webresources 2>nul :: crée le dossier webresources s'il a disparu entre temps
+
+pushd ..\bin
+rem repositionnemnt nécessaire sans quoi le script awk ne trouve pas le module à inclure
+cat ..\StatsIS\is-seuil.csv |grep -v riel |gawk -f ..\bin\genHTMLindex.awk -v statdate="%moisfin%" >..\StatsIS\index.html
+popd
+md webresources 2>nul
+:: ^^ crée le dossier webresources s'il a disparu entre temps
 cat is-seuil.csv |grep -v riel |gawk -f ..\bin\genressourcesindex.awk >webresources\index.html
 REM génération de la page d'en-tête pour toutes les familles suivies
 
 move index.html %moisfin%
 
+
+@echo on
 REM mise à jour des webresources
-pushd webresources
+pushd "%isdir%\StatsIS\webresources"
 xcopy /s /c /h /e /m /y *.* ..\quipo\webresources\*.* 
 popd
+@echo off
 
 set web=%userprofile%\Dropbox\EasyPHP-DevServer-14.1VC11\data\localweb\StatsIS
 REM move /y %moisfin% %web%
@@ -146,13 +159,25 @@ rem déplacement des données produites vers le dossier web
 :movedata
 @echo on
 del %temp%\erreur.txt 2>nul
-move /y %moisfin% quipo 2>%temp%\erreur.txt
-if not exist %temp%\erreur.txt goto :quipoput
-if exist quipo\%moisfin%\nul goto :quipoput
+pushd "%isdir%\StatsIS\%moisfin%"
+md ..\quipo\%moisfin%
+move /y *.* ..\quipo\%moisfin% 2>%temp%\erreur.txt
+cd ..
+rd %moisfin%
+popd
+if not exist %temp%\erreur.txt goto :genindex
+if exist quipo\%moisfin%\nul goto :genindex
 @echo Libérer le dossier "%cd%\%moisfin%" >>%temp%\erreur.txt
 cat %temp%\erreur.txt |msg /W %username% 
 pause
 goto :movedata
+:genindex
+pushd "%isdir%\bin"
+rem génération de l'index des stats précédentes, pour consultation de l'historique
+rem repositionnemnt nécessaire sans quoi le script awk ne trouve pas le module à inclure
+dir  ..\StatsIS\quipo |gawk -f genDateIndex.awk >..\StatsIS\quipo\index.html
+REM simple liste des dates triée par ordre décroissant
+popd
 :quipoput
 call ..\bin\quipoput.cmd
 if exist %moisfin%\nul @echo Libérer le dossier "%cd%\%moisfin%"

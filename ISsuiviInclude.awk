@@ -7,6 +7,7 @@
 # MODIF 16/02/2018 - 15:28:17 COLPORT et WIFICISCO ne sont plus monitorés
 # MODIF 16/02/2018 - 15:31:00 rajoute les uc "deloc" prémasterisées au pool CHRUC
 # MODIF 27/03/2018 - 10:28:03 remplace la famille des uc hp rp 5700/5800 (chrrp) par la famille des uc xp (CHRXP), identique sauf qu'elle inclut aussi les Lenovo compatibles W7 (donc XP), plus difficile à calculer
+# MODIF 04/04/2018 - 17:20:43 ajoute un avertissement indiquant que ce script doit être utilisé comme #inclide et interdisant de l'utiliser en stand-alone
 
 function initfamilles() # initialise un tableau avec le nom des familles de produits suivies
 {
@@ -189,4 +190,9 @@ function affiche(indexmin,indexmax,tablo1,tablo2,tablo3)
         for (j=indexmin;j<=indexmax;j++) ligne=ligne OFS tablo3[tablo2[i] tablo1[j]]
         print ligne
     }
+}
+
+BEGIN {
+    # print "Ce module n'est pas censé être invoqué directement mais appelé par d'autres scripts au moyen d'une instruction #INCLUDE"
+    # exit 1
 }

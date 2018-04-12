@@ -7,8 +7,13 @@
 #   lien en bas de page pour retour vers l'index
 # MODIF 20/02/2018 - 10:24:51 ajoute un panneau avec l'image et la description du matériel concerné
 # MODIF 20/02/2018 - 16:33:51 prend le fichier de seuil en tant que fichier d'entrée et le nom de l'item de stat en tant que variable
-# BUG 20/02/2018 - 17:22:20 - correction d'une mauvaise génération de lien image (doubles quotes oubliées)
+# BUG   20/02/2018 - 17:22:20 - correction d'une mauvaise génération de lien image (doubles quotes oubliées)
 # MODIF 29/03/2018 - 16:20:59 - utilise un format plus convivial pour afficher la date de valeur des stats
+# MODIF 06/04/2018 - 13:48:51 - externalise la création de l'entête de la page HTML dans le module inclus IShtmlInclude.awk et ajoute un accès au menu et à une page d'aide en haut de page afin d'être visible sur les petits écrans
+# MODIF 09/04/2018 - 11:30:36 - externalise la création de l'entête de tableau html dans le module inclus IShtmlInclude.awk 
+
+
+@include "IShtmlInclude.awk"
 
 BEGIN {
 	OFS="@"
@@ -31,44 +36,18 @@ $1 ~ fichier {
 	# nbarg=split(FILENAME,nomfich,".")
 }
 END {
-	# print nbarg
-	# for (i in nomfich) print i OFS nomfich[i]
-	# print PWD
-	# cmdstring="\"dir /d\""         ||
-	# cmdstring="\"gnuplot " fichier ".plt" "\""
-	# print cmdstring
-	# system(cmdstring)
-	# cmdstring |& getline results
-	# print OFS results OFS
-	print "<!DOCTYPE html>"
-	print "<html lang=\"fr-FR\" class=\"subpage\">"
-	print "\t<head>"
-	print "\t\t<meta charset=\"UTF-8\" />"
-	print "\t\t<title>Statistiques " fichier "</title>"
-	print "\t\t<meta name=\"description\" content=\"stats \"" fichier "/>"
-	print "\t\t<meta name=\"generator\" content=\"genHTMLlink.awk\" />"
-	print "\t\t<meta name=\"date\" content=\"" strftime("%F %T",systime()) "\" />"
-	# print "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />"
-	print "\t</head>"
-	print "\t<body>"
-	print "\t\t<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"960px\">"
-	print "\t\t\t<caption><b>Statistiques " fichier " au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1] "</b></caption>"
-	print "\t\t\t<colgroup>"
-	print "\t\t\t\t<col width=\"640px\">"
-	print "\t\t\t\t<col width=\"320px\">"
-	print "\t\t\t</colgroup>"
-	print "\t\t\t<thead>"
-	print "\t\t\t\t<tr>"
-	print "\t\t\t\t\t<th>Historique 13 mois</th>"
-	print "\t\t\t\t\t<th>Matériel concerné</th>"
-	print "\t\t\t\t</tr>"
-	print "\t\t\t</thead>"
-	print "\t\t\t<tfoot>"
-	print "\t\t\t\t<tr>"
-	print "\t\t\t\t\t<td colspan=\"2\" align=\"center\"><hr><a href=\"index.html\">Retour au menu </a></td>"
-	print "\t\t\t\t</tr>"
-	print "\t\t\t</tfoot>"
-	print "\t\t\t<tbody>"
+
+    
+    texte="Statistiques " fichier " au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1]
+    makehead(texte,texte,"genHTMLlink.awk","statistiques,flux,sorties,stock,i&s,liste,dates",texte,"http://quipo.alt","gilles.metais@alturing.eu")
+    
+    tcaption=htmllink("index.html","Menu") "<b> " texte " </b>" htmllink("../webresources/aide.html","Aide")
+    theader="<th>Historique 13 mois</th>" "\r\n" "\t\t\t\t\t<th>Matériel concerné</th>"
+    tfooter="\t<td colspan=\"2\" align=\"center\"><hr>" htmllink("index.html","Retour au menu") "</td>"
+    tcolgroupstring="\t\t\t\t<col width=\"640px\">" "\r\n" "\t\t\t\t<col width=\"320px\">"
+    thoptions="width=\"960px\""
+    inittableau(tcaption,theader,tfooter,tcolgroupstring,thoptions)
+    
 	print "\t\t\t\t<tr>"
 	print "\t\t\t\t\t<td width=\"640px\">"
 	print "\t\t\t\t\t\t<a href=\"" fichier ".png\">"
@@ -92,11 +71,11 @@ END {
 	print "\t\t\t\t\t<td><object type=\"text/plain\" data=\"../webresources/" fichier ".txt \" style=\"overflow: hidden;\" border=\"0\" height=\"100\" width=\"640\"></object><br>"
 	print "\t\t\t\t\t</td>"
 	print "\t\t\t\t</tr>"
+    
+    # le <tbody> correspondant a été préalablement produit par la fonction "inittableau()"
 	print "\t\t\t</tbody>"
 	print "\t\t</table>"
-	# print "\t\t<hr><a href=\"index.html\">Retour au menu </a>"
+    # le <body> et le <html> correspondants ont été préalablement produit par la fonction "makehead()"
 	print "\t</body>"
     print "</html>"
-    
-    # print OFS "fichier " fichier OFS "nomfich " fichier OFS "seuil " seuil OFS "label " label OFS
 }

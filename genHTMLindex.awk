@@ -11,12 +11,22 @@
 # MODIF 16/03/2018 - 15:47:05 - prise en compte de l'UTF-8 et rajout de la date de génération dans le header
 # MODIF 26/03/2018 - 17:02:50 - Affichage d'un logo en tête de chaque colonne dans la page générée
 # MODIF 29/03/2018 - 16:20:59 - utilise un format plus convivial pour afficher la date de valeur des stats
+# MODIF 06/04/2018 - 13:48:51 - externalise la création de l'entête dans le module inclus IShtmlInclude.awk et ajoute un accès au menu et à une page d'aide en haut de page afin d'être visible sur les petits écrans
+# MODIF 09/04/2018 - 17:03:50 - externalise la création de l'entête de tableau html dans le module inclus IShtmlInclude.awk
+
 #
 # génération de l'index de toutes les pages web générées
 # entrée : fichier is-seuil.csv dont seuls les 1° et 3° champs nous intéressent
 # 1 Produit
 # 2 Seuil
 # 3 Désignation
+
+@include "IShtmlInclude.awk"
+
+function iconebu(bu)
+{
+    return "\t\t\t\t<th colspan=\"2\"><img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/" bu ".png\" alt=\"logo " bu "\"></th>"
+}
 
 BEGIN {
 	FS=";"
@@ -32,32 +42,40 @@ BEGIN {
 	split(statdate,jjmmaa,"-")
 	
 	# génération de la première partie de l'index
-	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">"
-	print "<html>"
-	print " <head>"
-	# print "<meta charset=\"utf-8\" />"
-	print "  <title>Statistiques I&S par famille de produit</title>"
-	print "  <meta charset=\"UTF-8\" />"
-	print "  <meta name=\"description\" content=\"statsindex\"/>"
-	print "  <meta name=\"generator\" content=\"genHTMLindex.awk\" />"
-	print "  <meta name=\"date\" content=\"" strftime("%F %T",systime()) "\" />"
-	print " </head>"
-	print " <body>"
+	# print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">"
+	# print "<html>"
+	# print " <head>"
+	# print "  <title>Statistiques I&S par famille de produit</title>"
+	# print "  <meta charset=\"UTF-8\" />"
+	# print "  <meta name=\"description\" content=\"statsindex\"/>"
+	# print "  <meta name=\"generator\" content=\"genHTMLindex.awk\" />"
+	# print "  <meta name=\"date\" content=\"" strftime("%F %T",systime()) "\" />"
+	# print " </head>"
+	# print " <body>"
+    texte="Statistiques I&S par famille de produit au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1]
+    makehead("Index principal",texte,"genHTMLindex.awk","statistiques,flux,sorties,stock,i&s,liste,dates",texte,"http://quipo.alt","gilles.metais@alturing.eu")
 	print "  <div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
-	print "   <table><!--Statistiques I&S par famille de produit au " statdate " -->"
-	print "    <tr><th colspan=\"6\">Statistiques I&S par famille de produit au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1] "</th></tr>"
-	print "    <tr><th colspan=\"6\"><hr></th></tr>"
-	print "    <tr>"
-    print "      <th colspan=\"2\">"
-	print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/COL.png\" alt=\"logo Colissimo\">"
-    print "      </th>"
-    print "      <th colspan=\"2\">"
-	print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/CHR.png\" alt=\"logo Chronopost\">"
-    print "      </th>"
-    print "      <th colspan=\"2\">"
-	print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/SHP.png\" alt=\"logo Chronoship\">"
-    print "      </th>"
-    print "    </tr>"
+	# print "   <table><!--Statistiques I&S par famille de produit au " statdate " -->"
+	# print "    <tr><td><a href=\"../index.html\">Historique</a></td><th colspan=\"4\">" texte "</th><td><a href=\"../webresources/aide.html\">Aide</a></td></tr>"
+	# print "    <tr><th colspan=\"6\"><hr></th></tr>"
+	# print "    <tr>"
+    # print "      <th colspan=\"2\">"
+	# print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/COL.png\" alt=\"logo Colissimo\">"
+    # print "      </th>"
+    # print "      <th colspan=\"2\">"
+	# print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/CHR.png\" alt=\"logo Chronopost\">"
+    # print "      </th>"
+    # print "      <th colspan=\"2\">"
+	# print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/SHP.png\" alt=\"logo Chronoship\">"
+    # print "      </th>"
+    # print "    </tr>"
+    
+    tcaption=htmllink("../index.html","Historique") "<b> " texte " </b>" htmllink("../webresources/aide.html","Aide") "<hr>"
+    theader=iconebu("COL") "\r\n" "\t\t\t\t\t" iconebu("CHR") "\r\n" "\t\t\t\t\t" iconebu("SHP") 
+    tfooter="\t<td colspan=\"6\" align=\"center\"><hr>" htmllink("../","Index des Stats") "</td>"
+    tcolgroupstring=""
+    thoptions=""
+    inittableau(tcaption,theader,tfooter,tcolgroupstring,thoptions)
 }
 
 { #MAIN
@@ -186,12 +204,12 @@ END {
 	}
 	
 	
-	print "    <tr><th colspan=\"6\"><hr></th></tr>"
-	print "    <tr><th colspan=\"6\">"
-	print "     <a href=\"" "..\\" "\">" "<!-- retour à l'index -->"
-	print "      Index des Stats"
-    print "     </a>"
-    print "    </th></tr>"
+	# print "    <tr><th colspan=\"6\"><hr></th></tr>"
+	# print "    <tr><th colspan=\"6\">"
+	# print "     <a href=\"" "..\\" "\">" "<!-- retour à l'index -->"
+	# print "      Index des Stats"
+    # print "     </a>"
+    # print "    </th></tr>"
 	print "   </table>"
 	print "  </div>"
 	# print ""
