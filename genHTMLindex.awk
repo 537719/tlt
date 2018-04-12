@@ -23,9 +23,31 @@
 
 @include "IShtmlInclude.awk"
 
-function iconebu(bu)
+function iconebu(bu) # rent une chaine html affichant l'icône liée à la bu fournie en argument
 {
     return "\t\t\t\t<th colspan=\"2\"><img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/" bu ".png\" alt=\"logo " bu "\"></th>"
+}
+
+function casetablo(item,lib,    templine) # remplit la case de tableau correspondant à l'item fourni en argument
+{
+    templine="\t\t\t\t<!-- function casetablo(" item ",    " templine ") -->\r\n"
+    templine=templine "\t\t\t\t\t<td valign=\"top\"><!-- " item " -->\r\n"
+    if (item) {
+    templine=templine "\t\t\t\t\t\t<a href=\"" item ".png\">\r\n"
+    templine=templine "\t\t\t\t\t\t\t<img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" item ".png\" alt=\"" item ".png\">\r\n"
+    templine=templine "\t\t\t\t\t\t</a>\r\n"
+    templine=templine "\t\t\t\t\t</td>\r\n"
+    templine=templine "\t\t\t\t\t<td>\r\n"
+    templine=templine "\t\t\t\t\t\t<a href=\"" item ".htm\">\r\n"
+    templine=templine "\t\t\t\t\t\t\t" lib "\r\n"
+    templine=templine "\t\t\t\t\t\t</a>\r\n"
+    } else {
+        templine=templine "     </td>\r\n"
+        templine=templine "     <td>\r\n"
+        templine=templine "      <!-- aucune donnée colissimo -->\r\n"
+    }
+    templine=templine 
+    return templine "     </td>\r\n"
 }
 
 BEGIN {
@@ -119,13 +141,13 @@ END {
 		# ligne=OFS col[i] OFS chr[i] OFS shp[i] OFS
 		# début de ligne
 		
-		if (col[i]=="") {
-			colpng=""
-			colhtm=""
-		} else {
-			colpng=col[i] ".png"
-			colhtm=col[i] ".htm"
-		}
+		# if (col[i]=="") {
+			# colpng=""
+			# colhtm=""
+		# } else {
+			# colpng=col[i] ".png"
+			# colhtm=col[i] ".htm"
+		# }
 		if (chr[i]=="") {
 			chrpng=""
 			chrhtm=""
@@ -144,22 +166,30 @@ END {
 		ligne="    <tr><!-- " col[i] " " chr[i] " " shp[i] " -->\r\n"
 		
 		# colissimo
-		ligne=ligne "     <td valign=\"top\"><!-- " col[i] " -->\r\n"
-		if (colpng) {
-		ligne=ligne "      <a href=\"" colpng "\">\r\n"
-		ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" colpng "\" alt=\"" colpng "\">\r\n"
-		ligne=ligne "      </a>\r\n"
-		ligne=ligne "     </td>\r\n"
-		ligne=ligne "     <td>\r\n"
-		ligne=ligne "      <a href=\"" colhtm "\">\r\n"
-		ligne=ligne "       " collib[i] "\r\n"
-		ligne=ligne "      </a>\r\n"
-		} else {
-            ligne=ligne "     </td>\r\n"
-            ligne=ligne "     <td>\r\n"
-            ligne=ligne "      <!-- aucune donnée colissimo -->\r\n"
-        }
-		ligne=ligne "     </td>\r\n"
+        ligne=ligne casetablo(col[i],lib)
+		# ligne=ligne "     <td valign=\"top\"><!-- " col[i] " -->\r\n"
+		# if (col[i]) {
+            # ligne=ligne "      <a href=\"" colpng "\">\r\n"
+            # ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" colpng "\" alt=\"" colpng "\">\r\n"
+            # ligne=ligne "      </a>\r\n"
+            # ligne=ligne "     </td>\r\n"
+            # ligne=ligne "     <td>\r\n"
+            # ligne=ligne "      <a href=\"" colhtm "\">\r\n"
+		# ligne=ligne "      <a href=\"" col[i] "\.png\">\r\n"
+		# ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" col[i] "\.png\" alt=\"" col[i] "\.png\">\r\n"
+		# ligne=ligne "      </a>\r\n"
+		# ligne=ligne "     </td>\r\n"
+		# ligne=ligne "     <td>\r\n"
+		# ligne=ligne "      <a href=\"" col[i] "\.htm\">\r\n"
+		# ligne=ligne "       " collib[i] "\r\n"
+		# ligne=ligne "      </a>\r\n"
+		# } else {
+            # ligne=ligne "     </td>\r\n"
+            # ligne=ligne "     <td>\r\n"
+            # ligne=ligne "      <!-- aucune donnée colissimo -->\r\n"
+        # }
+		# ligne=ligne "     </td>\r\n"
+        
 		
 		#chronopost
 		ligne=ligne "     <td valign=\"top\"><!-- " chr[i] " -->\r\n"
