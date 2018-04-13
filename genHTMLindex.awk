@@ -13,6 +13,7 @@
 # MODIF 29/03/2018 - 16:20:59 - utilise un format plus convivial pour afficher la date de valeur des stats
 # MODIF 06/04/2018 - 13:48:51 - externalise la création de l'entête dans le module inclus IShtmlInclude.awk et ajoute un accès au menu et à une page d'aide en haut de page afin d'être visible sur les petits écrans
 # MODIF 09/04/2018 - 17:03:50 - externalise la création de l'entête de tableau html dans le module inclus IShtmlInclude.awk
+# MODIF 13/04/2018 - 11:03:25 - regroupe dans une fonction toutes les parties récurrentes de la génération de la page d'index
 
 #
 # génération de l'index de toutes les pages web générées
@@ -30,68 +31,47 @@ function iconebu(bu) # rent une chaine html affichant l'icône liée à la bu fo
 
 function casetablo(item,lib,    templine) # remplit la case de tableau correspondant à l'item fourni en argument
 {
-    templine="\t\t\t\t<!-- function casetablo(" item ",    " templine ") -->\r\n"
-    templine=templine "\t\t\t\t\t<td valign=\"top\"><!-- " item " -->\r\n"
+    # templine=tabu(4) "<!-- function casetablo(" item "," lib ",    " templine ") -->\r\n"
+    templine=templine tabu(5) "<td valign=\"top\"><!-- " item " -->\r\n"
     if (item) {
-    templine=templine "\t\t\t\t\t\t<a href=\"" item ".png\">\r\n"
-    templine=templine "\t\t\t\t\t\t\t<img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" item ".png\" alt=\"" item ".png\">\r\n"
-    templine=templine "\t\t\t\t\t\t</a>\r\n"
-    templine=templine "\t\t\t\t\t</td>\r\n"
-    templine=templine "\t\t\t\t\t<td>\r\n"
-    templine=templine "\t\t\t\t\t\t<a href=\"" item ".htm\">\r\n"
-    templine=templine "\t\t\t\t\t\t\t" lib "\r\n"
-    templine=templine "\t\t\t\t\t\t</a>\r\n"
+    templine=templine tabu(6) "<a href=\"" item ".png\">\r\n"
+    templine=templine tabu(7) "<img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" item ".png\" alt=\"" item ".png\">\r\n"
+    templine=templine tabu(6) "</a>\r\n"
+    templine=templine tabu(5) "</td>\r\n"
+    templine=templine tabu(5) "<td>\r\n"
+    templine=templine tabu(6) "<a href=\"" item ".htm\">\r\n"
+    templine=templine tabu(7) lib "\r\n"
+    templine=templine tabu(6) "</a>\r\n"
     } else {
-        templine=templine "     </td>\r\n"
-        templine=templine "     <td>\r\n"
-        templine=templine "      <!-- aucune donnée colissimo -->\r\n"
+        templine=templine tabu(5) "</td>\r\n"
+        templine=templine tabu(6) "<!-- aucune donnée " lib " -->\r\n"
+        templine=templine tabu(5) "<td>\r\n"
     }
-    templine=templine 
-    return templine "     </td>\r\n"
+    templine=templine  tabu(5) "</td>\r\n"
+    # templine=templine  tabu(4) "<!-- fin fonction -->\r\n"
+    return templine
 }
 
 BEGIN {
-	FS=";"
-	
-	ixcol=0
-	ixchr=0
-	ixshp=0
-	
-	if (statdate=="") {
-		statdate=strftime("%d-%m-%Y ",systime())
-	}
-	
-	split(statdate,jjmmaa,"-")
-	
-	# génération de la première partie de l'index
-	# print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">"
-	# print "<html>"
-	# print " <head>"
-	# print "  <title>Statistiques I&S par famille de produit</title>"
-	# print "  <meta charset=\"UTF-8\" />"
-	# print "  <meta name=\"description\" content=\"statsindex\"/>"
-	# print "  <meta name=\"generator\" content=\"genHTMLindex.awk\" />"
-	# print "  <meta name=\"date\" content=\"" strftime("%F %T",systime()) "\" />"
-	# print " </head>"
-	# print " <body>"
+    FS=";"
+
+    ixcol=0
+    ixchr=0
+    ixshp=0
+
+    if (statdate=="") {
+        statdate=strftime("%d-%m-%Y ",systime())
+    }
+
+    split(statdate,jjmmaa,"-")
+
+    # génération de la première partie de l'index, qui ne dépend pas des données à afficher
+    # header html
     texte="Statistiques I&S par famille de produit au " jjmmaa[3] "/" jjmmaa[2] "/" jjmmaa[1]
     makehead("Index principal",texte,"genHTMLindex.awk","statistiques,flux,sorties,stock,i&s,liste,dates",texte,"http://quipo.alt","gilles.metais@alturing.eu")
-	print "  <div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
-	# print "   <table><!--Statistiques I&S par famille de produit au " statdate " -->"
-	# print "    <tr><td><a href=\"../index.html\">Historique</a></td><th colspan=\"4\">" texte "</th><td><a href=\"../webresources/aide.html\">Aide</a></td></tr>"
-	# print "    <tr><th colspan=\"6\"><hr></th></tr>"
-	# print "    <tr>"
-    # print "      <th colspan=\"2\">"
-	# print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/COL.png\" alt=\"logo Colissimo\">"
-    # print "      </th>"
-    # print "      <th colspan=\"2\">"
-	# print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/CHR.png\" alt=\"logo Chronopost\">"
-    # print "      </th>"
-    # print "      <th colspan=\"2\">"
-	# print "        <img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/SHP.png\" alt=\"logo Chronoship\">"
-    # print "      </th>"
-    # print "    </tr>"
+    print tabu(2) "<div style=\"width:480px;margin:0px auto 0px auto;padding:20px 0px 0px 0px;\">"
     
+    # header du tableau
     tcaption=htmllink("../index.html","Historique") "<b> " texte " </b>" htmllink("../webresources/aide.html","Aide") "<hr>"
     theader=iconebu("COL") "\r\n" "\t\t\t\t\t" iconebu("CHR") "\r\n" "\t\t\t\t\t" iconebu("SHP") 
     tfooter="\t<td colspan=\"6\" align=\"center\"><hr>" htmllink("../","Index des Stats") "</td>"
@@ -101,148 +81,70 @@ BEGIN {
 }
 
 { #MAIN
-	if (NR >1) { # pas de génération de lien pour la ligne d'en-tête
-		BU=$3
-		switch (BU) {
-			case /Colissimo/ :
-			{
-				colonne="COL"
-				ixcol++
-				col[ixcol]=$1
-				collib[ixcol]=$3
-				break
-			}
-			case /Chronopost/ :
-			{
-				colonne="CHR"
-				ixchr++
-				chr[ixchr]=$1
-				chrlib[ixchr]=$3
-				break
-			}
-			case /Chronoship/ :
-			{
-				colonne="SHP"
-				ixshp++
-				shp[ixshp]=$1
-				shplib[ixshp]=$3
-				break
-			}
-		}
-	}
+    # ventilation des données selont la BU dont elles relèvent
+    if (NR >1) { # pas de génération de lien pour la ligne d'en-tête
+        BU=$3
+        switch (BU) {
+            case /Colissimo/ :
+            {
+                colonne="COL"
+                ixcol++
+                col[ixcol]=$1
+                collib[ixcol]=$3
+                break
+            }
+            case /Chronopost/ :
+            {
+                colonne="CHR"
+                ixchr++
+                chr[ixchr]=$1
+                chrlib[ixchr]=$3
+                break
+            }
+            case /Chronoship/ :
+            {
+                colonne="SHP"
+                ixshp++
+                shp[ixshp]=$1
+                shplib[ixshp]=$3
+                break
+            }
+        }
+    }
 }
-END {
-	ixmax=ixcol
-	if (ixchr > ixmax) ixmax=ixchr
-	if (ixshp > ixmax) ixmax=ixshp	
-	for (i=1;i <= ixmax;i++)
-	{
-		# implémenter l'écriture du tableau html de sortie
-		# ligne=OFS col[i] OFS chr[i] OFS shp[i] OFS
-		# début de ligne
-		
-		# if (col[i]=="") {
-			# colpng=""
-			# colhtm=""
-		# } else {
-			# colpng=col[i] ".png"
-			# colhtm=col[i] ".htm"
-		# }
-		if (chr[i]=="") {
-			chrpng=""
-			chrhtm=""
-		} else {
-			chrpng=chr[i] ".png"
-			chrhtm=chr[i] ".htm"
-		}
-		if (shp[i]=="") {
-			shppng=""
-			shphtm=""
-		} else {
-			shppng=shp[i] ".png"
-			shphtm=shp[i] ".htm"
-		}
-		
-		ligne="    <tr><!-- " col[i] " " chr[i] " " shp[i] " -->\r\n"
-		
-		# colissimo
-        ligne=ligne casetablo(col[i],lib)
-		# ligne=ligne "     <td valign=\"top\"><!-- " col[i] " -->\r\n"
-		# if (col[i]) {
-            # ligne=ligne "      <a href=\"" colpng "\">\r\n"
-            # ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" colpng "\" alt=\"" colpng "\">\r\n"
-            # ligne=ligne "      </a>\r\n"
-            # ligne=ligne "     </td>\r\n"
-            # ligne=ligne "     <td>\r\n"
-            # ligne=ligne "      <a href=\"" colhtm "\">\r\n"
-		# ligne=ligne "      <a href=\"" col[i] "\.png\">\r\n"
-		# ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" col[i] "\.png\" alt=\"" col[i] "\.png\">\r\n"
-		# ligne=ligne "      </a>\r\n"
-		# ligne=ligne "     </td>\r\n"
-		# ligne=ligne "     <td>\r\n"
-		# ligne=ligne "      <a href=\"" col[i] "\.htm\">\r\n"
-		# ligne=ligne "       " collib[i] "\r\n"
-		# ligne=ligne "      </a>\r\n"
-		# } else {
-            # ligne=ligne "     </td>\r\n"
-            # ligne=ligne "     <td>\r\n"
-            # ligne=ligne "      <!-- aucune donnée colissimo -->\r\n"
-        # }
-		# ligne=ligne "     </td>\r\n"
-        
-		
-		#chronopost
-		ligne=ligne "     <td valign=\"top\"><!-- " chr[i] " -->\r\n"
-		if (chrpng) {
-		ligne=ligne "      <a href=\"" chrpng "\">\r\n"
-		ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" chrpng "\" alt=\"" chrpng "\">\r\n"
-		ligne=ligne "      </a>\r\n"
-		ligne=ligne "     </td>\r\n"
-		ligne=ligne "     <td>\r\n"
-		ligne=ligne "      <a href=\"" chrhtm "\">\r\n"
-		ligne=ligne "       " chrlib[i] "\r\n"
-		ligne=ligne "      </a>\r\n"
-		} else {
-            ligne=ligne "     </td>\r\n"
-            ligne=ligne "     <td>\r\n"
-            ligne=ligne "      <!-- aucune donnée chronopost -->\r\n"
-        }
-		ligne=ligne "     </td>\r\n"
-		
-		#chronoship
-		ligne=ligne "     <td valign=\"top\"><!-- " shp[i] " -->\r\n"
-		if (shppng) {
-		ligne=ligne "      <a href=\"" shppng "\">\r\n"
-		ligne=ligne "       <img style=\"border: 0px solid ; width: 64px; height: 48px;\" src=\"" shppng "\" alt=\"" shppng "\">\r\n"
-		ligne=ligne "      </a>\r\n"
-		ligne=ligne "     </td>\r\n"
-		ligne=ligne "     <td>\r\n"
-		ligne=ligne "      <a href=\"" shphtm "\">\r\n"
-		ligne=ligne "       " shplib[i] "\r\n"
-		ligne=ligne "      </a>\r\n"
-		} else {
-            ligne=ligne "     </td>\r\n"
-            ligne=ligne "     <td>\r\n"
-            ligne=ligne "      <!-- aucune donnée chronoship -->\r\n"
-        }
-		ligne=ligne "     </td>\r\n"
-		
-		# fin de ligne
-		ligne=ligne "    </tr>"
-		
-		print ligne
-	}
-	
-	
-	# print "    <tr><th colspan=\"6\"><hr></th></tr>"
-	# print "    <tr><th colspan=\"6\">"
-	# print "     <a href=\"" "..\\" "\">" "<!-- retour à l'index -->"
-	# print "      Index des Stats"
-    # print "     </a>"
-    # print "    </th></tr>"
-	print "   </table>"
-	print "  </div>"
-	# print ""
-	print " </body>"
-	print "</html>"
+END { # écriture du corps du tableau et du talon de page
+    ixmax=ixcol
+    if (ixchr > ixmax) ixmax=ixchr
+    if (ixshp > ixmax) ixmax=ixshp	
+    for (i=1;i <= ixmax;i++)
+    {
+        # implémenter l'écriture du tableau html de sortie
+        # ligne=OFS col[i] OFS chr[i] OFS shp[i] OFS
+        # début de ligne
+
+        ligne=tabu(4) "<tr><!-- " col[i] " " chr[i] " " shp[i] " -->\r\n" # ligne purement informative afin de mieyx s'y retrouver dans le code html généré
+
+        # colissimo
+        ligne=ligne casetablo(col[i],collib[i])
+
+        #chronopost
+        ligne=ligne casetablo(chr[i],chrlib[i])
+
+        #chronoship
+        ligne=ligne casetablo(shp[i],shplib[i])
+
+        # fin de ligne
+        ligne=ligne tabu(4) "</tr>"
+
+        print ligne
+    }
+
+
+    # le <tbody> correspondant a été préalablement produit par la fonction "inittableau()"
+    print tabu(3) "</tbody>"
+    print tabu(2) "</table>"
+    print tabu(2) "</div>"
+    # le <body> et le <html> correspondants ont été préalablement produit par la fonction "makehead()"
+    print tabu(1) "</body>"
+    print "</html>"
 }

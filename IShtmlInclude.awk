@@ -137,6 +137,12 @@ function htmllink(url,texte,cible)
     #" commentaire servant juste à placer une double quote de manière à ce que la coloration syntaxique retombe sur ses pieds
 }
 
+function tabu(n,    localstring,i) # retourne une chaîne constituée de n tabulations
+{
+    for (i=1;i<=n;i++) localstring=localstring "\t"
+    return localstring
+}
+
 BEGIN {
     # print "Ce module n'est pas censé être invoqué directement mais appelé par d'autres scripts au moyen d'une instruction #INCLUDE"
     # {
