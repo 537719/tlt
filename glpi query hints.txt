@@ -1,0 +1,74 @@
+-- glpi query hints
+-- contact bénéficiaire : champ "id" de glpi_users
+-- site lié au numéro de contrat : champ groups_id de glpi_plugin_shipping_clients => id 51680 / groups_id=51831
+
+-- numéro de dossier glpi id => ticket id glpi_ticket_users
+-- glpi_ticket_users users_id => id glpi_users
+
+-- numéro du dossier glpi => ticket_id dans glpi_ticket_users 1803270338
+-- users_id dans glpi_tickets_users et type 1 => id de glpi_users => realname et firstname=client bénéficiaire 109735
+-- users_id dans glpi_tickets_users et type 3 => id de glpi_users => realname et firstname=appelant demandeur 27600
+
+
+-- glpi_ticket champ users_id_recipient = appelant demandeur 
+
+-- numéro du dossier glpi => ticket_id dans glpi_groups_tickets 1803270338
+-- groups_id dans glpi_groups_tickets et type 1 => groups_id de glpi_plugin_shipping_clients => num_contract= = code imputation 211133
+-- groups_id dans glpi_groups_tickets et type 2 => groupe d'affectation
+
+-- numéro de dossier + code imputation
+select glpi_groups_tickets.tickets_id, glpi_plugin_shipping_clients.num_contract
+	from		glpi_groups_tickets,  glpi_plugin_shipping_clients
+	where		glpi_groups_tickets.type=1 
+	AND 
+				glpi_groups_tickets.tickets_id IN (
+				  1803270338,
+				  1803270261
+				)
+	AND
+		glpi_plugin_shipping_clients.groups_id=glpi_groups_tickets.groups_id
+limit 2
+;
+
+-- numéro de dossier + bénéficiaire
+select glpi_tickets_users.tickets_id, glpi_users.firstname, glpi_users.realname
+	from		glpi_tickets_users,  glpi_users
+	where		glpi_tickets_users.type=1 
+	AND 
+				glpi_tickets_users.tickets_id IN (
+				  1803270338,
+				  1803270261
+				)
+	AND
+		glpi_users.id=glpi_tickets_users.users_id
+limit 2
+;
+
+-- numéro de dossier + code imputation + bénéficiaire
+select glpi_groups_tickets.tickets_id, glpi_plugin_shipping_clients.num_contract,glpi_tickets_users.tickets_id, glpi_users.firstname, glpi_users.realname
+	from		glpi_groups_tickets,  glpi_plugin_shipping_clients, glpi_tickets_users,  glpi_users
+	where		glpi_tickets_users.type=1 
+    AND         glpi_groups_tickets.type=1 
+	AND 
+				glpi_tickets_users.tickets_id IN (
+				  1803270338,
+				  1803270261
+				)
+	AND 
+				glpi_groups_tickets.tickets_id IN (
+				  1803270338,
+				  1803270261
+				)
+	AND
+		glpi_plugin_shipping_clients.groups_id=glpi_groups_tickets.groups_id
+	AND
+		glpi_users.id=glpi_tickets_users.users_id
+    AND
+        glpi_groups_tickets.tickets_id=glpi_tickets_users.tickets_id
+limit 2
+;
+
+
+
+
+

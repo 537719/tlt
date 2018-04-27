@@ -1,5 +1,7 @@
-# ISsuivistocks.awk
-# 14:11 lundi 25 avril 2016
+# ISspareStocks.awk
+# 15:09 mercredi 30 novembre 2016
+# Etat des stock I&S synthétisées par famille demandant un suivi de réappro des stocks de spare (typiquement : claviers/souris et rouleaux d'étiquettes)
+# d'après ISsuivistocks.awk 14:11 lundi 25 avril 2016 MODIF 15:41 vendredi 4 novembre 2016
 # d'après
 # ISsuivisorties.awk
 # 07:27 21/04/2016
@@ -52,17 +54,8 @@
 #	fournit un résultat sous forme de csv
 #	comptabilise le total d'éléments n'appartenant pas aux familles de produits suivies
 
-# MODIF 11:08 lundi 13 juin 2016 prise en compte de l'ajout du numéro de tag I&S dans l'export des sorties, qui peut maintenant compter autant de champs que l'état des stocks
-# BUG 11:17 lundi 13 juin 2016correction du fait que EXIT ne fonctionne pas au coeur de la section "MAIN" (mais ok dans END)
-# MODIF 10:09 mardi 20 septembre 2016 rajoute la prise en compte des UC dites "développeur" (M73 i7 et M700) ainsi que des UC DELL
-#  la raison du rajout des uc dev est double
-#    d'une part des m73 i5 (non dev) ont été mis par erreur sous la ref des i7 (alors qu'il n'y en a plus en stock)
-#    d'autre part compte tenu de la nomenclature des référence et de l'ajout des nouveaux modèles, maintenir la distinction entretenait lourdeur et complexité, source de bugs
-# MODIF 15:41 vendredi 4 novembre 2016 ajout des nouvelles réf de portables COLI
-# MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
-# MODIF 15/02/2018 - 15:33:53 exporte dans un module externe à inclure toutes les routines communes à la famille "ISstatsXXX"
 
-    @include "ISsuiviInclude.awk"
+
 BEGIN {
 	FS=";"
 	OFS=";"
@@ -78,16 +71,38 @@ BEGIN {
 	types[8]="Destruction"
 	types[9]="aLivrer"
 	
-    initfamilles()
-    zerofamilles()
-}
+	# familles[1]="COLPV"
+	# familles[2]="COLGV"
+	# familles[3]="COLMET"
+	# familles[4]="PFMA"
+	# familles[5]="COLUC"
+	# familles[6]="COLPORT"
+	# familles[7]="WIFICISCO"
+	# familles[8]="CHRRP"
+	# familles[9]="CHRUC"
+	# familles[10]="CHRPORT"
+	# familles[11]="SERVEURS"
+	# familles[12]="PSMM3"
+	# familles[13]="UCSHIP"
+	# familles[14]="ZPL"
+	# familles[15]="FINGERPRINT"
+	# familles[16]="SERIALISE"
+	# familles[17]="DIVERS"
+	familles[18]="EXPEDITOR"
+	familles[19]="COLRECOND"
+	familles[20]="CHRRECOND"
+	
+	for (i in familles) for (j in types) nbsorties[familles[i] types[j]]=0 # afin de ne pas avoir de "cases vides" à la sortie
+
+	}
 { #MAIN
 	# définition des champs 
 	reference=$2
 	
 	if (NR==1) {
 		if (NF!=9) {
-			erreurnf(NF)
+			print "Ce fichier n'est pas du type requis car il contient " NF " champs."
+			# exit NF
 			codesortie = NF
 		} else {
 			if ($0 !~ /Ok/ ) {
@@ -105,7 +120,36 @@ BEGIN {
 		Destr=$8
 		Aliv=$9
 
-        famille=selectfamille(reference) # détermination de la famille de produits, la référence du produit étant passée en paramètre
+		# détermination de la famille de produits
+		switch (reference) { # corriger les expressions régulières en fonction des critères précis
+			case /^CLP35.S1AK/ : # Rouleaux d'étiquettes, à mettre en rapport avec les sorties d'imprimantes expeditor /^CLP34[N|R]S/
+			{
+				famille="EXPEDITOR"
+				break
+			}
+			case /^CLP51N/ : # Claviers, à mettre en rapport avec les sorties d'UC reconditionnées CLP10R - voir pour la gestion éventuelle des souris CLP52
+			{
+				famille="COLRECOND"
+				break
+			}
+			case /^CHR51N/ : # Claviers, à mettre en rapport avec les sorties d'UC reconditionnées CHR10R - voir pour la gestion éventuelle des souris CHR52
+			{
+				famille="CHRRECOND"
+				break
+			}
+			
+			default :
+			{
+				if (sn ~ /./) {
+					famille="SERIALISE"
+				} else {
+					famille="DIVERS"
+				}
+			}
+		}
+		# types[type]++
+		# familles[famille]++
+		# nbsorties[famille type]++
 		for (i in types) {
 			nbstock[famille i] = nbstock[famille i]+$i
 		}
@@ -116,11 +160,12 @@ BEGIN {
 END {
 	if (codesortie !=0) exit codesortie
 	
-	ligne= "!" FILENAME 
-	for (j=4;j<=9;j++) ligne= ligne OFS types[j] 
-	print ligne
+	# ligne= FILENAME 
+	# for (j=4;j<=9;j++) ligne= ligne OFS types[j] 
+	# print ligne
 	for (i in familles) {
 		ligne= familles[i] 
+		# ligne= FILENAME OFS familles[i] 
 		# for (j=4;j<=9;j++) ligne=ligne OFS nbstock[familles[i] types[j]]
 		for (j in types) ligne = ligne OFS nbstock[familles[i] j]
 		print ligne

@@ -1,0 +1,5 @@
+CALL ..\randomword nomscomunsmasculinssansaccents.txt
+CALL ..\randomword adjectifsmasculinssansaccents.txt
+CALL ..\randomword verbesintransitifsG1sansaccent.txt
+CALL ..\randomword nomscomunsmasculinssansaccents.txt
+CALL ..\randomword adjectifsmasculinssansaccents.txt 
