@@ -23,6 +23,7 @@ MODIF 23/03/2018 - 13:28:43 vérifie que le dossier en cours a bien été déplacé e
 MODIF 29/03/2018 - 15:54:01 génère un index pour les webresources et met le dossier à jour dans le repository
 MODIF 29/03/2018 - 16:38:56 renomme le whatsnews.txt en *.log afin de ne pas l'auto-référencer
 BUG   05/04/2018 - 16:54:21 corrige un commentaire mal défini qui créait des dossiers vides inutiles
+MODIF 20/04/2018 - 14:12:45 sauvegarde les données servant à élaborer les stats
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -137,7 +138,11 @@ move index.html %moisfin%
 @echo on
 REM mise à jour des webresources
 pushd "%isdir%\StatsIS\webresources"
+md data 2>nul
+xcopy /m /y ..\*.* .\data\*.*
+REM ^^ sauvegarde des données servant à élaborer les stats
 xcopy /s /c /h /e /m /y *.* ..\quipo\webresources\*.* 
+
 popd
 @echo off
 

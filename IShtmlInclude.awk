@@ -74,50 +74,50 @@ function makehead(titre,description,generateur,nuage,sujet,url,mailto) # génèr
 {
 	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">"
 	print "<html lang=\"fr-FR\" >"
-	print "\t<head>"
-	print "\t\t<meta charset=\"UTF-8\"/>"
-	print "\t\t<title>" titre "</title>"
-	print "\t\t<meta name=\"Content-Type\" content=\"UTF-8\">"
-	print "\t\t<meta name=\"Content-Language\" content=\"fr\">"
-	print "\t\t<meta name=\"Description\" content=\"" description "\">"
-	print "\t\t<meta name=\"Keywords\" content=\"" nuage "\">"
-	print "\t\t<meta name=\"Subject\" content=\"" sujet "\">"
-	print "\t\t<meta name=\"Copyright\" content=\"Alturing\">"
-	print "\t\t<meta name=\"Author\" content=\"Gilles Métais\">"
-	print "\t\t<meta name=\"Publisher\" content=\"Gilles Métais\">"
-	print "\t\t<meta name=\"Identifier-Url\" content=\"" url "\">"
-	print "\t\t<meta name=\"Reply-To\" content=\"" mailto "\">"
-	print "\t\t<meta name=\"Rating\" content=\"restricted\">"
-	print "\t\t<meta name=\"Distribution\" content=\"iu\">"
-	print "\t\t<meta name=\"generator\" content=\"" generateur "\" />"
-	print "\t\t<meta name=\"date\" content=\"" strftime("%d/%m/%Y %T",systime()) "\" />"
-	print "\t\t<meta name=\"Expires\" content=\"" strftime("%d/%m/%Y",systime()+604800) "\" />"
-	print "\t\t<meta name=\"Geography\" content=\"94250 Gentilly, France\">"
+	print tabu(1) "<head>"
+	print tabu(2) "<meta charset=\"UTF-8\"/>"
+	print tabu(2) "<title>" titre "</title>"
+	print tabu(2) "<meta name=\"Content-Type\" content=\"UTF-8\">"
+	print tabu(2) "<meta name=\"Content-Language\" content=\"fr\">"
+	print tabu(2) "<meta name=\"Description\" content=\"" description "\">"
+	print tabu(2) "<meta name=\"Keywords\" content=\"" nuage "\">"
+	print tabu(2) "<meta name=\"Subject\" content=\"" sujet "\">"
+	print tabu(2) "<meta name=\"Copyright\" content=\"Alturing\">"
+	print tabu(2) "<meta name=\"Author\" content=\"Gilles Métais\">"
+	print tabu(2) "<meta name=\"Publisher\" content=\"Gilles Métais\">"
+	print tabu(2) "<meta name=\"Identifier-Url\" content=\"" url "\">"
+	print tabu(2) "<meta name=\"Reply-To\" content=\"" mailto "\">"
+	print tabu(2) "<meta name=\"Rating\" content=\"restricted\">"
+	print tabu(2) "<meta name=\"Distribution\" content=\"iu\">"
+	print tabu(2) "<meta name=\"generator\" content=\"" generateur "\" />"
+	print tabu(2) "<meta name=\"date\" content=\"" strftime("%d/%m/%Y %T",systime()) "\" />"
+	print tabu(2) "<meta name=\"Expires\" content=\"" strftime("%d/%m/%Y",systime()+604800) "\" />"
+	print tabu(2) "<meta name=\"Geography\" content=\"94250 Gentilly, France\">"
 	print "\t</head>"
 	print "\t<body>"
 }
 
 function inittableau(ttitre,theader,tfooter,tcolgroupstring,thoptions)
 { # titre du tableau, contenu du thead et tfoot, groupement de colonnes, options supplémentaires dans le titre du tableau
-    print "\t\t<table border=\"0px\" cellspacing=\"0px\" cellpadding=\"0px\" " thoptions "> " #" commentaire servant juste à placer une double quote de manière à ce que la coloration syntaxique retombe sur ses pieds
-    print "\t\t\t<caption>" ttitre "</caption>"
+    print tabu(2) "<table border=\"0px\" cellspacing=\"0px\" cellpadding=\"0px\" " thoptions "> " #" commentaire servant juste à placer une double quote de manière à ce que la coloration syntaxique retombe sur ses pieds
+    print tabu(3) "<caption>" ttitre "</caption>"
     if (colgroupstring ~ /^<col/)
     {
-        print "\t\t\t<colgroup>"
-        print "\t\t\t\t" tcolgroupstring
-        print "\t\t\t</colgroup>"
+        print tabu(3) "<colgroup>"
+        print tabu(4) tcolgroupstring
+        print tabu(3) "</colgroup>"
     }
-    print "\t\t\t<thead>"
-    print "\t\t\t\t<tr>"
-    print "\t\t\t\t\t" theader
-    print "\t\t\t\t</tr>"
-    print "\t\t\t</thead>"
-    print "\t\t\t<tfoot>"
-    print "\t\t\t\t<tr>"
-    print "\t\t\t\t" tfooter
-    print "\t\t\t\t</tr>"
-    print "\t\t\t</tfoot>"
-    print "\t\t\t<tbody>"
+    print tabu(3) "<thead>"
+    print tabu(4) "<tr>"
+    print tabu(5) "" theader
+    print tabu(4) "</tr>"
+    print tabu(3) "</thead>"
+    print tabu(3) "<tfoot>"
+    print tabu(4) "<tr>"
+    print tabu(4) tfooter
+    print tabu(4) "</tr>"
+    print tabu(3) "</tfoot>"
+    print tabu(3) "<tbody>"
 }
 
 function htmllink(url,texte,cible)

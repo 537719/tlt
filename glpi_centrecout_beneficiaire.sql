@@ -1,4 +1,4 @@
--- numéro de dossier + code imputation + bénéficiaire
+-- numéro de dossier + centre coût + bénéficiaire
 select glpi_groups_tickets.tickets_id, glpi_plugin_shipping_clients.num_contract,glpi_users.firstname, glpi_users.realname
 	from		glpi_groups_tickets,  glpi_plugin_shipping_clients, glpi_tickets_users,  glpi_users
 	where		glpi_tickets_users.type=1 
@@ -213,7 +213,8 @@ select glpi_groups_tickets.tickets_id, glpi_plugin_shipping_clients.num_contract
 1803270366,
 1803280355,
 1803280607,
-1803270154
+1803270154,
+0
 				)
 	AND 
 				glpi_groups_tickets.tickets_id IN (
@@ -425,7 +426,8 @@ select glpi_groups_tickets.tickets_id, glpi_plugin_shipping_clients.num_contract
 1803270366,
 1803280355,
 1803280607,
-1803270154
+1803270154,
+0
 				)
 	AND
 		glpi_plugin_shipping_clients.groups_id=glpi_groups_tickets.groups_id

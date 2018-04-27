@@ -26,7 +26,7 @@ goto :eof
 if not exist %userprofile%\downloads\export*.csv goto :raf
 
 REM Boucle de scan des fichiers d'export
-for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "%isdir%\bin\exportIS.awk" "%%I" &&del "%%I")
+for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "%isdir%\bin\ExportIS.awk" "%%I" &&del "%%I")
 REM uFind pr‚f‚rable … un dir /s qui ne permet pas d'avoir … la fois le chemin d'accŠs complet et le filtre sur la date
 REM mais il faut quand mˆme en ‚diter la sortie sinon le del ne marche pas
 REM (alors que le gawk marche)

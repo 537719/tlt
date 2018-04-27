@@ -30,8 +30,9 @@ msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
 REM @echo isdirok
-REM set AWKPATH=".;.\bin\;..\bin\;%isdir%\bin\"
+REM set AWKPATH=.;.\bin\;..\bin\;%isdir%\bin\
 pushd "%isdir%\bin"
+REM pause
 rem on prend 
 rem		le dernier des stock\TEexport_*.csv
 rem		le dernier des is_out_*.csv
