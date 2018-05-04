@@ -14,9 +14,23 @@
 # Nombre d'incidents par type de site (ACP	CLIENT EXPEDITOR	DOT	PFC	SAV+SIEGE	SOUS-TRAITANT	SPECIFIQUE)
 # Nombre d'incidents par type d'activité, plus cumul pour les groupes d'activité EXPEDITOR	IMPRIMANTE	UC FIXE	UC PORTABLE	Autres
 # Nombre de déploiement de PC (fixes et portables) par type de site (ACP PFC SIEGE+DOT+SAV)
+
+# modif 02/02/2018 - 14:53:30 corrige en DOT les données mises de manière erronées en tant que DRV
+# modif 02/03/2018 - 10:45:27 remplace I&S par DEPART (seul groupe d'I&S concerné et pas sensible à une altération du "&" en "&amp;"
+# modif 03/05/2018 - 10:19:53 prise en compte de la disparition de la catégorie "expeditor" : utilisation à la place de entité "colissimo > shipping" et catégorie "imprimante"
 BEGIN {
 	FS="\0"
 	OFS=";"
+    
+	nbinc=0
+	nbdem=0
+	expeditor=0
+	imprimante=0
+	ucfixe=0
+	ucportable=0
+	autres=0
+	fde=0
+
 }
 { #MAIN
 	entite=$2
@@ -25,19 +39,21 @@ BEGIN {
 	historique=$31
 	type=$33
 	
-	if (entite ~ /COLI/) if (historique~/CIL|PLANIF|SOLUTIONS30|I&S|ECONOCOM|CRII|OPS/)  {
+	# if (entite ~ /COLI/) if (historique~/CIL|PLANIF|SOLUTIONS30|I&S|ECONOCOM|CRII|OPS/)  {
+	if (entite ~ /COLI/) if (historique~/CIL|PLANIF|SOLUTIONS30|DEPART|ECONOCOM|CRII|OPS/)  {
 		gsub(/\"/,"",categorie) # les guillemets parasitent le traitement et l'affichage des résultats
 		gsub(/\"/,"",emplacement) # les guillemets parasitent le traitement et l'affichage des résultats
 		if ( type ~ /ncident/) {
 			nbinc++ #OK
 			# calcul du nombre d'incidents par type de site (its) #OK
 			split(emplacement,site,">")
+			if (site[1] ~/DOT|DRV/) site[1]="DOT"
 			if (site[1] ~/SAV|SIEGE/) site[1]="SIEGE/SAV"
 			its[site[1]]++ #its = incidents par type de site
 			
 			# ventilation du nombre d'incidents par type d'activité (ita)
 			# autres++
-			if (categorie ~ /^MATERIEL.*IMPRIMANTE THERMIQUE|EXPEDITOR/) {
+			if (categorie ~ /^MATERIEL.*IMPRIMANTE THERMIQUE|EXPEDITOR|DTMX|COLISHIP/ || entite ~ /SHIPPING/) {
 				expeditor++ #OK
 			} else { #OK
 				if (categorie ~ /POSTE DE TRAVAIL.*IMPRIMANTE/) imprimante++
@@ -51,7 +67,7 @@ BEGIN {
 			if (categorie ~ /^Demande de ma.*ouveau poste de travail.* PC /) { #OK
 				fde++
 				split(emplacement,site,">")
-				if (site[1] ~/SAV|SIEGE|DOT/) site[1]="ADM"
+				if (site[1] ~/SAV|SIEGE|DOT|DRV/) site[1]="ADM"
 				fts[site[1]]++ #fts = fil de l'eau par type de site
 			}
 		}
@@ -82,5 +98,3 @@ END {
 	n=asorti(ita,oita)
 	for (i=1;i<=n;i++) print oita[i] OFS ita[oita[i]]
 }
-
-
