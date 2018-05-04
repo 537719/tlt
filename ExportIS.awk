@@ -10,22 +10,16 @@
 # dans tous les autres cas de fourchette de date, rajoute le suffixe <datedeb>-<datefin>
 # puis reprend l'extension .csv
 
-<<<<<<< HEAD
-=======
 # BUG 26/01/2018 13:38 : oubliait de prendre en compte l'espace comme séparateur entre la date et l'heure
 # MODIF 16/03/2018 - 15:44:14 le dossier "Historique" est renommé en "Data"
+# MODIF 04/05/2018 - 15:16:46 - Régénération depuis le repositiry github suite à conflit lors de la fusion des branches
 
->>>>>>> statsis
 BEGIN {
     FS=";"
     OFS=FS
     # outputdir="C:\\Us\\Documents\\TLT\\I&S\\Historique\\"
-<<<<<<< HEAD
-    outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Historique/" # emplacement relatif constant quelque soit le compte utilisateur
-=======
     # outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Historique/" # emplacement relatif constant quelque soit le compte utilisateur
     outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Data/" # emplacement relatif constant quelque soit le compte utilisateur
->>>>>>> statsis
    hzero="00 00 00"
     
 }
@@ -34,25 +28,14 @@ BEGINFILE {
     typefich="undef"
     champdate=0
     outputfile=""
-<<<<<<< HEAD
-    datemin=2^55
-=======
     # datemin=2^55
     datemin=strftime(systime()) # dans les données concernées, aucune raison d'avoir une date postérieure à la date du jour
->>>>>>> statsis
     datemax=0
  }
 { #MAIN
     aligne[FNR]=$0
     if (FNR==1) { # la détermination du type de fichier se fait en testant la 1° ligne uniquement
         switch (NF) {
-<<<<<<< HEAD
-            case 22 : # fichier des produits expédiés
-                typefich="out"
-                champdate=8
-                break
-            case 10 : # fichier des produits reçus
-=======
             case 22 : # fichier des produits expédiés (jusqu'à Pays de destination inclus)
                 typefich="out"
                 champdate=8
@@ -62,7 +45,6 @@ BEGINFILE {
                 champdate=8
                 break
             case 10 : # fichier des produits reçus (jusqu'à NumTag inclus)
->>>>>>> statsis
                 typefich="in"
                 champdate=4
                 break
@@ -71,11 +53,7 @@ BEGINFILE {
                 exit NF
         }
     } else { #run
-<<<<<<< HEAD
-        split($champdate,adateevent,/\/|\:/) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure
-=======
         split($champdate,adateevent,/\/|\:| /) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure plus un autre entre la date et l'heure
->>>>>>> statsis
         datestring=adateevent[3] " " adateevent[2] " " adateevent[1] " " adateevent[4] " " adateevent[5] " " adateevent[6] " " hzero " " hzero
         #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
         # print datestring
@@ -87,8 +65,6 @@ BEGINFILE {
         } # else print $champdate OFS datestring
         # print datenum
     }
-<<<<<<< HEAD
-=======
     # if (datenum>systime()) { # pour debug uniquement
         # print
         # print NR OFS (strftime("%F",datemax)) OFS datestring OFS datenum
@@ -96,7 +72,6 @@ BEGINFILE {
         # exit
     # }
 
->>>>>>> statsis
 }
 ENDFILE {
     if (FNR>1) {
