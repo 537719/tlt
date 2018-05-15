@@ -8,6 +8,8 @@
 # MODIF 16/02/2018 - 15:31:00 rajoute les uc "deloc" prémasterisées au pool CHRUC
 # MODIF 27/03/2018 - 10:28:03 remplace la famille des uc hp rp 5700/5800 (chrrp) par la famille des uc xp (CHRXP), identique sauf qu'elle inclut aussi les Lenovo compatibles W7 (donc XP), plus difficile à calculer
 # MODIF 04/04/2018 - 17:20:43 ajoute un avertissement indiquant que ce script doit être utilisé comme #inclide et interdisant de l'utiliser en stand-alone
+# BUG 09/05/2018 - 15:47:1 - il y a besoin d'avoir le numéro de série en 2nd paramètre pour pouvoir déterminer la famille "sérialisé"
+# MODIF 09/05/2018 - 15:49:25 - Ajout de la réf -19N à la famille "FINGERPRINT"
 
 function initfamilles() # initialise un tableau avec le nom des familles de produits suivies
 {
@@ -44,10 +46,10 @@ function erreurnf(n) # produit un message d'erreur si le fichier traité n'a pas
             print "Ce fichier n'est pas du type requis car il contient " n " champs."
 }
 
-function selectfamille(entree)    # détermination de la famille de produits, la référence du produit étant passée en paramètre
+function selectfamille(entree,sn)    # détermination de la famille de produits, la référence du produit et l'éventuel numéro de série étant passés en paramètres
 {
     switch (entree) { # corriger les expressions régulières en fonction des critères précis
-        case /CHR34[N|R]S19M|CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
+        case /CHR34[N|R]S19[M|N]|CHR34RS18R|CHR34NS18R|CHR34RSZXT|CHR34NS0TK|CHR34RS0IT|CHR34RSZXS|CHR34NS0IT|CHR34RSZXZ|CHR34RSZY1|CHR34NS0LN|CHR34NS0KR|CHR34NS15B|CHR34RSZXV/ :
         {
             sortie="FINGERPRINT"
             break
@@ -180,6 +182,7 @@ function selectfamille(entree)    # détermination de la famille de produits, la
     }
     return sortie
 }
+
 function affiche(indexmin,indexmax,tablo1,tablo2,tablo3)
 {
     ligne= "!" FILENAME

@@ -81,6 +81,7 @@ REM Construit pour chaque famille de produit les fichiers de données pour alimen
   REM ce qui peut arriver si on manipule le csv avec un tableur
   REM BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
   REM MODIF 06/04/2018 - 14:36:49 centralisation de fonctions dans un module à inclure dans les scripts de génération de page HTML et création d'une page d'index général pour visu de l'historique
+  REM MODIF 11/05/2018 - 10:17:30 rajoute une protection contre la mise en ligne de fichiers corrompus de taille nulle
   
 ::  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
   gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
@@ -140,6 +141,13 @@ REM mise à jour des webresources
 pushd "%isdir%\StatsIS\webresources"
 md data 2>nul
 xcopy /m /y ..\*.* .\data\*.*
+cd data
+for %%I in (*.*) do if %%~zI==0 (
+msg /w %username% "le fichier %%I a une taille nulle"
+dir %%I
+pause
+)
+cd ..
 REM ^^ sauvegarde des données servant à élaborer les stats
 xcopy /s /c /h /e /m /y *.* ..\quipo\webresources\*.* 
 

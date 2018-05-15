@@ -78,8 +78,13 @@
 # MODIF 14:49 lundi 9 janvier 2017 correction de la catégorie des PM43C Shipping, qui sont en fait Fingerprint et non ZPL
 # MODIF 29/01/2018 - 14:45:04 après crash disque : prise en compte des champs 20 à 22 dans le fichier d'entrée
 # MODIF 12/02/2018 - 16:06:19 exporte dans un module externe à inclure toutes les routines communes à la famille "ISstatsXXX"
+# MODIF 09/05/2018 - 15:11:18 exporte la détermination du type de sortie dans un module externe à inclure
+# IMPORTANT cette modif permet d'homogénéïser et fiabiliser la détermination du type de sortie
+# BUG 09/05/2018 - 15:47:15 - ajout du s/n en 2nd paramètre pour pouvoir déterminer la famille "sérialisé"
 
     @include "ISsuiviInclude.awk"
+    @include "typesortieinclude.awk"
+    
 BEGIN {
 	FS=";"
 	OFS=";"
@@ -93,6 +98,12 @@ BEGIN {
 	types[4]="destruction"
 	types[5]="undef"
 	
+    # La fonction "typesortie" renvoie un code alphabétique à 3 caractères, qu'il faut convertir en libellé
+	libtype["INC"]="incident"
+	libtype["DEM"]="demande"
+	libtype["RMA"]="RMA"
+	libtype["DEL"]="destruction"
+	
     initfamilles()
     zerofamilles()
 }
@@ -104,6 +115,7 @@ BEGIN {
 	codep=$16
 	dest=$12
 	sn=$11
+    provenance=$3
 	
 	if (NR==1) {
 		if ( NF != 18 && NF != 19  && NF != 22 ) {
@@ -111,71 +123,8 @@ BEGIN {
             codesortie=NF
 		}
 	} else {
-		switch (priorite) { # détermination du type de sortie
-	#	déterminer automatiquement si la sortie concerne un incident, une demande, une rma ou une destruction 
-	#		DEL :	P5 et premier champ contient "DESTRUCTION"
-	#		RMA : 	P5 "non DEL" ou (P4 et code postal = 91019 (SPC) ou 94043 (LVI)) ou (P2 et codepostal=94360 (Athesi))
-	#		dem :	P3 (shipping) P4 (métier)
-	#		inc :	P2
-			case /P[3-4]/ : 
-			{
-				type="demande"
-				if (codep==91019||codep==94043) type="RMA"
-				break
-			}
-			case /P2/ :
-			{
-				type="incident"
-				if (codep==94360) type="RMA"
-				break
-			}
-			case /P5/ :
-			{
-				switch (dossier) {
-					case /NAVETTE|RMA|PSM|LVI|SPC/ :
-					{
-						type="RMA"
-						break;
-					}
-					case /DESTRUCT/ :
-					{
-						type="destruction"
-						break;
-					}
-					default :
-					{
-						type="undef"
-					}
-				}
-				if (type=="undef") switch (codep) {
-					case /91019/ : #SPC
-					{
-						type="RMA"
-						break;
-					}
-					case /94360/ : # ATHESI
-					{
-						type="RMA"
-						break;
-					}
-					case /9444[0-3]/ : # LVI
-					{
-						type="RMA"
-						break;
-					}
-					default :
-					{
-						type="undef"
-					}
-				}
-				break
-			}
-			default :
-			{
-				type="undef"
-			}
-		}
-        famille=selectfamille(reference) # détermination de la famille de produits, la référence du produit étant passée en paramètre
+        type=libtype[typesortie(dossier, priorite, provenance, reference, codep)]
+        famille=selectfamille(reference,sn) # détermination de la famille de produits, la référence du produit étant passée en paramètre
 		nbsorties[famille type]++
 	}
 }
