@@ -1,7 +1,8 @@
 # genSQLccbGLPI.awk
-# 13/04/2018 - 14:47:22
-# parcourt un fichier des produits expédiés par I&S afin d'en extraire une requête MySQL
-# permettant de retrouver le centre de coût et le bénéficiaire du matériel
+# 13/04/2018 - 14:47:22 version initiale :
+#   parcourt un fichier des produits expédiés par I&S afin d'en extraire une requête MySQL
+#   permettant de retrouver le centre de coût et le bénéficiaire du matériel
+# 02/07/2018 - 16:01:09 : ajoute des meta informations sur les conditions de génération du fichier de sortie
 
 # usage :
 # gawk -f genSQLccbGLPI.awk nom_de_fichier.csv > nomderequete.SQL
@@ -39,6 +40,7 @@
 # $22  Pays de destination
 
 BEGIN {
+    scriptname="genSQLccbGLPI.awk"
     FS=";"
     OFS=","
     delete occurences # initialisation à vide du tableau de comptage de occurences des numéros de dossiers sélectionnés
@@ -51,6 +53,14 @@ BEGIN {
     datemin=mktime("2038 01 19 03 14 07")
     hzero="00 00 00" # pattern pour la conversion date nombre
     
+}
+
+BEGINFILE {
+    if (filestring) {
+        filestring=filestring ", " FILENAME
+    } else {
+        filestring = FILENAME
+    }
 }
 
 $1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE1610000000" { #MAIN
@@ -109,6 +119,7 @@ $1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE
         occurences[dossier]=un # gain perceptible (5 pour mille) par rapport à l'incrémentation
      }
 }
+
 END {
     for (i in occurences) {
         nbdossiers++ # comptage du nombre de résultats
@@ -120,6 +131,13 @@ END {
         # print "Date maximale " strftime("%F",datemax)
     print "-- Extraction des centres de coût et bénéficiaire des " nbdossiers " dossiers GLPI ayant fait l'objet d'un déstockage d'UC ou portable immobilisé par Chronopost"
     print "-- entre le " strftime(jjmmaaaa,datemin) " et le " strftime(jjmmaaaa,datemax)
+    if (filestring ~ /, /) {
+        filestring= "des fichiers " filestring
+    } else {
+        filestring= "du fichier " filestring
+    }
+    print "-- généré par le script " scriptname " le " strftime(jjmmaaaa,systime()) " par traitement " filestring
+    print "--"
     if (nberreurs > 0) {
         for (i in errdossier) {
             print "-- erreur de numéro de dossier : " i

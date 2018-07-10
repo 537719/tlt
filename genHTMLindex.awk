@@ -76,6 +76,7 @@ BEGIN {
     tcaption=htmllink("../index.html","Historique") "<b> " texte " </b>" htmllink("../webresources/aide.html","Aide") "<hr>"
     theader=iconebu("COL") "\r\n" "\t\t\t\t\t" iconebu("CHR") "\r\n" "\t\t\t\t\t" iconebu("SHP") 
     tfooter="\t<td colspan=\"6\" align=\"center\"><hr>" htmllink("../","Index des Stats") "</td>"
+    tfooter=tfooter "<br />" "\t<td colspan=\"6\" align=\"center\"><hr>" htmllink("alt-stock.csv","(c)Alturing") "</td>"
     tcolgroupstring=""
     thoptions=""
     inittableau(tcaption,theader,tfooter,tcolgroupstring,thoptions)

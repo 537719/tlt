@@ -19,6 +19,8 @@ MODIF 31/01/2018 - 11:28:08 mise en application des adaptations ajoutées la vei
 TESTE 01/02/2018 - 16:33:58 semble OK, aucun bug détecté sur des données réelles
 MODIF 13/02/2018 - 11:54:22 modification des positionnements dans l'arborescence afin de gérer les bibliothèques de fonction via @include
 BUG   06/04/2018 - 15:04:21 rajoute un filtre sed lors des recherches des fichiers à utiliser afin d'être certain que leurs noms corresponde à la nomenclature
+MODIF 05/07/2018 - 11:53:47 :  extraction du stock alturing
+MODIF 06/07/2018 - 10:12:43 n'affiche pas les articles dont la qté dispo est nulle
 :debut
 REM @echo on
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -84,6 +86,15 @@ REM encadre le chemin de fichier par des guillemets afin de protéger le I&S
 set /p inputfile=<%temp%\file.tmp
 :: set inputfile=stock\%inputfile%
 :: supprimer le set inputfile=stock\%inputfile%
+
+
+REM verrue du 05/07/2018 - 11:53:47 :  extraction du stock alturing
+for %%I in (%inputfile%) do set filename=%%~nI
+set outputfile="%isdir%\StatsIS\alt-stock.csv"
+cat %inputfile% |gawk -F; "NR==1 || $1 ~ /TELINTRANS/ {if ($4) {print $2 FS $3 FS $4}}" >%outputfile%
+REM fin verrue
+
+
 
 REM set outputfile=isstock.txt 2>nul
 set outputfile="%isdir%\StatsIS\is-stock.csv"

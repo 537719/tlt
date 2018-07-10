@@ -134,7 +134,9 @@ cat is-seuil.csv |grep -v riel |gawk -f ..\bin\genressourcesindex.awk >webresour
 REM génération de la page d'en-tête pour toutes les familles suivies
 
 move index.html %moisfin%
-
+REM déplacement de l'état du stock alturing dans un dossier ad hoc
+rem cet état a été généré dans isstatloop
+move alt-*.csv %moisfin%
 
 @echo on
 REM mise à jour des webresources

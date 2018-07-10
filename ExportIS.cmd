@@ -13,6 +13,7 @@ AWK (ici dans sa version GNU Gawk 4, issu de la distrib de GIT)
 FIND unix (ici renomm‚ ufind afin de ne pas le confondre avec le find windows)
 
 MODIF : 23/02/2018 - 11:00:00 finalisation
+MODIF : 08/06/2018 - 15:20:24 résolution d'un conflit pour cause de présence d'un & dans le chemin du dossier défini par %isdir%
 :debut
 REM @echo on
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -25,8 +26,15 @@ goto :eof
 :isdirok
 if not exist %userprofile%\downloads\export*.csv goto :raf
 
+pushd "%isdir%\bin"
+
+
 REM Boucle de scan des fichiers d'export
-for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "%isdir%\bin\ExportIS.awk" "%%I" &&del "%%I")
+REM for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "%isdir%\bin\ExportIS.awk" "%%I" &&del "%%I")
+for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "ExportIS.awk" "%%I" &&del "%%I")
+
+popd
+
 REM uFind pr‚f‚rable … un dir /s qui ne permet pas d'avoir … la fois le chemin d'accŠs complet et le filtre sur la date
 REM mais il faut quand mˆme en ‚diter la sortie sinon le del ne marche pas
 REM (alors que le gawk marche)

@@ -3,7 +3,7 @@
 #place dans les données web à héberger dans le dossier quipo sur le serveur de rebond 
 # 
 echo #1 ouverture de la session 
-open sftp://gmetais:PrixChairRireArt23-03-2018@rebond.tlt 
+open sftp://gmetais:AngoisseGardeCompagnonQuart29-06-2018@rebond.tlt 
 echo #2 synchronisation du distant par rapport au local 
 synchronize  -delete remote quipo quipo
 echo #3 récupération des données de vérification 

@@ -15,6 +15,7 @@ BUT : intégration de ces données dans la base SQLite de traitement des donnée
 PREREQUIS : Utilitaires GNU Linux (inclus dans GIT) : cat, awk (ici dans sa version gawk) et sort (ici renommé Usort)
 ATTENTION : utiliser des / au lieu de \ dans le chemin d'accès fourni à cat
 :debut
-cat %1|gawk -i typesortieinclude.awk -i ISsuiviInclude.awk -F; -v sepdate="/" "$8 !~/./ {$8=$4};{split($4,datecrea,sepdate);split($8,datebl,sepdate);print $1 FS selectfamille($6,$11) FS typesortie($1,$2,$3,$6,$16) FS datecrea[3] FS datecrea[2] FS datecrea[1] FS datebl[3] FS datebl[2] FS datebl[1]FS $19}"|sed -e "s/Tagis$/!Tagis/" -e "s/DIVERS/divers/" -e "s/SERIALISE/serialise/"|usort -t; -k 10 -u -o ../work/typesorties.csv
+REM cat %1|gawk -i typesortieinclude.awk -i ISsuiviInclude.awk -F; -v sepdate="/" -v dcrea="crjj/cdmm/craaaa"  -v dbl="bljj/cdmm/blaaaa" "if (NR==1) {print NR;$4=dcrea;$8=dbl} ;$8 !~/./ {$8=$4};{split($4,datecrea,sepdate);split($8,datebl,sepdate);print $1 FS selectfamille($6,$11) FS typesortie($1,$2,$3,$6,$16) FS datecrea[3] FS datecrea[2] FS datecrea[1] FS datebl[3] FS datebl[2] FS datebl[1] FS $19}"|sed -e "s/Tagis$/!Tagis/" -e "s/DIVERS/divers/" -e "s/SERIALISE/serialise/"|usort -t; -k 10 -u -o ../work/typesorties.csv
+cat %1|gawk -i typesortieinclude.awk -i ISsuiviInclude.awk -F; -v sepdate="/" -v dcrea="crjj/cdmm/craaaa"  -v dbl="bljj/cdmm/blaaaa" "NR==1 {$4=dcrea;$8=dbl} ;$8 !~/./ {$8=$4};{split($4,datecrea,sepdate);split($8,datebl,sepdate);print $1 FS selectfamille($6,$11) FS typesortie($1,$2,$3,$6,$16) FS datecrea[3] FS datecrea[2] FS datecrea[1] FS datebl[3] FS datebl[2] FS datebl[1] FS $19}"
 @echo le résultat est dans
 dir ..\work\typesorties.csv
