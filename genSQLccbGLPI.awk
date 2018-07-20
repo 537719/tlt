@@ -1,12 +1,13 @@
 # genSQLccbGLPI.awk
-# 13/04/2018 - 14:47:22 version initiale :
 #   parcourt un fichier des produits expédiés par I&S afin d'en extraire une requête MySQL
 #   permettant de retrouver le centre de coût et le bénéficiaire du matériel
-# 02/07/2018 - 16:01:09 : ajoute des meta informations sur les conditions de génération du fichier de sortie
+# 13/04/2018 - 14:47:22 version initiale :
+# 02/07/2018 - 16:01:09 : MODIF ajoute des meta informations sur les conditions de génération du fichier de sortie
+# 18/07/2018 - 14:42:41 : MODIF ajout une redirection par TEE via une variable fournie en ligne de commande pour utilisation en ligne de commande MySQL
 
 # usage :
-# gawk -f genSQLccbGLPI.awk nom_de_fichier.csv > nomderequete.SQL
-# puis exécution de la requête sql via, par exemple, HeidiSQL
+# gawk -v outputfile="chemindufichierdesortie" -f genSQLccbGLPI.awk nom_de_fichier.csv > nomderequete.SQL
+# puis exécution de la requête sql via, par exemple, une ligne de commande MySQL
 # prévoir ensuite de croiser les résultats avec le fichier d'entrée afin de détecter les imputations non valides
 
 # filtre de manière à ne prendre en considération que les dossiers correspondant aux critères suivants :
@@ -40,6 +41,13 @@
 # $22  Pays de destination
 
 BEGIN {
+    if (outputfile=="") {
+        # la variable outputfile doit être définie sur la ligne de commande
+        # elle sert à paramétrer la redirection de la sortie via l'instruction tee dans le script généré
+        exit 1
+        # saute directement à la section END
+    }
+    
     scriptname="genSQLccbGLPI.awk"
     FS=";"
     OFS=","
@@ -71,8 +79,9 @@ $1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE
 #   $19>"TE1610000000" => Entrée en stock postérieure au 01/10/2016 - des entrées de matériel reconditionné après cette date seront néanmoins prises en compte même si hors scope
 
     designation=$7
+    
 
-    switch (designation)  # pour exclure les HP RP5700/RP5800 et Thinkpad T410 à T440 qui auraient pu passer le filtre de l'IR
+    switch (designation)  # pour exclure les HP RP5700/RP5800 et Thinkpad T410 à T440 qui auraient pu passer le filtre de l'ER
     {
         case /5[7|8]00/ : # HP RP5700/RP5800
         {
@@ -121,6 +130,11 @@ $1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE
 }
 
 END {
+    if (outputfile=="") {
+        print "-- variable outputfile non définie sur la ligne de commande"
+        exit 1
+    }
+    
     for (i in occurences) {
         nbdossiers++ # comptage du nombre de résultats
     }
@@ -143,6 +157,8 @@ END {
             print "-- erreur de numéro de dossier : " i
         }
     }
+    print "-- redirection de la sortie"
+    print "tee " outputfile
     print "SELECT       glpi_groups_tickets.tickets_id AS 'NoDossier',"
     print "             glpi_plugin_shipping_clients.num_contract AS 'Centre_de_Cout', "
     print "             glpi_users.firstname AS 'Prenom', "
@@ -170,4 +186,5 @@ END {
     print "    GROUP BY glpi_groups_tickets.tickets_id"
     print "    LIMIT "nbdossiers
     print ";"
+    print "notee"
 }
