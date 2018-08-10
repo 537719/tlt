@@ -18,6 +18,7 @@ MODIF 02/07/2018 - 17:28:03 force la sortie vers un nom de fichier immuable
 AJOUT 02/07/2018 - 17:28:03 enchaîne avec le croisement GLPI puis le croisement des résultats
 MODIF 17/07/2018 - 10:57:37 maryemme.cmd,devient SNxCC.cmd
 MODIF 20/07/2018 - 15:04:39 externalisation dans le script genCSVsnGLPI.awk de l'extraction des numéros de série concernés afin d'utiliser exactement les même critères que pour l'interrogationGLPI
+BUG   08/08/2018 - 15:02:04 s'assure que les scripts awk exécutés proviennent bien du dossier des scripts
 
 :debut
 REM @echo on
@@ -33,8 +34,7 @@ set /p workdirlx=<%temp%\workdirlx.tmp
 set /p workdir=<%temp%\workdir.tmp
 :: chemin d'accès au dossier de travail
 
-REM @echo on
-REM pause
+
 pushd "%workdir%"
 if exist ??base.* del ??base.* 
 if exist ??base.* goto :errdel
@@ -44,7 +44,7 @@ REM @echo off
 REM pause
 REM gawk -F; "BEGIN {OFS=FS} NR==1 {print $1 OFS $8 OFS $11};$6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ {tagis=gensub(/TE/,vide,1,$19);if (tagis > "1610000000") {print $1 OFS $8 OFS $11}}" %1 >SNbase.csv
 REM les données produites doivent ensuite être croisées avec celles issues de la requête SQL issue de l'invocation de genSQLccbGLPI.awk sur le même jeu de données
-gawk -f genCSVsnGLPI.awk %1 >SNbase.csv
+gawk -f ..\bin\genCSVsnGLPI.awk %1 >SNbase.csv
 
 :loop1
 :: vérification de la sortie
@@ -60,7 +60,7 @@ for %%I in (SNbase.csv) do if NOT "%%~tI" EQU "%timecheck%" goto errSNtime
 REM pause
 
 REM Production des données issues de GLPI
-gawk -v outputfile="%workdirlx%/CCbase.txt" -f genSQLccbGLPI.awk %1 >glpi_centrecout_beneficiaire.sql
+gawk -v outputfile="%workdirlx%/CCbase.txt" -f ..\bin\genSQLccbGLPI.awk %1 >glpi_centrecout_beneficiaire.sql
 REM pause
 REM @echo exécuter la requête "source %workdirlx%/glpi_centrecout_beneficiaire.sql" et en sauvegarder le résultat en tant que CCbase.csv
 @Echo copier la ligne suivante dans la ligne de commande mysql (sans les doubles quotes)
@@ -73,6 +73,7 @@ REM dir *.csv /od
 REM pause
 
 :loopdot
+@echo off
 uecho -n .
 :: uecho = echo.exe renommé, option -n pour ne pas avoir de saut de ligne
 if not exist CCbase.txt goto :loopdot
@@ -86,7 +87,7 @@ REM grep -e "notee" CCbase.txt 2>nul
 if errorlevel 1 goto :loopstar
 
 :reprise
-gawk -f outsql.awk CCbase.txt >CCbase.csv
+gawk -f ..\bin\outsql.awk CCbase.txt >CCbase.csv
 :: ^^ convertit le query MySql en CSV
 
 sqlite3 <SNxCC.SQL
