@@ -3,7 +3,10 @@
 -- interroge la base GLPI pour en extraire les numéros de dossiers des demandes émis par les chefs de projets et non encore clos
 
 -- à invoquer depuis une ligne de commande MySQL connectée à la base GLPI
-tee c:/users/Utilisateur/Documents/TLT/I&S/work/suiviprojets.txt
+
+USE glpi
+
+tee c:/users/Utilisateur/Documents/TLT/I&S/work/liveGLPIprojects.txt
 -- redigige la sortie vers le fichier attendu
 
 SELECT tickets_id AS GLPI FROM glpi_plugin_timelineticket_assigngroups

@@ -21,10 +21,20 @@
     -- 1808200126;06/09/2018;NEUVILLE SUR SARTHE;3;CHR47NP1F5;CARTE WIFI INTEL AVEC ANTENNE EXTERNE ref 7265802.11AC PCIe X1
 
 -- Destiné à être invoqué au travers de SQLITE en ligne de commande
+-- sqlite3 <projexped.sql >projexped.html
+
+-- modif 21/09/2018 - 13:38:31 produit une sortie sous forme de tableau HTML plutôt que du csv
+-- bug   21/09/2018 - 15:00:08 ajout du champ GLPI dans la clause GROUP faute de quoi les sous-totaux étaient incorrects
+-- modif 21/09/2018 - 15:00:08 modification cosmétique des noms de champs via l'utilisation d'alias
+
 .separator ;
 
 .import projexped.csv database
 
+SELECT '<table>';
 .headers on
-
-SELECT GLPI, "Date BL", "Ville L",count(Reference),Reference,description FROM DATABASE GROUP BY Reference ORDER BY "Ville L",GLPI;
+.mode html
+SELECT GLPI, "Date BL" AS Date, "Ville L" AS Ville ,count(Reference) AS Qte,Reference,Description FROM DATABASE GROUP BY Reference,GLPI ORDER BY Ville,GLPI;
+.headers off
+.mode csv
+SELECT '</table>';
