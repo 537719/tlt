@@ -78,7 +78,8 @@ gawk -f ..\bin\outsql.awk liveGLPIprojects.txt >liveGLPIprojects.csv
 :: ^^ convertit le query MySql en CSV
 
 :: utilise le résultat précédent comme filtre de recherche dans les expéditions d'I&S
-grep -f liveGLPIprojects.csv ..\data\is_out_201809.csv |usort  -n -t; -k18 -k1 -k6|gawk -F; "{print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
+REM grep -f liveGLPIprojects.csv ..\data\is_out_201809.csv |usort  -n -t; -k18 -k1 -k6|gawk -F; "{print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
+grep -f liveGLPIprojects.csv %1 |usort  -n -t; -k18 -k1 -k6|gawk -F; "{print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
 
 
 sqlite3 <projexped.sql >projexped.html

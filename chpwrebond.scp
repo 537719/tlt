@@ -1,9 +1,9 @@
 #chpwrebond.scp 
-#29/06/2018 - 15:41:05,77 
+#24/09/2018 -  9:49:32,98 
 #change mon mot de passe sur le serveur de rebond 
 # 
 echo #1 ouverture de la session 
-open sftp://gmetais:GuerrePuissanceSujetLong29-06-2018@rebond.tlt 
+open sftp://gmetais:BlancTraceRaceInstant29-06-2018@rebond.tlt 
 echo #2 copie le fichier contenant le nouveau mot de passe 
 call rm -r test 2>nul.tmp 
 mkdir test
@@ -16,4 +16,4 @@ call rm test/t*.txt
 call rmdir test 
 call rm nul.tmp 
 exit 
-# new BlancTraceRaceInstant29-06-2018 
+# new LongReprocheInutileDiscours24-09-2018 
