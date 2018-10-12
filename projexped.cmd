@@ -1,8 +1,9 @@
 @echo off
 goto :debut
 projexped.cmd
-20/09/2018 - 15:33:38
-suivi des envois effectués par I&S dans le cadre des projets
+CREE    20/09/2018 - 15:33:38 suivi des envois effectués par I&S dans le cadre des projets
+BUG     11/10/2018 - 15:47:38 rajoute une condition dans le monoligne gawk de manière à ne retenir que l'en-tête et les numéros de dossiers valides
+MODIF   12/10/2018 - 11:26:59 prend en compte tous les fichiers mensuels d'export I&S et les concatène : plus besoin de spécifier un fichier particulier en argument
 
 PREREQUIS :
     Ligne de commande MySQL ayant un accès en lecture à la base GLPI
@@ -21,8 +22,8 @@ PREREQUIS :
         export des produits expédiés, dans le dossier ..\data\
 
 :debut
-if @%1@==@@ goto err0
-if not exist %1 goto :err1
+rem if @%1@==@@ goto err0
+rem if not exist %1 goto :err1
 
 md ..\work 2>nul
 
@@ -32,14 +33,17 @@ set /p workdirlx=<%temp%\workdirlx.tmp
 @echo "%~d0%~p0" |sed -e                 "s/\d34//g" -e "s/bin.*$/work/" >%temp%\workdir.tmp
 set /p workdir=<%temp%\workdir.tmp
 :: chemin d'accès au dossier de travail
-
+pushd "%workdir%"
+cd ..\bin
 REM mise à disposition du script d'interrogation de GLPI
 copy liveGLPIprojects.sql "%workdir%"
 REM mise à disposition du script d'interrogation de SQLite
 copy projexped.sql "%workdir%"
 
+cd ..\data
+cat is_out_2???0?.csv is_out_2???1?.csv >"%workdir%\is_out_all.csv"
+cd /d "%workdir%"
 
-pushd "%workdir%"
 if exist projexped.csv del projexped.csv
 if exist liveGLPIprojects.txt del liveGLPIprojects.txt 
 if exist liveGLPIprojects.txt goto :errdel
@@ -79,7 +83,7 @@ gawk -f ..\bin\outsql.awk liveGLPIprojects.txt >liveGLPIprojects.csv
 
 :: utilise le résultat précédent comme filtre de recherche dans les expéditions d'I&S
 REM grep -f liveGLPIprojects.csv ..\data\is_out_201809.csv |usort  -n -t; -k18 -k1 -k6|gawk -F; "{print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
-grep -f liveGLPIprojects.csv %1 |usort  -n -t; -k18 -k1 -k6|gawk -F; "{print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
+grep -f liveGLPIprojects.csv "%workdir%\is_out_all.csv" |usort  -n -t; -k18 -k1 -k6|gawk -F; "$1~ /^[0-9]{10}$|^GLPI$/ {print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
 
 
 sqlite3 <projexped.sql >projexped.html

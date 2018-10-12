@@ -26,12 +26,15 @@
 -- modif 21/09/2018 - 13:38:31 produit une sortie sous forme de tableau HTML plutôt que du csv
 -- bug   21/09/2018 - 15:00:08 ajout du champ GLPI dans la clause GROUP faute de quoi les sous-totaux étaient incorrects
 -- modif 21/09/2018 - 15:00:08 modification cosmétique des noms de champs via l'utilisation d'alias
+-- modif 11/10/2018 - 15:47:38 meilleure présentation du tableau html généré en sortie
 
 .separator ;
-
 .import projexped.csv database
+.separator " "
 
-SELECT '<table>';
+SELECT '<table border="1px" cellspacing="1px" cellpadding="1px" > ';
+SELECT '<caption><b>Produits sortis sur les projets en cours au ',strftime('%d/%m/%Y','now'),'<hr></caption>';
+
 .headers on
 .mode html
 SELECT GLPI, "Date BL" AS Date, "Ville L" AS Ville ,count(Reference) AS Qte,Reference,Description FROM DATABASE GROUP BY Reference,GLPI ORDER BY Ville,GLPI;

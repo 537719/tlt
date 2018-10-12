@@ -24,6 +24,7 @@ MODIF 29/03/2018 - 15:54:01 génère un index pour les webresources et met le doss
 MODIF 29/03/2018 - 16:38:56 renomme le whatsnews.txt en *.log afin de ne pas l'auto-référencer
 BUG   05/04/2018 - 16:54:21 corrige un commentaire mal défini qui créait des dossiers vides inutiles
 MODIF 20/04/2018 - 14:12:45 sauvegarde les données servant à élaborer les stats
+MODIF 12/10/2018 - 11:26:59 génère la page de suivi du matériel expédié sur les projets
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -135,6 +136,11 @@ REM génération de la page d'en-tête pour toutes les familles suivies
 
 move index.html %moisfin%
 REM déplacement de l'état du stock alturing dans un dossier ad hoc
+
+REM génère la page de suivi du matériel expédié sur les projets
+call ..\bin\projexped.cmd
+move ..\work\projexped.html %moisfin%
+
 rem cet état a été généré dans isstatloop
 move alt-*.csv %moisfin%
 

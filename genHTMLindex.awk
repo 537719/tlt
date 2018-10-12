@@ -15,6 +15,7 @@
 # MODIF 09/04/2018 - 17:03:50 - externalise la création de l'entête de tableau html dans le module inclus IShtmlInclude.awk
 # MODIF 13/04/2018 - 11:03:25 - regroupe dans une fonction toutes les parties récurrentes de la génération de la page d'index
 # MODIF 04/05/2018 - 15:16:46 - Régénération depuis le repositiry github suite à conflit lors de la fusion des branches
+# MODIF 12/10/2018 - 10:34:03 - réécriture du talon du tableau de manière à lier vers la page de suivi des projets
 
 #
 # génération de l'index de toutes les pages web générées
@@ -75,8 +76,12 @@ BEGIN {
     # header du tableau
     tcaption=htmllink("../index.html","Historique") "<b> " texte " </b>" htmllink("../webresources/aide.html","Aide") "<hr>"
     theader=iconebu("COL") "\r\n" "\t\t\t\t\t" iconebu("CHR") "\r\n" "\t\t\t\t\t" iconebu("SHP") 
-    tfooter="\t<td colspan=\"6\" align=\"center\"><hr>" htmllink("../","Index des Stats") "</td>"
-    tfooter=tfooter "<br />" "\t<td colspan=\"6\" align=\"center\"><hr>" htmllink("alt-stock.csv","(c)Alturing") "</td>"
+    tfooter="\t<td colspan=\"6\" align=\"center\"><hr></td>\r\n" tabu(4) "</tr>\r\n"
+    tfooter=tfooter tabu(4) "<tr>\t\n"
+    tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">" htmllink("projexped.html","Projets") "</td>\r\n"
+    tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("../","Index des Stats") "</td>\r\n"
+    tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("alt-stock.csv","(c)Alturing") "</td>\r\n"
+    # tfooter=tfooter "</tr>"
     tcolgroupstring=""
     thoptions=""
     inittableau(tcaption,theader,tfooter,tcolgroupstring,thoptions)
