@@ -4,6 +4,7 @@ projexped.cmd
 CREE    20/09/2018 - 15:33:38 suivi des envois effectués par I&S dans le cadre des projets
 BUG     11/10/2018 - 15:47:38 rajoute une condition dans le monoligne gawk de manière à ne retenir que l'en-tête et les numéros de dossiers valides
 MODIF   12/10/2018 - 11:26:59 prend en compte tous les fichiers mensuels d'export I&S et les concatène : plus besoin de spécifier un fichier particulier en argument
+MODIF   18/10/2018 - 16:05:02 rajoute un filtre UNIQ afin de dédoublonner le flot de sortie
 
 PREREQUIS :
     Ligne de commande MySQL ayant un accès en lecture à la base GLPI
@@ -83,7 +84,7 @@ gawk -f ..\bin\outsql.awk liveGLPIprojects.txt >liveGLPIprojects.csv
 
 :: utilise le résultat précédent comme filtre de recherche dans les expéditions d'I&S
 REM grep -f liveGLPIprojects.csv ..\data\is_out_201809.csv |usort  -n -t; -k18 -k1 -k6|gawk -F; "{print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
-grep -f liveGLPIprojects.csv "%workdir%\is_out_all.csv" |usort  -n -t; -k18 -k1 -k6|gawk -F; "$1~ /^[0-9]{10}$|^GLPI$/ {print $1 FS $8 FS $18 FS $6 FS $7}"  >projexped.csv
+grep -f liveGLPIprojects.csv "%workdir%\is_out_all.csv" |usort  -n -t; -k18 -k1 -k6|gawk -F; "$1~ /^[0-9]{10}$|^GLPI$/ {print $1 FS $8 FS $18 FS $6 FS $7}" |uniq >projexped.csv
 
 
 sqlite3 <projexped.sql >projexped.html
