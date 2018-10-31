@@ -8,7 +8,7 @@ MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web c
 MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
 BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
 BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
-  BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
+BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
   ce qui peut arriver si on manipule le csv avec un tableur
 MODIF 30/01/2018 - 11:12:00 reprise après crash disque
     remplacement de ssed par sed
@@ -25,6 +25,7 @@ MODIF 29/03/2018 - 16:38:56 renomme le whatsnews.txt en *.log afin de ne pas l'a
 BUG   05/04/2018 - 16:54:21 corrige un commentaire mal défini qui créait des dossiers vides inutiles
 MODIF 20/04/2018 - 14:12:45 sauvegarde les données servant à élaborer les stats
 MODIF 12/10/2018 - 11:26:59 génère la page de suivi du matériel expédié sur les projets
+MODIF 26/10/2018 - 15:46:53 remplace la modif précédente par l'actualisation des données XML de la page de visu des projets
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -138,8 +139,12 @@ move index.html %moisfin%
 REM déplacement de l'état du stock alturing dans un dossier ad hoc
 
 REM génère la page de suivi du matériel expédié sur les projets
-call ..\bin\projexped.cmd
-move ..\work\projexped.html %moisfin%
+REM call ..\bin\projexped.cmd
+REM move ..\work\projexped.html %moisfin%
+
+REM Actualise la page de suivi des projets
+call ..\bin\projets.cmd
+xcopy /y ..\work\projexped.xml  ..\StatsIS\quipo\projets
 
 rem cet état a été généré dans isstatloop
 move alt-*.csv %moisfin%
@@ -150,6 +155,7 @@ pushd "%isdir%\StatsIS\webresources"
 md data 2>nul
 xcopy /m /y ..\*.* .\data\*.*
 cd data
+rem del quipoput.log 2>nul
 for %%I in (*.*) do if %%~zI==0 (
 msg /w %username% "le fichier %%I a une taille nulle"
 dir %%I

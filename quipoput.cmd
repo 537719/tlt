@@ -14,6 +14,7 @@ PREREQUIS :
 BUG   23/03/2018 - 17:18:29 rajoute une vérification de bon positionnement des répertoires avant invocation => dans le répertoire des stats I&S et présence du repository quipo
 BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation des mdp n'est pas trouvée
 MODIF 30/03/2018 - 15:12:30 exporte la récupération du mdp de connexion au serveur de rebond dans le script getpwrebond.cmd
+MODIF 26/10/2018 - 10:43:13 déplace la log au niveau de directory précédent afin d'éviter de la transférer
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -54,7 +55,7 @@ rem un ^ avant le > pour le protéger car il fait partie de la ligne à produire
 @echo exit >>%~n0.scp
 
 @echo invocation du script winscp
-winscp /script=%~n0.scp /log=%~n0.log
+winscp /script=%~n0.scp /log=..\%~n0.log
 @echo partie winscp terminee
 if errorlevel 1 goto :errscp
 @echo sans erreur
@@ -118,11 +119,11 @@ goto :eof
 goto :eof
 
 :errscp
-gawk "/fail|deni|error/ {print NR}" quipoput.log|tail -1>%temp%\errline.txt
+gawk "/fail|deni|error/ {print NR}" ..\%~n0.log|tail -1>%temp%\errline.txt
 set /p errline=<%temp%\errline.txt
 @echo winscp a rencontré une erreur, voir ligne %errline% de %~n0.log
 msg %username% winscp a rencontré une erreur, voir ligne %errline% de %~n0.log
-"C:\Program Files\Notepad++\notepad++.exe" -n%errline% %~n0.log
+"C:\Program Files\Notepad++\notepad++.exe" -n%errline% ..\%~n0.log
 goto :eof
 
 :errrep

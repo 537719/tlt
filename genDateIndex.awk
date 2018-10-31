@@ -5,6 +5,7 @@
 #   une ligne en entrée => un lien vers le dossier de nom correspondant à la ligne
 #   ne produit de sortie que pour les lignes ayant un format date (aaaa-mm-jj pour l'instant)
 #   trie la sortie par ordre de date décroissante (donc le plus récent en haut)
+# MODIF 26/10/2018 - 16:02:31 rajout d'un lien vers la page de suivi des projets
 
 @include "IShtmlInclude.awk"
 BEGIN {
@@ -24,11 +25,15 @@ END {
     print "\t\t<h1 align=\"center\">"
     print "\t\t\tListe des Statistiques I&S par famille de produit"
     print "\t\t</h1>"
-    print "<div align=\"center\">"
+    print "\t\t<div align=\"center\">"
     print "\t\t\t<a href=\" webresources/aide.html\">Aide</a><hr/>"
     for (i in tablo) {
         split(tablo[i],aaaammjj,"-")
         print "\t\t\t<a href=\"" tablo[i]"/index.html\">État au  " aaaammjj[3] "/" aaaammjj[2] "/" aaaammjj[1] "</a><br/>"
     }
     print "\t\t</div>"
-}
+    print "\t\t<hr/>"
+    print "\t\t<div align=\"center\">"
+    print "\t\t\t" htmllink("../projets/index.html","Projets")
+    print "\t\t</div>"
+ }

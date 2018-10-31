@@ -11,6 +11,8 @@
 # gawk -f genCSVsnGLPI.awk nom_de_fichier.csv > nomdefichier.csv
 # pour utilisation ultérieure par croisement sur le numéro de dossier avec une extraction glpi
 
+# MODIF 31/10/2018 - 11:09:03 rajout de quelques contrôles de conformité du fichier lors de la lecture du premier enregistrement
+
 
 # structure des fichiers de données à traiter
 # $1 GLPI
@@ -36,14 +38,25 @@
 # $21 NumeroOfl
 # $22  Pays de destination
 
+# MODIF 30/10/2018 - 11:46:30 rajoute comme condition que le numéro de série ne soit pas vide
+# MODIF 30/10/2018 - 11:46:30 rajoute les en-êtes de champ
+
 BEGIN {
     FS=";"
     OFS=";"
 }
 NR==1 { # Titre
     print $1 OFS $8 OFS $11
+    if ($1 !~ /GLPI/) {
+        print "la première ligne ne contient pas la description des champs"
+        exit 1
+    }
+    if (NF !~ 22) {
+        print "Ce cichier contient " NF " champs alors qu'on en attend 22"
+        exit NF
+    }
 }
-$1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE1610000000" { #MAIN
+$1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE1610000000" && $11 ~ /./ { #MAIN
 # Explication de l'expression régulière :
 #   $1 ~ /[0-9]{10}/ => premier champ contient un numéro de dossier GLPI (peut être constitué d'un mélange de numéro et de texte
 #   $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ => la référence de l'article porte sur du matériel CHR (uc ou pc portable), neuf ou reconditionné, pas shipping, pas "spécial (Z)" ni d'une référence trop ancienne pour être dans le scope (0)
@@ -86,7 +99,7 @@ $1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE
                 dossier=$1
             }
         }
-        print dossier OFS $champdate OFS sn
+        print dossier OFS $champdate OFS sn OFS
      }
 }
 

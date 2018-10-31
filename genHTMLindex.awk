@@ -78,7 +78,7 @@ BEGIN {
     theader=iconebu("COL") "\r\n" "\t\t\t\t\t" iconebu("CHR") "\r\n" "\t\t\t\t\t" iconebu("SHP") 
     tfooter="\t<td colspan=\"6\" align=\"center\"><hr></td>\r\n" tabu(4) "</tr>\r\n"
     tfooter=tfooter tabu(4) "<tr>\t\n"
-    tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">" htmllink("projexped.html","Projets") "</td>\r\n"
+    tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">" htmllink("../projets/","Projets") "</td>\r\n"
     tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("../","Index des Stats") "</td>\r\n"
     tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("alt-stock.csv","(c)Alturing") "</td>\r\n"
     # tfooter=tfooter "</tr>"

@@ -21,7 +21,7 @@ MODIF 20/07/2018 - 15:04:39 externalisation dans le script genCSVsnGLPI.awk de l
 BUG   08/08/2018 - 15:02:04 s'assure que les scripts awk exécutés proviennent bien du dossier des scripts
 
 :debut
-REM @echo on
+@echo on
 if @%1@==@@ goto err0
 if not exist %1 goto :err1
 

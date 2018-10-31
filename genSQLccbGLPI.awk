@@ -9,6 +9,7 @@
 # gawk -v outputfile="chemindufichierdesortie" -f genSQLccbGLPI.awk nom_de_fichier.csv > nomderequete.SQL
 # puis exécution de la requête sql via, par exemple, une ligne de commande MySQL
 # prévoir ensuite de croiser les résultats avec le fichier d'entrée afin de détecter les imputations non valides
+# en pratique : invocation depuis le script SNxCC.cmd
 
 # filtre de manière à ne prendre en considération que les dossiers correspondant aux critères suivants :
 # - UC fixe ou PC portable Chronopost non shipping
