@@ -3,6 +3,8 @@ goto :debut
 VillesDemandesProjets.cmd
 d'après 24/10/2018 - 17:26:54 ArticlesDemandesProjets.cmd
 CREE    29/10/2018 - 16:17:23 - Donne, si trouvé, le code postal et la ville de de chacun des dossiers projets en cours
+MODIF   31/10/2018 - 17:26:11 - Homonénéïsation du nom du chciier d'entrée et affichage d'un message d'attente
+BUG     02/11/2018 - 15:15:15 - Purge les données éventuellement déjà existantes au préalable
 
 PREREQUIS :
     liveGLPIprojects.csv fichier des dossiers de projets en cours (issue de glpi via liveGLPIprojects.sql)
@@ -20,8 +22,10 @@ REM Explication :
 ::  ventiler les données valides code postal, ville, précédées du numéro de dossier issu de la boucle for
 
 
-@echo GLPI;CodePostal;Ville> VillesDemandesProjets.csv
+REM @echo GLPI;CodePostal;Ville> VillesDemandesProjets.csv
 :: Attention, pas d'espace avant la redirection sinon il est rajouté au texte redirigé et perturbe le nommage des champs dans la base sqlite générée à partir du fichier csv
 
-for /F %%I in (liveGLPIprojects.csv) do sqlite3 projets.db "select content from dossiers where id=%%I;"  |gawk -f .\VillesDemandesProjets.awk -v dossier=%%I >> VillesDemandesProjets.csv
+del VillesDemandesProjets.csv 2>nul
+@echo Extraction des villes d'exécution des projets
+for /F %%I in (GLPIliveprojectsNumbers.csv) do sqlite3 projets.db "select content from dossiers where id='%%I';"  |gawk -f .\VillesDemandesProjets.awk -v dossier=%%I >> VillesDemandesProjets.csv
 

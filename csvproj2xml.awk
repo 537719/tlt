@@ -33,8 +33,8 @@ NR==1 { #vérification de la structure du fichier CSV
         print "ERREUR : Manque l'intitulé des champs"
         exit 1
     }
-    if (NF!=7) {
-        print "ERREUR : Ce cichier contient " NF " champs au lieu de 7 attendus"
+    if (NF!=8) {
+        print "ERREUR : Ce cichier contient " NF " champs au lieu de 8 attendus"
         exit NF
     }
 }
@@ -50,6 +50,7 @@ $1 ~ /^[0-9]{10}$/   {#MAIN
     print tabu tabu "<qte>" sprintf("%03i",$5+0) "</qte>" # s'assure que les quantité sont formatées sous la forme de 3 chiffres afin que le tri effectué plus tard par le xsl soit pertinent
     print tabu tabu "<ref>"$6"</ref>"
     print tabu tabu "<lib>" special2html($7) "</lib>"
+    print tabu tabu "<dem>" $8 "</dem>"
     print tabu "</article>"
 }
 
