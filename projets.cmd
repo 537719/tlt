@@ -9,6 +9,7 @@ MODIF   02/11/2018 - 11:26:50 inverse la présentation de la date de jj/mm/aaaa 
 MODIF   02/11/2018 - 16:14:07 écriture des en-têtes désactivée et remplacée par une définition des champs dans le script sql d'import des données
 MODIF   02/11/2018 - 16:14:07 rajoute l'expression du tagis de manière à pouvoir y appliquer un filtre d'unicité dans le traitement sqlite
 MODIF   02/11/2018 - 16:14:07 expurge les éventuels espaces parasites en tête de la désignation des articles expédiés
+BUG     08/11/2018 - 11:04:06 affiche un message si une anomalie est détectée lors de la conversion des accents
 
 
 
@@ -105,7 +106,9 @@ sqlite3 projets.db <projets.sql
 :: conversion des accents
 REM Les données étant ce qu'elles sont, on arrive ici avec des données en codepage 850 alors qu'il nous faut de l'iso8859-1
 iconv -f 850 -t ISO-8859-1 fichier.csv >fichier_ISO-8859-1.csv
+if not exist fichier_ISO-8859-1.csv msg /w %username% "Le fichier fichier_ISO-8859-1.csv n'a pas pu être créé"
 move /y fichier_ISO-8859-1.csv fichier.csv
+if exist fichier_ISO-8859-1.csv msg /w %username% "Le fichier fichier_ISO-8859-1.csv n'a pas pu être déplacé"
 
 :: transforme en xml le fichier csv généré
 gawk -f ..\bin\csvproj2xml.awk fichier.csv > projexped.xml
