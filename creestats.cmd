@@ -26,6 +26,9 @@ BUG   05/04/2018 - 16:54:21 corrige un commentaire mal défini qui créait des dos
 MODIF 20/04/2018 - 14:12:45 sauvegarde les données servant à élaborer les stats
 MODIF 12/10/2018 - 11:26:59 génère la page de suivi du matériel expédié sur les projets
 MODIF 26/10/2018 - 15:46:53 remplace la modif précédente par l'actualisation des données XML de la page de visu des projets
+MODIF 16/11/2018 -  9:55:21 Rajout de l'invocation à la màj des données brutes, qui était jusqu'ici lancée manuellement au préalable donc souvent oubliée
+BUG   29/11/2018 - 11:37:31 Restauration de l'invocation de ISstatloop qui avait sauté lors de la modif précédente 
+MODIF 03/12/2018 - 11:13:14 génère les données de suivi du stock Alturing
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -41,7 +44,12 @@ msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
 
+REM actualisation des données brutes
+call "%isdir%\bin\exportIS.cmd"
+
+REM mise en forme des donnée brutes dans le format de traitement
 call "%isdir%\bin\ISstatloop.cmd"
+
 REM génération préalable des fichiers de stats des familles de produits chez I&S
 pushd "%isdir%\StatsIS"
 
@@ -142,9 +150,18 @@ REM génère la page de suivi du matériel expédié sur les projets
 REM call ..\bin\projexped.cmd
 REM move ..\work\projexped.html %moisfin%
 
+
 REM Actualise la page de suivi des projets
 call ..\bin\projets.cmd
 xcopy /y ..\work\projexped.xml  ..\StatsIS\quipo\projets
+
+REM génère les données de suivi du stock Alturing
+call ..\bin\cataltstock.cmd
+xcopy /y ..\work\stockfamille.xml  ..\StatsIS\quipo\stockalt
+
+REM génère les données de bénéficiairss d'uc
+call ..\bin\SNxCC.cmd ..\work\is_out_all.csv
+xcopy /y ..\work\snxcc.xml  ..\StatsIS\quipo\snxcc\fichier.xml
 
 rem cet état a été généré dans isstatloop
 move alt-*.csv %moisfin%

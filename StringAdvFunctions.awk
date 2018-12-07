@@ -4,6 +4,18 @@
 # OBJET : Centralisation dans un module commun des fonctions créées pour le traitement avancé des chaines de caractères dans Awk
 # Premier usage : Invocation depuis ArticlesDemandesProjets.awk et VillesDemandesProjets.awk
 
+# MODIF 28/11/2018 - 11:05:36 rajoute les fonctions leftstr(chaine,n) et rightstr(chaine,n) qui retournent les n caractères qui respectivement commencent ou terminent la chaine
+
+function leftstr(chaine,n) # retourne les n premiers caractères de la chaine
+{
+    return substr(chaine,1,n)
+}
+function rightstr(chaine,n      ,l) # retourne les n derniers caractères de la chaine
+{
+    l=length(chaine)
+    return substr(chaine,l-n+1,n)
+}
+
 function trim(chaine) #enlève les espaces (et ":") de début et de fin de chaine
 {
     # sub(/^[ |:]+/,"",chaine)

@@ -13,6 +13,10 @@
 # BUG 26/01/2018 13:38 : oubliait de prendre en compte l'espace comme séparateur entre la date et l'heure
 # MODIF 16/03/2018 - 15:44:14 le dossier "Historique" est renommé en "Data"
 # MODIF 04/05/2018 - 15:16:46 - Régénération depuis le repositiry github suite à conflit lors de la fusion des branches
+# MODIF 20/11/2018 - 14:30:13 - ajoute la gestion des exports de stock
+# MODIF 20/11/2018 - 16:24:29 - corrige les exports des sorties dont la désignation contient des séparateurs ; indésirables
+# MODIF 27/11/2018 - 15:18:14 - ajoute la prise en compte du nouveau format d'export de stock, 10 champs comme les réceptions
+# MODIF 28/11/2018 - 10:36:35 - ajoute la prise en compte du catalogue (12 champs dont le dernir est vide à la date de la modif)
 
 BEGIN {
     FS=";"
@@ -29,41 +33,68 @@ BEGINFILE {
     champdate=0
     outputfile=""
     # datemin=2^55
-    datemin=strftime(systime()) # dans les données concernées, aucune raison d'avoir une date postérieure à la date du jour
-    datemax=0
+    idatemin=strftime(systime()) # dans les données concernées, aucune raison d'avoir une date postérieure à la date du jour
+    idatemax=0
  }
 { #MAIN
     aligne[FNR]=$0
     if (FNR==1) { # la détermination du type de fichier se fait en testant la 1° ligne uniquement
         switch (NF) {
-            case 22 : # fichier des produits expédiés (jusqu'à Pays de destination inclus)
+            case 22 : { # fichier des produits expédiés (jusqu'à Pays de destination inclus)
                 typefich="out"
                 champdate=8
                 break
-            case 19 : # fichier des produits expédiés ancienne structure (jusqu'à Tagis inclus)
+            }
+            case 19 : { # fichier des produits expédiés ancienne structure (jusqu'à Tagis inclus)
                 typefich="out"
                 champdate=8
                 break
-            case 10 : # fichier des produits reçus (jusqu'à NumTag inclus)
-                typefich="in"
-                champdate=4
+            }
+            case 12 : { # Export du catalogue
+                if ($NF=="") { # le dernier champ de l'export du catalogue est vide, y compris sur la ligne d'en-tête)
+                    typefich="catalogue"
+                    champdate=0
+                    break
+                } else {
+                    typefich="inconnu"
+                    champdate=0
+                    # pas de break ici, on est censé déclencher ensuite une erreur en passant par le cas default
+                }
+            }
+            case 10 : { # fichier des produits reçus (jusqu'à NumTag inclus), ou de l'extraction des stocks "nouvelle formule" (novembre 2018)
+                if ($NF=="") { # le dernier champ de l'export des stocks est vide, y compris sur la ligne d'en-tête)
+                    typefich="stock"
+                    champdate=9
+                } else {
+                    typefich="in"
+                    champdate=4
+                }
                 break
-            default : #indéterminé, on ne fait rien
-                print FILENAME " n'est pas un export I&S des produits expédiés ou reçus"
+            }
+            case 7 : { # export du stock (jusqu'au champ vide après Num"ro de s▒"ie)
+                typefich="stock"
+                champdate=0 # pas de champ date dans cette version
+                break
+            }
+            default : { #indéterminé, on ne fait rien
+                print FILENAME " n'est pas un export I&S des produits en stock, expédiés ou reçus ni du catalogue"
                 exit NF
+            }
         }
     } else { #run
-        split($champdate,adateevent,/\/|\:| /) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure plus un autre entre la date et l'heure
-        datestring=adateevent[3] " " adateevent[2] " " adateevent[1] " " adateevent[4] " " adateevent[5] " " adateevent[6] " " hzero " " hzero
-        #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
-        # print datestring
-        # datenum=mktime(dateevent[3] space dateevent[2] space dateevent[1] space dateevent[4] space dateevent[5] space dateevent[6] space hzero space hzero) #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
-        datenum=mktime(datestring) 
-        if (datenum>0) { #sinon, erreur de date
-            if (datenum>datemax) datemax=datenum
-            if (datenum<datemin) datemin=datenum
-        } # else print $champdate OFS datestring
-        # print datenum
+        if (champdate) { # on ne cherche une date que si l'enregistreemnt est censé en contenir une
+            split($champdate,adateevent,/\/|\:| /) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure plus un autre entre la date et l'heure
+            datestring=adateevent[3] " " adateevent[2] " " adateevent[1] " " adateevent[4] " " adateevent[5] " " adateevent[6] " " hzero " " hzero
+            #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
+            # print datestring
+            # datenum=mktime(dateevent[3] space dateevent[2] space dateevent[1] space dateevent[4] space dateevent[5] space dateevent[6] space hzero space hzero) #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
+            datenum=mktime(datestring) 
+            if (datenum>0) { #sinon, erreur de date
+                if (datenum>idatemax) idatemax=datenum
+                if (datenum<idatemin) idatemin=datenum
+            } # else print $champdate OFS datestring
+            # print datenum
+        }
     }
     # if (datenum>systime()) { # pour debug uniquement
         # print
@@ -75,17 +106,29 @@ BEGINFILE {
 }
 ENDFILE {
     if (FNR>1) {
-        # détermination de la fourchette de dates
-        print "Date minimale " strftime("%F",datemin)
-        print "Date maximale " strftime("%F",datemax)
+        if (champdate) { # on ne cherche une date que si l'enregistreemnt est censé en contenir une
+            # détermination de la fourchette de dates
+            # print "Date minimale " strftime("%F",idatemin)
+            # print "Date maximale " strftime("%F",idatemax)
+            
+            sdatemin=strftime("%F",idatemin)
+            sdatemax=strftime("%F",idatemax)
+            # print sdatemin OFS sdatemax
+            
+        } else { # si le fichier ne contient pas de date, la date retenue est la date du jour
+            idatemin=systime()
+            idatemax=idatemin
+            sdatemin=strftime("%F",idatemin)
+            sdatemax=strftime("%F",idatemax)
+        }
         
-        split(strftime("%F",datemin),adatemin,"-")
-        split(strftime("%F",datemax),adatemax,"-")
+        split(strftime("%F",idatemin),adatemin,"-")
+        split(strftime("%F",idatemax),adatemax,"-")
         
         outputfile="is_" typefich "_"
         
-        datemin=strftime("%F",datemin)
-        datemax=strftime("%F",datemax)
+        # for (i in adatemin) {print i OFS adatemin[i]}
+        # for (i in adatemax) {print i OFS adatemax[i]}
         
         if (adatemin[1]==adatemax[1]) {
             outputfile=outputfile adatemin[1]
@@ -108,7 +151,55 @@ ENDFILE {
         # system(commandline)
 
         for (i=1; i<=FNR; i++) {
-            print aligne[i] > outputfile
+            switch (typefich) {
+                case /stock/ :
+                {
+                    nf=split(aligne[i],alaligne,";") # simulation du NF sur le tableau aligne
+                    # print alaligne[3]
+                    # FPAT = / +\(/
+                    split(alaligne[3],reflib,"(")
+                    # patsplit(alaligne[3],reflib,"  +")
+                    gsub(/ +$/,"",reflib[1])
+                    gsub(/\)$/,"",reflib[2])
+                    if (reflib[2]=="") reflib[2]="Lib" 
+                    alaligne[3]=reflib[1] OFS reflib[2]
+                    # print i OFS alaligne[3]
+                    aligne[i]=alaligne[1]
+                    for (j=2;j<=nf;j++) {
+                        aligne[i]=aligne[i] OFS alaligne[j]
+                    }
+                    # print aligne[i]
+                    # break
+                }
+                
+                case /out/ :
+                {
+                    nf=split(aligne[i],alaligne,";") # simulation du NF sur le tableau aligne
+                    if (nf>22) { # détection et correction des séparateurs ; présents à tort dans la désignation
+                        decalage=0
+                        for (j=20;j<=nf;j++) { # calcul du décalage des champs
+                            if (alaligne[j] ~ /^TE[0-9]{10}$/) {
+                                decalage=j-19
+                            }
+                        }
+                        for (j=1;j<=decalage;j++) { # rafistole le champ
+                            alaligne[6]=alaligne[6] " " alaligne[j]
+                        }
+                        for (j=1;j<=decalage;j++) { # décale les champs
+                            alaligne[6+i]=alaligne[6+i+decalage]
+                        }
+                        aligne[i]=alaligne[1]
+                        for (j=2;j<=22;j++) { # recrée l'enregistrement
+                            aligne[i]=aligne[i] OFS alaligne[j]
+                        }
+                    }
+                }
+                
+                default :
+                {
+                    print aligne[i] > outputfile
+                }
+            }
         }
     }
 }

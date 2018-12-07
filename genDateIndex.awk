@@ -6,6 +6,8 @@
 #   ne produit de sortie que pour les lignes ayant un format date (aaaa-mm-jj pour l'instant)
 #   trie la sortie par ordre de date décroissante (donc le plus récent en haut)
 # MODIF 26/10/2018 - 16:02:31 rajout d'un lien vers la page de suivi des projets
+# BUG   03/12/2018 - 11:39:31 corrige la valeur erronée du generator dans l'invocation de la fonction makehead
+# MODIF 03/12/2018 - 11:39:31 rajoute le lien vers la visu du stock alturing dans le bas de page
 
 @include "IShtmlInclude.awk"
 BEGIN {
@@ -17,7 +19,7 @@ BEGIN {
 }
 
 END {
-    makehead("Index principal","Liste des Statistiques I&S par famille de produit","IShtmlInclude.awk","statistiques,flux,sorties,stock,i&s,liste,dates","Liste des Statistiques I&S par famille de produit","http://quipo.alt","gilles.metais@alturing.eu")
+    makehead("Index principal","Liste des Statistiques I&S par famille de produit","genDateIndex.awk","statistiques,flux,sorties,stock,i&s,liste,dates","Liste des Statistiques I&S par famille de produit","http://quipo.alt","gilles.metais@alturing.eu")
     
     PROCINFO["sorted_in"] = "@val_type_desc"
     # choisit l'ordre dans lequel les indices seront scannés, voir https://www.gnu.org/software/gawk/manual/gawk.html#Controlling-Scanning
@@ -34,6 +36,8 @@ END {
     print "\t\t</div>"
     print "\t\t<hr/>"
     print "\t\t<div align=\"center\">"
+    print "\t\t\t" htmllink("../snxcc/index.html","Imputations")
     print "\t\t\t" htmllink("../projets/index.html","Projets")
+    print "\t\t\t" htmllink("../stockalt/index.html","&copy;Alturing")
     print "\t\t</div>"
  }

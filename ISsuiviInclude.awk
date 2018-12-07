@@ -8,8 +8,9 @@
 # MODIF 16/02/2018 - 15:31:00 rajoute les uc "deloc" prémasterisées au pool CHRUC
 # MODIF 27/03/2018 - 10:28:03 remplace la famille des uc hp rp 5700/5800 (chrrp) par la famille des uc xp (CHRXP), identique sauf qu'elle inclut aussi les Lenovo compatibles W7 (donc XP), plus difficile à calculer
 # MODIF 04/04/2018 - 17:20:43 ajoute un avertissement indiquant que ce script doit être utilisé comme #inclide et interdisant de l'utiliser en stand-alone
-# BUG 09/05/2018 - 15:47:1 - il y a besoin d'avoir le numéro de série en 2nd paramètre pour pouvoir déterminer la famille "sérialisé"
+# BUG   09/05/2018 - 15:47:1 - il y a besoin d'avoir le numéro de série en 2nd paramètre pour pouvoir déterminer la famille "sérialisé"
 # MODIF 09/05/2018 - 15:49:25 - Ajout de la réf -19N à la famille "FINGERPRINT"
+# MODIF 23/11/2018 - 15:12:54 - Ajout des imprimantes MS826DE au périmètre des imprimantes C11
 
 function initfamilles() # initialise un tableau avec le nom des familles de produits suivies
 {
@@ -160,7 +161,7 @@ function selectfamille(entree,sn)    # détermination de la famille de produits,
             break
         }
         
-        case /^CHR32[N|R][F|P]1A2$/ :
+        case /^CHR32[N|R][F|P]1[A2|G3]$/ : # MODIF 23/11/2018 - 15:12:54 - Ajout des imprimantes MS826DE au périmètre des imprimantes C11
         {
             sortie="C11"
             break

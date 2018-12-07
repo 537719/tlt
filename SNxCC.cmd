@@ -19,6 +19,7 @@ AJOUT 02/07/2018 - 17:28:03 enchaîne avec le croisement GLPI puis le croisement
 MODIF 17/07/2018 - 10:57:37 maryemme.cmd,devient SNxCC.cmd
 MODIF 20/07/2018 - 15:04:39 externalisation dans le script genCSVsnGLPI.awk de l'extraction des numéros de série concernés afin d'utiliser exactement les même critères que pour l'interrogationGLPI
 BUG   08/08/2018 - 15:02:04 s'assure que les scripts awk exécutés proviennent bien du dossier des scripts
+MODIF 06/12/2018 - 16:11:21 convertit le csv de résultat en un fichier xml
 
 :debut
 @echo on
@@ -92,8 +93,11 @@ gawk -f ..\bin\outsql.awk CCbase.txt >CCbase.csv
 
 sqlite3 <SNxCC.SQL
 uecho Ok
+gawk -f csv2xml SNxCC.csv >SNxCC.xml
+
 uecho -n Le résultat est dans : 
-dir /-c SNxCC.csv |grep -i csv
+dir /-c SNxCC.* |grep -i SNxCC
+
 popd
 
 goto :eof

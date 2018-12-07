@@ -15,6 +15,7 @@ BUG   23/03/2018 - 17:18:29 rajoute une vérification de bon positionnement des 
 BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation des mdp n'est pas trouvée
 MODIF 30/03/2018 - 15:12:30 exporte la récupération du mdp de connexion au serveur de rebond dans le script getpwrebond.cmd
 MODIF 26/10/2018 - 10:43:13 déplace la log au niveau de directory précédent afin d'éviter de la transférer
+MODIF 29/11/2018 - 13:53:51 test du nouveau serveur "jump" à la place du "rebond"
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -45,6 +46,7 @@ rem génération du script winscp
 @echo # >>%~n0.scp
 @echo echo #1 ouverture de la session >>%~n0.scp
 @echo open sftp://gmetais:%pwdold%@rebond.tlt >>%~n0.scp
+REM @echo open sftp://004796:vmmdpSO18@jump.tlt >>%~n0.scp
 @echo echo #2 synchronisation du distant par rapport au local >>%~n0.scp
 @echo synchronize  -delete remote quipo quipo>>%~n0.scp
 @echo echo #3 récupération des données de vérification >>%~n0.scp
