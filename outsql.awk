@@ -6,7 +6,7 @@
 
 BEGIN {
     FS="|"
-    OFS=";"
+    # OFS=";"
     vide=""
     repl="\\1"
     dblqt="\"" #" double quote en commentaire pour que la coloration syntaxique retombe sur ses pieds
@@ -28,10 +28,11 @@ BEGIN {
 
 /^[+|-]+$/ { # le fichier est un tableau texte, préfixé et terminé par une ligne constituée de + et de - ; la ligne d'en-tête de colonnes est précédée et suivie d'une telle ligne, une autre de ces lignes marque la fin du tableau
     if (NR >3) {exit} # détection de la fin de tableau
+    # print NR OFS "separateur"
     next
 }
 { # main
-    gsub(/\"/,dblblqt)    # protège les doubles quotes déjà existantes
+    gsub(/\"/,dblblqt)    # protège les doubles quotes déjà existantes - cette double"quote n'est la que pour le colorateur syntaxique retombe sur ses pattes
     sub(/^\| /,dblqt)    # début d'enregistrement
     sub(/ *\|$/,dblqt)    # fin d'enregistrement
     gsub(/ *\| /, OFS)    # séparateur de champ

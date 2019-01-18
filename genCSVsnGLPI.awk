@@ -12,6 +12,7 @@
 # pour utilisation ultérieure par croisement sur le numéro de dossier avec une extraction glpi
 
 # MODIF 31/10/2018 - 11:09:03 rajout de quelques contrôles de conformité du fichier lors de la lecture du premier enregistrement
+# BUG   09/01/2019 - 11:29:16 suppression d'un point virgule en fin de champ lors de la sortie des enregistrements, ce qui fausait l'import ultérieur via sqlite
 
 
 # structure des fichiers de données à traiter
@@ -99,7 +100,7 @@ $1 ~ /[0-9]{10}/ && $6 ~ /^CHR1[0-1].[^S][^0|^Z]..$/ && $2 ~ /P[2-4]/ && $19>"TE
                 dossier=$1
             }
         }
-        print dossier OFS $champdate OFS sn OFS
+        print dossier OFS $champdate OFS sn 
      }
 }
 

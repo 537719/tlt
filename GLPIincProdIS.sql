@@ -9,6 +9,9 @@ tee c:/users/Utilisateur/Documents/TLT/I&S/work/GLPIincProdIS.txt
 SELECT  tickets_id,date,content
 FROM    glpi_tickettasks -- on cherche un commentaire placé dans les taches
 WHERE   
+    date > "2018-11-01"
+AND date < "2018-12-01"
+AND
     content LIKE "%ISI-%" -- structure de type "code d'incident de production"
 AND 
     users_id IN ( -- on cherche un commentaire émis par un membre des groupes I&S - on ne prend pas en compte les saisie accidentelles de texte similaire aux codes recherchés par quelqu'un qui ne fait pas partie des personnes habilitées à les renseigner

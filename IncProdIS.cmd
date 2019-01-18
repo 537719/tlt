@@ -9,7 +9,7 @@ pushd ..\work
 
 gawk -f ..\bin\outsql.awk GLPIincProdIS.txt >GLPIincProdIS.csv
 
-sqlite3 <SQLITEIncProdIS.sql
+sqlite3 IncProdIS.db <SQLITEIncProdIS.sql
 
 REM @echo GLPI;CodeErreur>DossiersErrProd.csv
 del DossiersErrProd.csv 2>nul

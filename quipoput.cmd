@@ -16,6 +16,7 @@ BUG   29/03/2018 - 14:04:49 détecte une erreur dans le cas où l'historisation 
 MODIF 30/03/2018 - 15:12:30 exporte la récupération du mdp de connexion au serveur de rebond dans le script getpwrebond.cmd
 MODIF 26/10/2018 - 10:43:13 déplace la log au niveau de directory précédent afin d'éviter de la transférer
 MODIF 29/11/2018 - 13:53:51 test du nouveau serveur "jump" à la place du "rebond"
+MODIF 09/01/2019 - 10:39:39 rajout d'une clause de détection d'erreur dans la log
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -45,8 +46,8 @@ rem génération du script winscp
 @echo #place dans les données web à héberger dans le dossier quipo sur le serveur de rebond >>%~n0.scp
 @echo # >>%~n0.scp
 @echo echo #1 ouverture de la session >>%~n0.scp
-@echo open sftp://gmetais:%pwdold%@rebond.tlt >>%~n0.scp
-REM @echo open sftp://004796:vmmdpSO18@jump.tlt >>%~n0.scp
+REM @echo open sftp://gmetais:%pwdold%@rebond.tlt >>%~n0.scp
+@echo open sftp://004796:vmmdpSO18@jump.tlt >>%~n0.scp
 @echo echo #2 synchronisation du distant par rapport au local >>%~n0.scp
 @echo synchronize  -delete remote quipo quipo>>%~n0.scp
 @echo echo #3 récupération des données de vérification >>%~n0.scp
@@ -121,7 +122,7 @@ goto :eof
 goto :eof
 
 :errscp
-gawk "/fail|deni|error/ {print NR}" ..\%~n0.log|tail -1>%temp%\errline.txt
+gawk "/fail|deni|error|exit status/ {print NR}" ..\%~n0.log|tail -1>%temp%\errline.txt
 set /p errline=<%temp%\errline.txt
 @echo winscp a rencontré une erreur, voir ligne %errline% de %~n0.log
 msg %username% winscp a rencontré une erreur, voir ligne %errline% de %~n0.log

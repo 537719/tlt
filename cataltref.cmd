@@ -18,8 +18,7 @@ set /p inputfile=<%temp%\file.tmp
 pushd ..\data\stock
 gawk -F; "$2 ~ /^TLT[0-9][0-Z][N|R][F|P][0-Z]{3}$/||NR==1 {print $2 FS substr($2,4,2) FS substr($2,8,3) FS $4 FS $9 FS $3}"  %inputfile% > ..\..\work\stockalt.csv
 :: ||NR==1 pour produire la ligne d'en-tête
-:: usort -n pour préserver l'en-tête lors du tri
-:: usort -r pour avoir en tout dernier la ligne ne concernant pas le matériel reconditionné
+
 popd
 goto :eof
 :errnofich
