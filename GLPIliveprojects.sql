@@ -4,12 +4,13 @@
 --          d'après 21/09/2018  13:06               901 liveGLPIprojects.sql
 --                  30/10/2018  11:30              1718 liveGLPIprojectsdetails.sql
 --                  31/10/2018  15:24              3771 genSQLddrGLPI.awk
+-- MODIF 18/01/2019 - 16:33:32  modifie les chemins d'accès suite à chgt de pc, de compte utilisateur et donc de chemin d'accès aux données
 
 USE glpi
 
 -- POINT 1 : Liste des numeros de dossiers des projets Chronopost en cours
 SELECT "POINT 1 : Liste des numeros de dossiers des projets Chronopost en cours";
-tee c:/users/Utilisateur/Documents/TLT/I&S/work/GLPIliveprojectsNumbers.txt
+tee c:/users/004796/Documents/TLT/I&S/work/GLPIliveprojectsNumbers.txt
 -- redigige la sortie vers le fichier attendu
 
 SELECT tickets_id AS GLPI FROM glpi_plugin_timelineticket_assigngroups
@@ -33,7 +34,7 @@ notee
 
 SELECT "POINT 2 : liste des numeros de dossier+titre+description";
 -- POINT 2 : liste des numeros de dossier+titre+description
-tee c:/users/Utilisateur/Documents/TLT/I&S/work/GLPIliveprojectsDetails.txt
+tee c:/users/004796/Documents/TLT/I&S/work/GLPIliveprojectsDetails.txt
 -- redigige la sortie vers le fichier attendu
 
 SELECT id,name,content FROM glpi_tickets
@@ -63,7 +64,7 @@ notee
 SELECT "POINT 3 : liste des numeros de dossiers+demandeurs";
 -- POINT 3 : liste des numeros de dossiers+demandeurs
 -- redirection de la sortie
-tee C:/Users/Utilisateur/Documents/TLT/I&S/work/GLPIliveprojectsDemandeurs.txt
+tee C:/Users/004796/Documents/TLT/I&S/work/GLPIliveprojectsDemandeurs.txt
 SELECT       glpi_groups_tickets.tickets_id AS 'NoDossier',
              CONCAT(glpi_users.realname,' ',glpi_users.firstname) AS 'Demandeur'
     FROM     glpi_groups_tickets,  glpi_tickets_users,  glpi_users
@@ -93,7 +94,7 @@ ORDER BY tickets_id
 notee
 
 SELECT "POINT 4 : Validation de fin";
-tee C:/Users/Utilisateur/Documents/TLT/I&S/work/GLPIliveprojectsFini.txt
+tee C:/Users/004796/Documents/TLT/I&S/work/GLPIliveprojectsFini.txt
 -- POINT 4 : Validation de fin"*
 SELECT "Tous les fichiers GLPIliveprojects* OK"; 
 -- Le fait d'avoir 4 fichiers en sortie valide la fin du traitement

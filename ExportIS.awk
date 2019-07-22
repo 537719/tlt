@@ -17,6 +17,8 @@
 # MODIF 20/11/2018 - 16:24:29 - corrige les exports des sorties dont la désignation contient des séparateurs ; indésirables
 # MODIF 27/11/2018 - 15:18:14 - ajoute la prise en compte du nouveau format d'export de stock, 10 champs comme les réceptions
 # MODIF 28/11/2018 - 10:36:35 - ajoute la prise en compte du catalogue (12 champs dont le dernir est vide à la date de la modif)
+# MODIF 11:47 08/03/2019 inversion de l'ordre d'affichage des dates des bornes dans le nom de fichier de sortie
+# MODIF 11:42 01/04/2019 rajout de la prise en compte des fichiers des dossiers traités (OFLX : OFLWEBEXPEDIES) et rajout de commentaires
 
 BEGIN {
     FS=";"
@@ -76,13 +78,18 @@ BEGINFILE {
                 champdate=0 # pas de champ date dans cette version
                 break
             }
+            case 16 : { # export des OFLWEBEXPEDIES)
+                typefich="OFLX"
+                champdate=14 # Date Notification - autres choix possibles : 6 (création), 7 (expédition), 13 (souhaité)
+                break
+            }
             default : { #indéterminé, on ne fait rien
                 print FILENAME " n'est pas un export I&S des produits en stock, expédiés ou reçus ni du catalogue"
                 exit NF
             }
         }
     } else { #run
-        if (champdate) { # on ne cherche une date que si l'enregistreemnt est censé en contenir une
+        if (champdate) { # on ne cherche une date que si l'enregistrement est censé en contenir une
             split($champdate,adateevent,/\/|\:| /) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure plus un autre entre la date et l'heure
             datestring=adateevent[3] " " adateevent[2] " " adateevent[1] " " adateevent[4] " " adateevent[5] " " adateevent[6] " " hzero " " hzero
             #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
@@ -105,7 +112,7 @@ BEGINFILE {
 
 }
 ENDFILE {
-    if (FNR>1) {
+    if (FNR>1) { # création du nom de chaque fichier de sortie
         if (champdate) { # on ne cherche une date que si l'enregistreemnt est censé en contenir une
             # détermination de la fourchette de dates
             # print "Date minimale " strftime("%F",idatemin)
@@ -139,7 +146,7 @@ ENDFILE {
                 }
             }
         } else {
-            outputfile=outputfile adatemin[1] adatemin[2] adatemin[3] "-" adatemax[1] adatemax[2] adatemax[3]
+            outputfile=outputfile adatemax[1] adatemax[2] adatemax[3] "-" adatemin[1] adatemin[2] adatemin[3]
         }
         outputfile=outputdir outputfile ".csv"
         print "entrée vient de " FILENAME
@@ -150,9 +157,10 @@ ENDFILE {
         # print commandline
         # system(commandline)
 
+        # Remplissage de chaque fichier de sortie
         for (i=1; i<=FNR; i++) {
             switch (typefich) {
-                case /stock/ :
+                case /stock/ : # besoin de détecter et corriger les espaces et parenthèses fermantes éventuellement présents à tort dans la désignation
                 {
                     nf=split(aligne[i],alaligne,";") # simulation du NF sur le tableau aligne
                     # print alaligne[3]
@@ -172,7 +180,7 @@ ENDFILE {
                     # break
                 }
                 
-                case /out/ :
+                case /out/ : # besoin de détecter et corriger les séparateurs ; éventuellement présents à tort dans la désignation
                 {
                     nf=split(aligne[i],alaligne,";") # simulation du NF sur le tableau aligne
                     if (nf>22) { # détection et correction des séparateurs ; présents à tort dans la désignation

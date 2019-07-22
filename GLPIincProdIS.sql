@@ -2,7 +2,7 @@
 -- CREE     29/11/2018 - 17:52:48 extrait de GLPI les données relatives aux incidents de productions détectés par I&S
 --
 
-tee c:/users/Utilisateur/Documents/TLT/I&S/work/GLPIincProdIS.txt
+tee c:/users/004796/Documents/TLT/I&S/work/GLPIincProdIS.txt
 -- redigige la sortie vers le fichier attendu
 -- la sortie sera à filtrer par le script outsql.awx pour être transformée en csv
 

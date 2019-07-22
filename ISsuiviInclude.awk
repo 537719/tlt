@@ -1,4 +1,5 @@
 #ISsuiviInclude.awk
+#ISsuiviInclude.awk
 #module à inclure regroupant les fonctions communes aux stats de suivi I&S
 #à destination de la famille de script ISsuiviXXX.awk
 
@@ -11,6 +12,8 @@
 # BUG   09/05/2018 - 15:47:1 - il y a besoin d'avoir le numéro de série en 2nd paramètre pour pouvoir déterminer la famille "sérialisé"
 # MODIF 09/05/2018 - 15:49:25 - Ajout de la réf -19N à la famille "FINGERPRINT"
 # MODIF 23/11/2018 - 15:12:54 - Ajout des imprimantes MS826DE au périmètre des imprimantes C11
+# modif 17:16 mardi 22 janvier 2019 correction de l'IR qui prenait mal en compte les MS826
+# MODIF 11:42 vendredi 1 f�vrier 2019 ajout du produit 0DW parmi les références d'imprimantes COLGV
 
 function initfamilles() # initialise un tableau avec le nom des familles de produits suivies
 {
@@ -118,7 +121,7 @@ function selectfamille(entree,sn)    # détermination de la famille de produits,
             # break
         # }
         
-        case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194/ : 
+        case /CLP34[N|R][F|P|S]1A[I|M|O]|CLP34[N|R]S194|CLP34[N|R]S0DW/ : 
         {
             sortie="COLGV"
             break
@@ -161,7 +164,8 @@ function selectfamille(entree,sn)    # détermination de la famille de produits,
             break
         }
         
-        case /^CHR32[N|R][F|P]1[A2|G3]$/ : # MODIF 23/11/2018 - 15:12:54 - Ajout des imprimantes MS826DE au périmètre des imprimantes C11
+        case /^CHR32[N|R][F|P]1[A|G][2|3]$/ : # MODIF 23/11/2018 - 15:12:54 - Ajout des imprimantes MS826DE au périmètre des imprimantes C11
+        # modif 17:16 mardi 22 janvier 2019 correction de l'IR qui prenait mal en compte les MS826
         {
             sortie="C11"
             break

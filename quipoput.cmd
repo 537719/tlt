@@ -17,6 +17,8 @@ MODIF 30/03/2018 - 15:12:30 exporte la récupération du mdp de connexion au ser
 MODIF 26/10/2018 - 10:43:13 déplace la log au niveau de directory précédent afin d'éviter de la transférer
 MODIF 29/11/2018 - 13:53:51 test du nouveau serveur "jump" à la place du "rebond"
 MODIF 09/01/2019 - 10:39:39 rajout d'une clause de détection d'erreur dans la log
+MODIF 14:20 mardi 22 janvier 2019 supprime la partie de recherche du mdp dans les fichiers temp qui n'a plus lieu d'être depuis le remplacement de rebond par jump
+MODIF 14:27 mardi 22 janvier 2019 adaptation au fait que winscp n'est plus dans le path et qu'il faut donc définir son chemin d'accès dans une variable d'environnement
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -34,12 +36,14 @@ goto :eof
 if not exist "%isdir%\StatsIS\quipo" goto :errrep
 cd /d "%isdir%\StatsIS"
 
+goto :genscript
 rem recherche du mdp de connexion au serveur de rebond
 set pwdold=
 call "%~p0getpwrebond.cmd"
 :: %~p0 donne le répertoire où se situe le présent script, et les doubles quotes protègent la présence du signe & dans le chemin d'accès
 if @%pwdold%@==@@ goto :pwdnull
 
+:genscript
 rem génération du script winscp
 @echo #%~n0.scp >%~n0.scp
 @echo #%date% - %time% >>%~n0.scp
@@ -47,7 +51,7 @@ rem génération du script winscp
 @echo # >>%~n0.scp
 @echo echo #1 ouverture de la session >>%~n0.scp
 REM @echo open sftp://gmetais:%pwdold%@rebond.tlt >>%~n0.scp
-@echo open sftp://004796:vmmdpSO18@jump.tlt >>%~n0.scp
+@echo open sftp://004796:vmmdpSO19@jump.tlt >>%~n0.scp
 @echo echo #2 synchronisation du distant par rapport au local >>%~n0.scp
 @echo synchronize  -delete remote quipo quipo>>%~n0.scp
 @echo echo #3 récupération des données de vérification >>%~n0.scp
@@ -58,7 +62,8 @@ rem un ^ avant le > pour le protéger car il fait partie de la ligne à produire
 @echo exit >>%~n0.scp
 
 @echo invocation du script winscp
-winscp /script=%~n0.scp /log=..\%~n0.log
+set winscp=%userprofile%\bin\winscp\winscp.exe
+%winscp% /script=%~n0.scp /log=..\%~n0.log
 @echo partie winscp terminee
 if errorlevel 1 goto :errscp
 @echo sans erreur

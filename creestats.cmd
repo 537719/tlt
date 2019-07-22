@@ -1,7 +1,7 @@
 ::creestats.cmd
 ::12/05/2016 11:41:59,27
 ::crée les stats de suivi I&S
-@echo off
+REM @echo off
 goto :debut
 MODIF 16:21 jeudi 19 mai 2016 ajoute aussi le seuil d'alerte
 MODIF 10:47 lundi 30 mai 2016 déplace les fichiers générés vers le dossier web correspondant
@@ -29,6 +29,8 @@ MODIF 26/10/2018 - 15:46:53 remplace la modif précédente par l'actualisation des
 MODIF 16/11/2018 -  9:55:21 Rajout de l'invocation à la màj des données brutes, qui était jusqu'ici lancée manuellement au préalable donc souvent oubliée
 BUG   29/11/2018 - 11:37:31 Restauration de l'invocation de ISstatloop qui avait sauté lors de la modif précédente 
 MODIF 03/12/2018 - 11:13:14 génère les données de suivi du stock Alturing
+MODIF 18/01/2019 - 15:25:26 adaptation au contexte d'un nouveau poste de travail : changement des dossiers utilisateur et d'installation de certains programmes
+MODIF 14:31 mardi 22 janvier 2019 le code de génération des graphiques a été remplacé par un sous-programme externe
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -71,61 +73,12 @@ REM dossier ^^ où seront stockées les fichiers créés
 
 del %temp%\moisdeb.tmp 2>nul
 
-set gnuplot=%programfiles%\gnuplot\bin\gnuplot.exe  
+REM set gnuplot=%programfiles%\gnuplot\bin\gnuplot.exe  
+set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
-:: for /F "delims=;" %%I in (is-data.csv) do if exist %%I.csv (
-for /F "delims=;" %%I in (.\is-data.csv) do if exist %%I.csv (
-REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
-::   head -1 %%I.csv |ssed -e "s/;/\t/g" -e "s/\\/-/g" > %%I.tab
-  head -1 %%I.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %%I.tab
-  REM BUG ^^ 11:37 mardi 6 décembre 2016 élimination des \ dans la ligne d'en-tête, dont la présence perturbe genericplot
-  REM en-tête ^^
+for /F "delims=;" %%I in (.\is-data.csv) do call ..\bin\plotloop.cmd %%I
+rem 14:31 mardi 22 janvier 2019 le code de génération des graphiques a été remplacé par un sous-programme externe
 
-  REM cat %%I.csv |grep -v "%moisfin:~0,-3%" |tail -13 |ssed "s/;/\t/g" >> %%I.tab
-  REM élimination ^^ de l'occurence précédente pour le moisfin en cours et conservation des 12 mois précédents
-  REM cat %%I.csv |ssed -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
-::  cat %%I.csv |ssed -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g" |tail -13 >> %%I.tab
-  cat %%I.csv |sed -e "/^[A-z]/d" -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g"|usort -u |tail -13 >> %%I.tab
-  REM Maintenant que la date ne contient plus de "/" c'est plus simple et plus rapide de ne plus utiliser grep
-  REM BUG 12:19 vendredi 30 décembre 2016 réécrit au format aaaa-mm-jj les dates éventuellement écrites au format jj/mm/aa
-  REM ce qui peut arriver si on manipule le csv avec un tableur
-  REM BUG 05/02/2018 - 10:46:41 rajoute un tri dédoublonné sur la date
-  REM MODIF 06/04/2018 - 14:36:49 centralisation de fonctions dans un module à inclure dans les scripts de génération de page HTML et création d'une page d'index général pour visu de l'historique
-  REM MODIF 11/05/2018 - 10:17:30 rajoute une protection contre la mise en ligne de fichiers corrompus de taille nulle
-  
-::  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
-  gawk -F; -v OFS="\t" "{if (sub(/%%I/,\"%moisfin%\",$1)) print}" is-data.csv >> %%I.tab
-  REM Rajout de l'occurence actuelle pour le moisfin en cours
-
-  REM Reconstitue un csv à jour
-  cat %%I.csv |grep -v "%moisfin:~0,-3%" >%%I.tmp
-::  ssed -n "s/^%%I/%moisfin%/p" is-data.csv >>%%I.tmp
-  sed -n "s/^%%I/%moisfin%/p" is-data.csv >>%%I.tmp
-
-  move /y %%I.csv %%I.bak.csv
-  move /y %%I.tmp %%I.csv
-
-  
-  if not exist %temp%\moisdeb.tmp gawk -F\t "{if (NR==2) if ($1 ~/[0-9]{4}-[0-9]{2}-[0-9]{2}/) print $1}" %%I.tab >%temp%\moisdeb.tmp
-  REM ^^ BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
-
-  set /p moisdeb=<%temp%\moisdeb.tmp
-  REM détermination de la borne temporelle inférieure pour le graphique
-  "%gnuplot%"  -c ..\bin\genericplot.plt %%I.tab %moisdeb% %moisfin%
-  REM Crée le graphique
-  
-REM @echo   gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" is-seuil.csv >%%I.htm
-pushd ..\bin
-rem repositionnemnt nécessaire sans quoi le script awk ne trouve pas le module à inclure
-  gawk -f ..\bin\genHTMLlink.awk -v fichier="%%I" -v moisfin="%moisfin%" ..\StatsIS\is-seuil.csv >..\StatsIS\%%I.htm
-popd
-  REM pause
-  REM génération de la page web affichant le graphique
-  move %%I.* "%moisfin%"
-  copy "%moisfin%\%%I.txt" .
-  copy "%moisfin%\%%I.csv" .
-  REM move %%I.htm "%moisfin%"
-)
 wc -l is-seuil.csv >%temp%\wc-l.txt
 set /p nblgn=<%temp%\wc-l.txt
 set /a nblgn=nblgn-2
@@ -183,7 +136,7 @@ REM ^^ sauvegarde des données servant à élaborer les stats
 xcopy /s /c /h /e /m /y *.* ..\quipo\webresources\*.* 
 
 popd
-@echo off
+rem @echo off
 
 set web=%userprofile%\Dropbox\EasyPHP-DevServer-14.1VC11\data\localweb\StatsIS
 REM move /y %moisfin% %web%

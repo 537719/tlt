@@ -1,5 +1,6 @@
 # csvproj2xml.awk
 # CREE  03/12/2018 - 12:57:04 d'après csvproj2xml.awk : convertit en xml tout fichier csv
+# MODIF 11:28 21/02/2019   assouplit les conditions de validité de l'enregistrement de titre
 
 function special2html(chaine) # convertit les caractères spéciaux en caractères html
 {
@@ -75,8 +76,8 @@ BEGIN {
  }
 
 NR==1 { #vérification de la structure du fichier CSV
-    if ($1 !~ /[^0-9][A-z]+$/) { # 1° champ ne commence pas par un chiffre puis ne contient que des lettres
-        print "ERREUR : Manque l'intitulé des champs"
+    if ($1 !~ /[^0-9][A-z]+$/) if ($1 !~ /[0-9]{4}/) { # 1° champ ne commence pas par un chiffre puis ne contient que des lettres ET 1° champ n'est pas une année
+        print "ERREUR : Manque l'intitulé des champs " NR "@" $1 "@"
         exit 1
     }
     nbchamps=NF # détermine le nombre de champs du fichier

@@ -5,6 +5,7 @@
 #                               et ce autant de fois qu'il y a de champ (en adaptant le titre et le critère de tri à chaque fois)
 # MODIF 07/12/2018 - 14:36:19   rajoute les stats sur les types de champs en commentaire en fin de sortie afin d'aider à décoder de modifier le type le cas échéant.
 # MODIF 07/12/2018 - 14:36:19   modifie le calcul d'indicateur de qualité afin qu'il porte sur toutes les données non vide au lieu de comparer le plus fort à celui qui le suit
+# MODIF 11:28 21/02/2019   assouplit les conditions de validité de l'enregistrement de titre
 
 # ATTENTION le fichier d'entrée doit être filtré afin que les caractères accentués soient manipulables
 # typiquement : cat [fichier].csv |iconv -f CP1250 -t UTF-8 |gawk -f statchampscsv.awk
@@ -20,10 +21,11 @@ BEGIN {
 }
 
 NR==1 { # traitement de la ligne d'en-tête
-    if ($1 !~ /[^0-9][A-z]+$/) { # 1° champ ne commence pas par un chiffre puis ne contient que des lettres
-        print "ERREUR : Manque l'intitulé des champs"
+    if ($1 !~ /[^0-9][A-z]+$/) if ($1 !~ /[0-9]{4}/) { # 1° champ ne commence pas par un chiffre puis ne contient que des lettres ET 1° champ n'est pas une année
+        print "ERREUR : Manque l'intitulé des champs " NR "@" $1 "@"
         exit 1
     }
+
     nbchamps=NF # détermine le nombre de champs du fichier
     for (i=1;i<=NF;i++) {    # sauvegarde les noms des champs avec accents et espaces, pour affichage
         accent[i]=$i
