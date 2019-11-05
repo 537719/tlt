@@ -31,6 +31,11 @@ BUG   29/11/2018 - 11:37:31 Restauration de l'invocation de ISstatloop qui avait
 MODIF 03/12/2018 - 11:13:14 génère les données de suivi du stock Alturing
 MODIF 18/01/2019 - 15:25:26 adaptation au contexte d'un nouveau poste de travail : changement des dossiers utilisateur et d'installation de certains programmes
 MODIF 14:31 mardi 22 janvier 2019 le code de génération des graphiques a été remplacé par un sous-programme externe
+MODIF 17:21 mercredi 30 octobre 2019 renomme en quipo\dateindex.html l'ancien index.html
+MODIF 17:21 mercredi 30 octobre 2019 utilise à la place une page de menu qui reste fixe 
+                                                     et s'actualise en prenant les données variables dans un fichier xml externe
+BUG     13:18 lundi 4 novembre 2019 le fichier XML externe en question n'était pas généré au bon endroit
+
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -76,6 +81,8 @@ del %temp%\moisdeb.tmp 2>nul
 REM set gnuplot=%programfiles%\gnuplot\bin\gnuplot.exe  
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
+REM @echo on
+
 for /F "delims=;" %%I in (.\is-data.csv) do call ..\bin\plotloop.cmd %%I
 rem 14:31 mardi 22 janvier 2019 le code de génération des graphiques a été remplacé par un sous-programme externe
 
@@ -105,16 +112,16 @@ REM move ..\work\projexped.html %moisfin%
 
 
 REM Actualise la page de suivi des projets
-call ..\bin\projets.cmd
-xcopy /y ..\work\projexped.xml  ..\StatsIS\quipo\projets
+REM call ..\bin\projets.cmd
+REM xcopy /y ..\work\projexped.xml  ..\StatsIS\quipo\projets
 
 REM génère les données de suivi du stock Alturing
 call ..\bin\cataltstock.cmd
 xcopy /y ..\work\stockfamille.xml  ..\StatsIS\quipo\stockalt
 
 REM génère les données de bénéficiairss d'uc
-call ..\bin\SNxCC.cmd ..\work\is_out_all.csv
-xcopy /y ..\work\snxcc.xml  ..\StatsIS\quipo\snxcc\fichier.xml
+REM call ..\bin\SNxCC.cmd ..\work\is_out_all.csv
+REM xcopy /y ..\work\snxcc.xml  ..\StatsIS\quipo\snxcc\fichier.xml
 
 rem cet état a été généré dans isstatloop
 move alt-*.csv %moisfin%
@@ -172,11 +179,16 @@ goto :movedata
 pushd "%isdir%\bin"
 rem génération de l'index des stats précédentes, pour consultation de l'historique
 rem repositionnemnt nécessaire sans quoi le script awk ne trouve pas le module à inclure
-dir  ..\StatsIS\quipo |gawk -f genDateIndex.awk >..\StatsIS\quipo\index.html
+dir  ..\StatsIS\quipo |gawk -f genDateIndex.awk >..\StatsIS\quipo\dateindex.html
 REM simple liste des dates triée par ordre décroissant
+
+rem génération du fichier xml servant à mettre à jour les données variables dans le nouveau système de menus
+dir ..\StatsIS\quipo|gawk -v OFS=";" 'BEGIN {print "date" OFS "dossier"} $4 ~ /[0-9]{4}-[0-9]{2}-[0-9]{2}/ {split($4,tdate,"-");print tdate[3] "-" tdate[2] "-" tdate[1] OFS $4}' |usort -t; -k2 -r  |gawk -f csv2xml.awk > ..\StatsIS\quipo\data.xml
+
 popd
 :quipoput
 call ..\bin\quipoput.cmd
+@echo on
 if exist %moisfin%\nul @echo Libérer le dossier "%cd%\%moisfin%"
 
 REM élaboration de la liste des nouveautés pour le mail de reporting

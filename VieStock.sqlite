@@ -1,0 +1,51 @@
+-- VieStock.sqlite
+-- CREATION    15:06 mercredi 2 octobre 2019 Ventilation par ordre de grandeur de la durée de stockage des sorties effectuées par I&SAMPLE
+                   -- part du fichier viestock.csv produit par le script viestock.awk
+                   -- produit en sortie un ventilation par "classe" de délai, la classe étant calculée par le script awk comme étant  l'arrondi au plus proche du log10 du nombre de jours passés en stock
+
+CREATE TABLE VieStock(
+classe INTEGER,
+nbjour INTEGER,
+tagis TEXT,
+etat TEXT,
+famille TEXT,
+produit TEXT,
+lib TEXT
+);
+
+CREATE UNIQUE INDEX tagunique ON VieStock(tagis);
+
+.separator ;
+.import viestock.csv VieStock
+
+-- UPDATE VieStock SET classe=0 WHERE classe="-inf";
+UPDATE VieStock SET classe=4 WHERE classe>4;
+
+-- select replace(round(avg(nbjour),0),".0","") as Moy,max(nbjour) as Max,min(nbjour) as Min, count(tagis) AS Qte,etat,Famille,'="' || produit || '"' AS Produit,lib from viestock group by etat, produit order by produit,etat ;
+-- select classe,count(tagis) from viestock group by classe order by classe ;
+
+-- CREATE TABLE Resultats(
+    -- Classe INTEGER,
+    -- NbClasse    INTEGER,
+    -- Grandeur   TEXT
+-- );
+
+.import classedurees.csv resultats
+alter table resultats add column Sorties integer default 0;
+
+with storage as (
+    select classe,count(tagis) as nb from viestock group by classe order by classe 
+)
+UPDATE Resultats SET 
+    Sorties = 
+    (
+    select NB from storage where resultats.classe=storage.classe 
+    )
+;
+update resultats set Sorties=0 where Sorties is null;
+
+.headers on
+.output resultats.csv
+
+select * from resultats;
+.output

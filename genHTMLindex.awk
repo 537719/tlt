@@ -17,6 +17,7 @@
 # MODIF 04/05/2018 - 15:16:46 - Régénération depuis le repositiry github suite à conflit lors de la fusion des branches
 # MODIF 12/10/2018 - 10:34:03 - réécriture du talon du tableau de manière à lier vers la page de suivi des projets
 # MODIF 03/12/2018 - 11:43:24 - le lien "alturing" pointe désormais vers la page du stock alturing par famille de produits
+# MODIF 15:32 02/08/2019 - Rajoute un lien vers les stats du support de proximité
 
 #
 # génération de l'index de toutes les pages web générées
@@ -82,6 +83,7 @@ BEGIN {
     tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">" htmllink("../projets/","Projets") "</td>\r\n"
     tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("../","Index des Stats") "</td>\r\n"
     tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("../stockalt","&copy;Alturing") "</td>\r\n"
+    tfooter=tfooter tabu(5) "<td colspan=\"2\" align=\"center\">"  htmllink("../SPX","Stats SPX") "</td>\r\n"
     # tfooter=tfooter "</tr>"
     tcolgroupstring=""
     thoptions=""

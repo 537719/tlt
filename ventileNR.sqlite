@@ -1,0 +1,94 @@
+-- ventileNR.sqlite
+-- d'après consoparproduit.sqlite
+-- #18:08 lundi 16 septembre 2019
+-- # ventilation des produits sortis selon qu'ils soient neufs ou reconditionnés
+-- # Nombre de sorties de chaque produit par année calendaire
+-- # Classé par famille de produits (UC, portables, écrans, serveurs et autres) => classement déhà effectué dans les données à traiter
+-- # séparer le shipping du reste
+-- #exclure le matériel qui ne vit qu'en neuf => ces produits sont exclus des données à traiter
+
+-- # Nécessite en entrée la sortie produite par le script ventileNR.awk postérieur du 16 septembre 2019 
+
+.separator ;
+CREATE TABLE VENTILENR(
+    TagIS   TEXT,
+    Famille TEXT,
+    Etat TEXT,
+    Annee  INTEGER,
+    Mois    INTEGER,
+    Jour    INTEGER,
+    Stock   TEXT
+    --,
+    -- Designation TEXT
+);
+
+CREATE UNIQUE INDEX cleunique ON VENTILENR(TagIS);
+
+.import ventileNR.csv VENTILENR
+.header ON
+-- .separator \t
+
+
+-- SELECT annee,famille,etat,count(TagIS) as Qte FROM VENTILENR GROUP BY annee,famille,etat ORDER BY annee DESC, famille DESC, etat ASC ;
+-- SELECT annee,famille,etat,count(TagIS) as Etat FROM VENTILENR WHERE STOCK  LIKE "%SHIP%" GROUP BY annee,famille,etat ORDER BY annee DESC, famille DESC, etat ASC ;
+
+--> --------------------------------------
+DROP TABLE IF EXISTS Resultats;
+CREATE TABLE Resultats(
+    Annee   INTEGER,
+    Famille  TEXT,
+    Neuf      INTEGER,
+    Recond  INTEGER
+);
+
+with storage as (
+    select annee,famille 
+    from ventilenr 
+    -- WHERE Famille NOT LIKE "%Diver%"
+    group by annee,famille)
+insert into Resultats(annee,famille,Neuf,Recond) 
+    select annee,famille,0,0
+    from storage;
+
+with storage as (
+    SELECT annee,famille,etat,count(TagIS) as Qte FROM VENTILENR GROUP BY annee,famille,etat ORDER BY annee DESC, famille DESC, etat ASC
+)
+UPDATE Resultats
+    SET Neuf = (
+        SELECT Qte
+        FROM storage
+        WHERE 
+        storage.annee=resultats.annee
+        AND
+        storage.famille=resultats.famille
+        AND
+        storage.Etat LIKE "%Neuf%"
+    )
+;
+with storage as (
+    SELECT annee,famille,etat,count(TagIS) as Qte FROM VENTILENR GROUP BY annee,famille,etat ORDER BY annee DESC, famille DESC, etat ASC
+)
+UPDATE Resultats
+    SET Recond = (
+        SELECT Qte
+        FROM storage
+        WHERE 
+        storage.annee=resultats.annee
+        AND
+        storage.famille=resultats.famille
+        AND
+        storage.Etat LIKE "%Recond%"
+    )
+;
+UPDATE Resultats SET Neuf = 0 WHERE Neuf IS NULL;
+UPDATE Resultats SET Recond = 0 WHERE Recond IS NULL;
+.output "ventilNRan.csv"
+select annee,famille,neuf,recond from resultats WHERE Famille NOT LIKE "%Diver%"  GROUP BY Famille ORDER BY Famille Asc;
+
+ALTER TABLE VentileNR ADD COLUMN ConcatDate TEXT;
+UPDATE VentileNR SET ConcatDate = Annee || "-" || substr("0" || Mois  , length(mois),2) || "-" || substr("0" || Jour  , length(Jour),2) ;
+
+.header off
+.output "Bornes.txt"
+SELECT ConcatDate FROM VentileNR WHERE Famille NOT LIKE "%Diver%"  ORDER BY ConcatDate ASC LIMIT 1;
+SELECT ConcatDate FROM VentileNR WHERE Famille NOT LIKE "%Diver%"  ORDER BY ConcatDate DESC LIMIT 1;

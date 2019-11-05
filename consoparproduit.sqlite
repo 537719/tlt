@@ -1,0 +1,32 @@
+-- #consoparproduit.sqlite
+-- #11:17 vendredi 13 septembre 2019
+-- # Consommations par famille de produit (à la demande de LQN et FBN)
+-- # Nombre de sorties de chaque produit par année calendaire
+-- # Classé par famille de produits
+-- # Produit = 3 derniers caractères de la référence
+-- # Séparer projets et FDE
+
+-- # Nécessite en entrée la sortie produite par le script last183days.awk postérieur au 13 septembre 2019 
+
+.separator ;
+CREATE TABLE CONSOCHR(
+    TagIS   TEXT,
+    Famille TEXT,
+    Produit TEXT,
+    Annee  INTEGER,
+    Mois    INTEGER,
+    Jour    INTEGER,
+    Stock   TEXT,
+    Designation TEXT
+);
+
+CREATE UNIQUE INDEX cleunique ON CONSOCHR(TagIS);
+
+.import consochr.csv CONSOCHR
+.header ON
+
+.output "ConsoParAn.csv"
+SELECT STOCK,Annee,produit,COUNT(produit) AS Qte, Designation FROM CONSOCHR WHERE STOCK LIKE "%CHRO%" GROUP BY stock,annee,produit;
+
+.output "ConsoParMois.csv"
+SELECT STOCK,Annee,Mois,produit,COUNT(produit) AS Qte, Designation FROM CONSOCHR WHERE STOCK LIKE "%CHRO%" GROUP BY stock,annee,mois,produit  ORDER BY stock,annee,produit;

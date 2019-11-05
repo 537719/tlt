@@ -1,0 +1,65 @@
+spécifications pour stocks morts
+définir une plage de 183 jours glissants antérieurs à la plus récente date d'expédition trouvée dans le flot d'entrée
+(si la date d'expédition est vide, lui substituer la date de création, on appelle cette valeur "date de sortie")
+(correction : ne prendre que la date de création :
+    1°) la différence n'est pas significative pour le traitement à faire, vu que tout article sorti a de toute façons été demandé
+    2°) c'est le premier champ de date du fichier
+    3°) il est toujours rempli
+)
+Pour tout tag distinct vu dans le flot d'entrée (pour éliminer les doublons)
+pour toute sortie de matériel chronopost sur numéro de dossier valide, hors envoi en destruction ou en rma
+si la date de sortie est dans la plage retenue,
+mémoriser référence [#inutile], date de sortie, stock de provenance et on détermine le produit (3 derniers caractères de la référence)
+(évidemment la plage évoluant au fil de l'auscultation des données, on va mémoriser plus de données que nécessaire) # en fait on mémorise pour tout le flot des enregistrements éligibles, quelle que soit la date
+(mémoriser le stock sous forme d'index dans un tableau, au lieu du libellé du nom du stock)
+
+Ensuite
+Pour chaque produit
+compter le nombre de sortie qui se sont produites dans la plage de référence
+incrémenter le nombre de sorties assorcié au couple (produit, stock de provenance)
+
+Enfin :
+Sortir tous les produits classés par ordre de qté sortie croissante, date de dernière sortie croisante et mention du stock de provenance
+    (les produits ayant eu des sorties antérieures à la plage sortiront en qté nulle)
+
+    
+ PUIS
+ croiser cette sortie avec l'état du stock actuel
+    en faire ressortir les produits présents en stock mais qui n'apparaissent pas dans le résultat précédent
+    (ou avec un volume nul, si c'est facile)
+    
+    
+    sqlite> DROP TABLE last183days;
+sqlite> CREATE TABLE last183days(
+   ...> TAGis TEXT(12),
+   ...> Produit TEXT(3),
+   ...> Annee INTEGER,
+   ...> Mois INTEGER,
+   ...> Jour INTEGER,
+   ...> Stock TEXT
+   ...> );
+sqlite> CREATE UNIQUE INDEX tag on last183days(TAGis);
+.separator ;
+sqlite> .import last183days.csv last183days
+select Produit,count(TAGis) AS Qte,Stock from last183days GROUP BY Produit, Stock;
+.import ../data/stock/TEexport_20190722.csv Stock
+alter table stock add column Produit TEXT(3);
+UPDATE Stock SET Produit=substr(Reference,8,3) WHERE Reference LIKE "CHR_______";
+
+
+select s.produit, s.Projet,s.OkDispo,l.produit,l.stock
+from last183days l
+left join stock s using(produit)
+union all
+select s.produit, s.Projet,s.OkDispo,l.produit,l.stock
+from stock s
+left join  last183days l using(produit)
+where l.produit is null
+and s.projet like "CHR%"
+and not s.OkDispo = 0
+ORDER BY S.produit
+;
+
+-- where stock.produit is null;
+where .produit is null;
+   

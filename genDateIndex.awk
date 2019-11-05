@@ -8,6 +8,8 @@
 # MODIF 26/10/2018 - 16:02:31 rajout d'un lien vers la page de suivi des projets
 # BUG   03/12/2018 - 11:39:31 corrige la valeur erronée du generator dans l'invocation de la fonction makehead
 # MODIF 03/12/2018 - 11:39:31 rajoute le lien vers la visu du stock alturing dans le bas de page
+# MODIF 15:32 02/08/2019 - Rajoute un lien vers les stats du support de proximité
+# MODIF 17:17 mercredi 30 octobre 2019 rajoute un avertissement sur le prochain arrêt de l'actualisation de la page
 
 @include "IShtmlInclude.awk"
 BEGIN {
@@ -29,6 +31,9 @@ END {
     print "\t\t</h1>"
     print "\t\t<div align=\"center\">"
     print "\t\t\t<a href=\" webresources/aide.html\">Aide</a><hr/>"
+    print "\t\t<h2 align=\"center\">"
+    print "\t\t\tCette liste ne sera plus mise à jour à partir de 2020"
+    print "\t\t</h2>"
     for (i in tablo) {
         split(tablo[i],aaaammjj,"-")
         print "\t\t\t<a href=\"" tablo[i]"/index.html\">État au  " aaaammjj[3] "/" aaaammjj[2] "/" aaaammjj[1] "</a><br/>"
@@ -39,5 +44,7 @@ END {
     print "\t\t\t" htmllink("../snxcc/index.html","Imputations")
     print "\t\t\t" htmllink("../projets/index.html","Projets")
     print "\t\t\t" htmllink("../stockalt/index.html","&copy;Alturing")
+    print "\t\t\t" htmllink("../SPX/index.html","Stats SPX")
+    print "\t\t\t" htmllink("../VentilNR/index.html","Neuf/Recond")
     print "\t\t</div>"
  }
