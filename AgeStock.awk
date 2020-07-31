@@ -1,5 +1,5 @@
 # AgeStock.awk
-# calcul du temps depuis chaque produit tocké chez I&S est présent en stock
+# calcul du temps depuis chaque produit stocké chez I&S est présent en stock
 # D'après VieStock.awk
 # du 02/10/2019  09:53 
 

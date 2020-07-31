@@ -80,7 +80,7 @@ function lignerma()
 
 function typeentree(ref, apt, refappro, tagis,datein,      localvar)
 {   # attention l'ordre des tests est important
-    if (apt !~ /./) return "AUDIT"                  # absence de tout numéro de réception donc ré-entrée en stock après audit de matériel déjà reçu auparavant sous un numéro
+    if (apt !~ /./) return "AUD"                  # absence de tout numéro de réception donc ré-entrée en stock après audit de matériel déjà reçu auparavant sous un numéro
     if ($0 ~ / +1[0-9]{9}[ |;]+/) return "CLI"  # présence d'un numéro de dossier GLPI donc retour client - Attention au test de la présence des séparateurs de mot sinon confusion possible avec un numéro de tag
     if (refrma(ref))    return "RMA"                # référence éligible au RMA (donc pas de livraison de neuf) et pas de référence à un dossier GLPI
     if (lignerma())     return "RMA"                # mention explicite au RMA dans la ligne
@@ -129,7 +129,7 @@ BEGIN {
 }
 
 NR == 1 {
-    print "TYPE" OFS $0
+    # print "TYPE" OFS $0
 }
 NR >1 { # MAIN
     # print "Ce module n'est pas censé être invoqué directement mais appelé par d'autres scripts au moyen d'une instruction #INCLUDE"
@@ -151,6 +151,6 @@ NR >1 { # MAIN
     $10=mac
     NF=10
     
-    print typeentree($2,$5,$6,$4) OFS $0
+    # print typeentree($2,$5,$6,$4) OFS $0
     # print $1
 }

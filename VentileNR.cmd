@@ -8,8 +8,8 @@ CREE    11:47 jeudi 26 septembre 2019 aggr‚gation de l'extraction, de l'aggr‚gat
                 histocumul.plt    histogramme montrant une barre par ligne de fichier comportant deux valeurs à cumuler.
 MODIF   14:39 mercredi 2 octobre 2019 le titre du graphique est d‚sormais pass‚ en paramŠtre
 BUG      10:33 lundi 4 novembre 2019 convertit l'encodage du script en OEM:863 afin d'afficher correctement les accents dans le graphique gnuplot
+MODIF   15:49 vendredi 17 janvier 2020 prend comme fichier d'entr‚e tous les is_out_aaaamm.csv de l'ann‚e aaaa en cours
                 
-:debut
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
@@ -28,9 +28,12 @@ if not exist %1 goto erreurdata
 
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
+:: calcul de l'ann‚e en cours
+set annee=%date:~6,4%
+
 :: Extraction des donn‚es
 pushd "%isdir%\Data"
-gawk -f ..\bin\ventileNR.awk %1 > ..\work\ventileNR.csv
+gawk -f ..\bin\ventileNR.awk is_out_%annee%??.csv > ..\work\ventileNR.csv
 
 :: Aggr‚gation des totaux par famille et statut
 cd ..\work

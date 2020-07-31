@@ -13,7 +13,9 @@
 # MODIF 09/05/2018 - 15:49:25 - Ajout de la réf -19N à la famille "FINGERPRINT"
 # MODIF 23/11/2018 - 15:12:54 - Ajout des imprimantes MS826DE au périmètre des imprimantes C11
 # modif 17:16 mardi 22 janvier 2019 correction de l'IR qui prenait mal en compte les MS826
-# MODIF 11:42 vendredi 1 f�vrier 2019 ajout du produit 0DW parmi les références d'imprimantes COLGV
+# MODIF 11:42 vendredi 1 février 2019 ajout du produit 0DW parmi les références d'imprimantes COLGV
+# MODIF 09:12 vendredi 24 janvier 2020 suite à l'homologation de CITS Windows 10, les seules UC compatiibles XP restant utiles sont celles qui permettent d'utiliser les cartes wifi CISCO soit les RP 5700/5800
+
 
 function initfamilles() # initialise un tableau avec le nom des familles de produits suivies
 {
@@ -70,17 +72,17 @@ function selectfamille(entree,sn)    # détermination de la famille de produits,
             break
         }
         
-        # case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR RP remplacé par UC CHR XP depuis le 27/03/2018
-        # {
-            # sortie="CHRRP"
-            # break
-        # }
-        case /CHR10[N|R][F|P]1A[4|S]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR XP - remplace UC CHR RP depuis le 27/03/2018 = idem plus références -1A4 et -1AS
-        #IMPORTANT 28/03/2018 - 16:16:23 il faut que cette section soit placée avant celle des CHRUC de manière à sortir avant en cas de détection de -1A4 ou -1AS
+        case /CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR RP remplacé par UC CHR XP depuis le 27/03/2018 # Règle réactivée le 24/01/2020 suite à l'homologation de CITS Windows 10
         {
-            sortie="CHRXP"
+            sortie="CHRRXP"
             break
         }
+        # case /CHR10[N|R][F|P]1A[4|S]|CHR10[N|R][F|I|P]18[3|M]|CHR10[N|R][F|P]0[DT|VK]|CHR10[N|R][F|P]164|CHR10RFZX6|CHR10RIKFX/ : # UC CHR XP - remplace UC CHR RP depuis le 27/03/2018 = idem plus références -1A4 et -1AS - règle inversée le 24/01/2020 suite à l'homologation de CITS Windows 10
+        # # IMPORTANT 28/03/2018 - 16:16:23 il faut que cette section soit placée avant celle des CHRUC de manière à sortir avant en cas de détection de -1A4 ou -1AS
+        # {
+            # sortie="CHRXP"
+            # break
+        # }
         
         case /CHR10.[^S]1[A-Z]/ : # inclut toutes les UC Lenovo M78/M79 y compris les poses développeurs (M73 i7 et m700) ainsi que les uc dell, et hors shipping
         #MODIF 12/02/2018 - 16:35:15 prise en compte des nouveaux modèles d'uc HP -1ER et -1F4 ainsi que les éventuels ultérieurs 

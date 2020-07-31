@@ -15,7 +15,9 @@ set xtics   ()
 # set title "Répartition des déstockages s matériel neuf et reconditionné\nSeptembre 2019"
 set title ARG4 . "\r\n" . ARG5 . ARG2 . " et "  . ARG3
 set grid
-set grid noxtics
+set grid 
+
+set encoding utf8
 
 set terminal png size 1024,768
 set output "histo_" . ARG2 . "_" . ARG3 . ".png"

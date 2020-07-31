@@ -1,0 +1,5 @@
+modifications à faire dans le système de menus
+- développer chaque "date" de stat vers un nouvel étage de menus qui développe toutes les pages disponible pour la date en question
+- ajouter pour chaque date une liste des alertes du jour
+
+- rajouter un historique des alertes

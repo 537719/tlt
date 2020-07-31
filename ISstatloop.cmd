@@ -31,6 +31,7 @@ goto isdirok
 msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
+
 REM @echo isdirok
 REM set AWKPATH=.;.\bin\;..\bin\;%isdir%\bin\
 pushd "%isdir%\bin"
@@ -52,9 +53,10 @@ REM for %%I in (pv gv clpmet pfma clpuc clptp cisco chrrp chruc chrtp serveur m3
 rem ^^ formulation d'avant lundi 25 avril 2016
 :: gawk -f ISsuivisorties.awk %inputfile% >>%outputfile%
 :: gawk -f ISspareSorties.awk %inputfile% >>%outputfile%
+
 gawk -f ISsuivisorties.awk "%inputfile%" >> %outputfile%
 gawk -f ISsparesorties.awk "%inputfile%" >> %outputfile%
-REM pause
+
 usort -o %outputfile% %outputfile%
 :: REM ^^ on trie la sortie de manière à en maîtriser l'ordre
 

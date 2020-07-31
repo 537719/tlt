@@ -1,81 +1,101 @@
-@echo off
+:: IncProdIS.cmd
 goto :debut
-IncProdIS.cmd
-CREE    30/11/2018 - 15:06:45 produit la stat des incidents de production I&S
-MODIF   14:58 30/01/2019    tronque les code erreurs afin de minimiser les risques d'erreurs de saisie
-MODIF   16:18 30/01/2019    rajoute le nom de la bdd sqlite sur laquelle travailler lors de la phase d'extraction des stats
-MODIF   10:55 05/02/2019    retraite la liste des codes erreurs en fonction des recodifications Ã  apporter (suite Ã  dÃ©tection manuelle)
+D'aprŠs 03/02/2020  11:13             3820 coutstock.cmd
+Remplace totalement l'ancienne version de IncProdIS.cmd rendue obsolŠte suite … la suppression de l'accŠs MySql via ODBC
+L'ancienne version est renomm‚e en IncProdIS2019.cmd et ne doit plus ˆtre utilis‚e
 
-A FAIRE 11:59 05/02/2019 rajouter la purge du fichier texte exportÃ© de glpi et l'invocation du script mysql sur glpi
-
+script de pilotage de la requˆte IncProdIS.sql visant … calculer, par cat‚gorie, le nombre d'incidents de production rencontr‚s mensuellement par I&S
+CREATION    17:06 04/02/2020
+PREREQUIS  requˆte IncProdIS.sql en ..\bin
+                    extraction en ..\IncProdIS du fichier glpi.csv obtenu d'aprŠs la requˆte suivante :
+--                          "Tâches - Date" aprŠs "01-01-2020 00:00"
+--                    ET  "Tâches - Date" avant "01-02-2020 00:00"
+--                    ET  "Tâches - Description" contient "isi-"
+-- ATTENTION : ne pas prendre de p‚riode … cheval sur plusieurs mois
+-- "isi-" est le pr‚fixe des codes indiqu‚s par I&S en cas d'erreur de production
+                    accŠs … SQLite
+                    accŠs aux utilitaires GNU
+                    Ce script doit ˆtre encod‚ en OEM863 (French) pour que les accents soient rendus correctement dans le graphique en sortie
+BUG             N‚cessit‚ de prot‚ger le & de I&S ce qui a introduit celle de prot‚ger le \ qui le protŠge, puis l'apostrophe et enfin les accents circonflexes
 :debut
-@echo on
-md ..\work 2>nul
-
-@echo "%~d0%~p0" |sed -e "s/\\\/\//g" -e "s/\d34//g" -e "s/bin.*$/work/" >%temp%\workdirlx.tmp
-set /p workdirlx=<%temp%\workdirlx.tmp
-:: ^^ chemin d'accÃ¨s "unix style" 
-@echo "%~d0%~p0" |sed -e                 "s/\d34//g" -e "s/bin.*$/work/" >%temp%\workdir.tmp
-set /p workdir=<%temp%\workdir.tmp
-:: chemin d'accÃ¨s au dossier de travail
-pushd "%workdir%"
-
-REM pushd ..\work
-copy ..\bin\GLPIincProdIS.sql .
-del GLPIincProdIS.txt 2>nul
-@Echo Editer %workdir:&=^&%\GLPIincProdIS.sql de maniÃ¨re Ã  ajuster les dates puis
-@Echo copier la ligne suivante dans la ligne de commande mysql (sans les doubles quotes)
-@echo "source %workdirlx%/GLPIincProdIS.sql"
-
-:loopdot
 @echo off
-uecho -n .
-:: uecho = echo.exe renommÃ©, option -n pour ne pas avoir de saut de ligne
-if not exist GLPIincProdIS.txt goto :loopdot
+:: d‚termination du dossier de travail
+if "@%isdir%@" NEQ "@@" goto isdirok
+if exist ..\bin\getisdir.cmd (
+call ..\bin\getisdir.cmd
+goto isdirok
+) else if exist .\bin\getisdir.cmd (
+call ..\bin\getisdir.cmd
+goto isdirok
+)
 
-:loopstar
-uecho -n *
-:: uecho = echo.exe renommÃ©, option -n pour ne pas avoir de saut de ligne
-grep -e "^[0-9]* rows in set" GLPIincProdIS.txt 2>nul
-if errorlevel 1 goto :loopstar
+msg /w %username% Impossible de trouver le dossier I^&S
+goto :fin
+:isdirok
 
-:reprise
-gawk -f ..\bin\outsql.awk GLPIincProdIS.txt >GLPIincProdIS.csv
 
-sqlite3 IncProdIS.db <SQLITEIncProdIS.sql
+REM positionnement dans le dossier de donn‚es
+pushd ..\IncProdIS
 
-@echo off
-REM @echo GLPI;CodeErreur>DossiersErrProd.csv
-del DossiersErrProd.csv 2>nul
-@echo Constitue la liste des dossiers ayant eu une erreur de production
-REM Constitue la liste des dossiers ayant eu une erreur de production
-for /F %%I in (dossiers.txt) do sqlite3 IncProdIS.db "select content from incProdIS where tickets_id=%%I;" |gawk '/ISI/ {print "%%I;" toupper(substr(gensub(/.*(ISI-[A-z]+).*/,toupper("\\\1"),1),1,6))}' >>DossiersErrProd.csv
-usort -u -o DossiersErrProd.csv DossiersErrProd.csv
+REM la requˆte SQLite s'attend … trouver uniquement un fichier glpi.csv en entr‚e
+if not exist glpi.csv goto :errfile
+for %%I in (glpi.csv)  do if %%~zI == 0 goto errsize
+ 
+ :: lance la requˆte SQLite en s'attendant … ce qu'elle porte le mˆme nom que le pr‚sent script mais avec une extension diff‚rente
+ 
+for %%I in (%0) do sqlite3 <..\bin\%%~nI.sql
+ 
+ :: finalisation des donn‚es
+ set /p nomresultat=<nomresultat.txt
 
-REM Corrige la liste en fonction des recodifications Ã  apporter aprÃ¨s analyse manuelle
-IF NOT EXIST Recodification.csv  goto :resultatsqlite
-REM vÃ©rifie auparavant qu'il y a bien des recodifications Ã  apporter
-gawk -F; "{print $1 FS substr($2,1,6)}" Recodification.csv >2recod.csv
-REM ^^ extrait du fichier des recodifications la partie qui concerne les codes erronÃ©s Ã  corriger
-grep -v -f 2recod.csv DossiersErrProd.csv |usort -u -o DossiersErrProd.tmp
-REM ^^ crÃ©e une liste temporaire des dossiers dont les erreurs ne sont pas Ã  corriger
-join -t ; -1 1 -2 1 -o 2.1,2.3 DossiersErrProd.csv Recodification.csv >> DossiersErrProd.tmp
-REM ^^ Rajoute en bout de liste les erreurs requalifiÃ©es
-usort -u -o DossiersErrProd.csv DossiersErrProd.tmp
-REM ^^ et dÃ©doublonne
-Uecho -n Nombre de dossiers en erreur : 
-wc -l DossiersErrProd.csv 
+ :: histostatincprod.csv est la concat‚nation de l'historique des stats d'incident de production
+sed -i "/%nomresultat:~0,7%/d" histostatincprod.csv
+:: ^^ purge de l'historique les donn‚es qu'il contenait d‚j… pour le mois en cours
+REM pause
+sed "s/%nomresultat:~0,7%-[0-3][0-9]/%nomresultat%/" resultats.csv >> histostatincprod.csv
+:: ^^ rajoute les derniers r‚sulats … l'historisation en remplaçant les diverses dates par la plus r‚cente
 
-del 2recod.csv
-del DossiersErrProd.tmp
+usort -h -o histostatincprod.csv histostatincprod.csv 
+:: ^^ trie le fichier par ordre de dates croissantes en conservant l'en-tˆte
 
-:resultatsqlite
-sqlite3 IncProdIS.db <SQLITEstatIncProdIS.sql
+rem transposition des donn‚es pour pr‚parer la g‚n‚ration du graphique
+gawk -f ..\bin\transpose.awk histostatincprod.csv > graphdata.csv
 
-popd
-goto :eof
+rem d‚termination des bornes temporelles
+gawk -F; "$1 !~ /[A-z]/ {print $1}" graphdata.csv |usort |head -1 >%temp%\datedeb.tmp
+set /p datedeb=<%temp%\datedeb.tmp
+gawk -F; "$1 !~ /[A-z]/ {print $1}" graphdata.csv |usort |tail -1 >%temp%\datefin.tmp
+set /p datefin=<%temp%\datefin.tmp
+REM set date
+REM pause
+REM @echo on
 
-dÃ©termination de la pÃ©riode d'extraction des stats
-1Â°) vÃ©rifier quel le dernier mois de stats mÃ©morisÃ©
-2Â°) si on est dans le mÃªme mois, prendre la mÃªme pÃ©riode
-3Â°) sinon prendre le mois suivant
+rem g‚n‚ration des graphiques
+:: le SED est obligatoire en cas de pr‚sence de la lettre "–" sinon le texte est encapsul‚ par deux paires de double-quotes au lieu d'une
+:: pas propre mais pas trouv‚ moyen de faire autrement
+:: attention, ‡a empˆche d'avoir des chaines vides en sortie
+gawk -f ..\bin\genCumulaire.awk -v BU="ISI" -v titre1="Ventilation des causes d'incidents" -v titre2="de production chez I\\\&S" graphdata.csv |sed "s/\"\"/\""/g" > ISI13mois.plt
+:: la s‚paration du titre en deux segments permet d'inserrer un saut de ligne entre les deux
+:: MAIS SURTOUT
+:: permet de g‚rer la pr‚sence … la fois d'une apostrophe dans le premier segment et d'un & dans le second (noter la maniŠre de le prot‚ger … la fois de gawk et de gnuplot)
+:: voir les commentaires dans genCumulaire.awk ainsi que dans le script .
+%gnuplot%  -c ISI13mois.plt ISI %datedeb% %datefin%  
+
+
+move /y ???13mois.png ..\StatsIS\Quipo\incprodis
+for %%I in (..\StatsIS\Quipo\incprodis\???13mois.png) do %%I
+
+ goto :fin
+ :: traitement des erreurs
+ :errfile
+ msg /w %username% Le fichier d'extraction GLPI est absent
+@echo e fichier d'extraction GLPI est absent
+ goto :fin
+ :errsize
+ msg /w %username% Un des fichiers de donn‚es a une taille nulle
+@echo Un des fichiers de donn‚es a une taille nulle
+  goto :fin
+ 
+ :fin
+ popd
+ 
