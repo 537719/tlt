@@ -1,4 +1,5 @@
 :: coutstock.cmd
+:: encodage OEM 863:French
 goto :debut
 script de pilotage de la requˆte coutstock.sql visant … calculer,par famille de produit et par BU, les co–ts de stockage hebdomadaires et cumul‚s depuis l'entr‚e des produits en stock I&S d'aprŠs un fichier d'export de stock I&S
 CREATION 16:02 mercredi 29 janvier 2020
@@ -10,6 +11,8 @@ PREREQUIS   requˆte coutstock.sql en ..\bin
                     accŠs aux utilitaires GNU
                     Ce script doit ˆtre encod‚ en OEM863 (French) pour que les accents soient rendus correctement dans le graphique en sortie
 BUG             La n‚cessit‚ de prot‚ger les accents circonflexes a mis en ‚vidence un bug dans gawk qui encapsule en sortie de telles chaines par deux paires de double-quotes au lieu d'une et impose de les filtrer par SED ensuite (pas trouv‚ comment le faire dans le script gawk)
+MODIF          11:58 28/02/2020 laisse les donn‚es g‚n‚r‚es dans le r‚pertoire de travail et les recopie dans le dossier de publication, au lieu de les d‚placer
+                    Affiche le graphique et le texte d'accompagnement afin de permettre de tenir … jour l'un en fonction des ‚volutions de l'autre.
 :debut
 @echo off
 :: d‚termination du dossier de travail
@@ -88,8 +91,10 @@ gawk -f ..\bin\genCumulaire.awk -v BU="%%I" -v titre1="Ventilation des co–ts de 
 %gnuplot%  -c %%I13mois.plt %%I %datedeb% %datefin% 
 )
 
-move /y ???13mois.png ..\StatsIS\Quipo\CoutStock
-for %%I in (..\StatsIS\Quipo\CoutStock\???13mois.png) do %%I
+del *.plt
+
+for %%I in (???13mois.???) do start %%I
+copy /y ???13mois.* ..\StatsIS\quipo\CoutStock
 
  goto :fin
  :: traitement des erreurs

@@ -24,12 +24,14 @@ msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
 
-if not exist %1 goto erreurdata
 
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
 :: calcul de l'ann‚e en cours
 set annee=%date:~6,4%
+
+if not exist is_out_%annee%??.csv goto :erreurdata
+
 
 :: Extraction des donn‚es
 pushd "%isdir%\Data"
@@ -57,6 +59,7 @@ popd
 
 goto :eof
 :erreurdata
-msg /w %username% fichier(s) %1 absent(s)
+msg /w %username% fichier(s) is_out_%annee%??.csv absent(s)
+@echo  fichier(s) is_out_%annee%??.csv absent(s)
 :eof
 popd

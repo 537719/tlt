@@ -1,0 +1,2 @@
+:: MajDB.cmd
+goto :debut

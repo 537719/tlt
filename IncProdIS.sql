@@ -12,21 +12,30 @@
 -- PREREQUIS fichier codeserreur.csv listant les codes d'erreur valides
 -- DIFFICULTÉ produire un résultat (0) pour les codes d'erreur n'apparaissant pas sur la période donnée.
 
+-- BUG  14:55 28/02/2020 corrige la définition de champ de la base des codes erreur afin d'éviter un message d'erreur inutile à l'exécution
+-- BUG  09:10 27/03/2020 erreur dans la contrainte check sur la table des codes erreur
+-- MODIF 09:10 27/03/2020 adaptation au nouveau format de date utilisé par glpi
+
 .separator ;
 drop table if exists IncProdIS;
 .import glpi.csv IncProdIS
+
+-- rectification des dates du format aaaa-mm-jj  hh:mm au format aaaa-mm-jj hh:mm
+update IncProdIS set "Tâches - Date" = substr("Tâches - Date",7,4) || "-" || substr("Tâches - Date",4,2)  || "-" || substr("Tâches - Date",1,2) || substr("Tâches - Date",11,6) where "Tâches - Date" like "__-__-____ __:__" ;
+
 
 drop table if exists codeserreur;
 CREATE TABLE codeserreur(
     code text,
     sujet text,
-    description text,
-    abrege text
+    description text
+    CHECK(substr(code,1,4)="ISI-")
+    -- le check est là pour éviter d'insérer la ligne de titre comme faisant partie des données
 );
 
 .import codeserreur.csv CodesErreur
 
--- alter table codeserreur add column(abrege text);
+alter table codeserreur add column abrege text;
 update codeserreur set abrege=substr(code,1,5);
 
 .header on
@@ -35,12 +44,7 @@ with storage as (
     select code,abrege from codeserreur
 )
 select 
-    strftime(
-        "%Y-%m-%d",
-        date( -- date des tâches reportées au dernier jour du mois
-            substr(max("Tâches - Date"),7,4) || "-" || substr(max("Tâches - Date"),4,2) || "-" || substr(max("Tâches - Date"),1,2)
-        )
-    ) as Jour
+    max(strftime("%Y-%m-%d","Tâches - Date"))as Jour
     ,code
     ,max(0,count("ID")) as Nombre 
 from incprodis,storage 

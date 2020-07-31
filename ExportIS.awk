@@ -19,6 +19,7 @@
 # MODIF 28/11/2018 - 10:36:35 - ajoute la prise en compte du catalogue (12 champs dont le dernir est vide à la date de la modif)
 # MODIF 11:47 08/03/2019 inversion de l'ordre d'affichage des dates des bornes dans le nom de fichier de sortie
 # MODIF 11:42 01/04/2019 rajout de la prise en compte des fichiers des dossiers traités (OFLX : OFLWEBEXPEDIES) et rajout de commentaires
+# MODIF 17:47 23/06/2020 prise en compte du rajout du numéro des colis expédiés dans les OFLX
 
 BEGIN {
     FS=";"
@@ -78,7 +79,12 @@ BEGINFILE {
                 champdate=0 # pas de champ date dans cette version
                 break
             }
-            case 16 : { # export des OFLWEBEXPEDIES)
+            case 16 : { # export des OFLWEBEXPEDIES
+                typefich="OFLX"
+                champdate=14 # Date Notification - autres choix possibles : 6 (création), 7 (expédition), 13 (souhaité)
+                break
+            }
+            case 17 : { # export des OFLWEBEXPEDIES "nouvelle formule" avec le(s) numéro(s) de colis 
                 typefich="OFLX"
                 champdate=14 # Date Notification - autres choix possibles : 6 (création), 7 (expédition), 13 (souhaité)
                 break

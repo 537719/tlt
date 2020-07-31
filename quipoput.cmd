@@ -19,6 +19,7 @@ MODIF 29/11/2018 - 13:53:51 test du nouveau serveur "jump" à la place du "rebon
 MODIF 09/01/2019 - 10:39:39 rajout d'une clause de détection d'erreur dans la log
 MODIF 14:20 mardi 22 janvier 2019 supprime la partie de recherche du mdp dans les fichiers temp qui n'a plus lieu d'être depuis le remplacement de rebond par jump
 MODIF 14:27 mardi 22 janvier 2019 adaptation au fait que winscp n'est plus dans le path et qu'il faut donc définir son chemin d'accès dans une variable d'environnement
+MODIF 10:35 lundi 29 juin 2020 vérifie que la connexion au serveur distant est établie (besoin établi depuis la mise en place du télétravail, nécessitant l'activation d'une connexion VPN
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -36,6 +37,9 @@ goto :eof
 if not exist "%isdir%\StatsIS\quipo" goto :errrep
 cd /d "%isdir%\StatsIS"
 
+ping -n 1 jump.tlt
+if errorlevel 1 goto :noping
+
 goto :genscript
 rem recherche du mdp de connexion au serveur de rebond
 set pwdold=
@@ -51,7 +55,7 @@ rem génération du script winscp
 @echo # >>%~n0.scp
 @echo echo #1 ouverture de la session >>%~n0.scp
 REM @echo open sftp://gmetais:%pwdold%@rebond.tlt >>%~n0.scp
-@echo open sftp://004796:vmmdpSO19@jump.tlt >>%~n0.scp
+@echo open sftp://004796:vmmdpSO20@jump.tlt >>%~n0.scp
 @echo echo #2 synchronisation du distant par rapport au local >>%~n0.scp
 @echo synchronize  -delete remote quipo quipo>>%~n0.scp
 @echo echo #3 récupération des données de vérification >>%~n0.scp
@@ -99,6 +103,10 @@ REM grep -v error %~n0.log
 REM if errorlevel 1 @echo erreur inconnue
 REM pause
 
+goto :eof
+
+:noping
+@echo la connexion au serveur n'est pas établie
 goto :eof
 
 :pwddiff

@@ -7,6 +7,7 @@
 # CREE   01/10/2019  14:26
 # OK       01/10/2019  16:31
 # MODIF  02/10/2019  09:53 ajoute en première colonne le log décimal de la durée calculée
+# MODIF  14:30 28/02/2020 ajoute un contrôle d'erreur sommaire sur le nombre de champs (pour limiter le risque de confusion avec AgeStock.awk)
 
 # Champs du fichier d'entrée
 # 1 GLPI
@@ -44,6 +45,9 @@ BEGIN {
 
 @include "typesortieinclude.awk"
 
+NF<22 { # détection d'erreurs
+    exit NF
+}
 $1 !~ /^[0-9]{10}$/ {next} # rien à faire si pas de dossier glpi valide
 $9 ~ /COLI/ {next} # rien à faire si Colissimo
 

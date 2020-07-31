@@ -35,6 +35,7 @@ MODIF 17:21 mercredi 30 octobre 2019 renomme en quipo\dateindex.html l'ancien in
 MODIF 17:21 mercredi 30 octobre 2019 utilise à la place une page de menu qui reste fixe 
                                                      et s'actualise en prenant les données variables dans un fichier xml externe
 BUG     13:18 lundi 4 novembre 2019 le fichier XML externe en question n'était pas généré au bon endroit
+MODIF  12:19 28/02/2020 intègre la génération de nouvelles stats qui étaient auparavant lancées individuellement
 
 
 :debut
@@ -53,6 +54,19 @@ goto :eof
 
 REM actualisation des données brutes
 call "%isdir%\bin\exportIS.cmd"
+
+REM génération des stats - certains de ces scripts ouvrent une image et un fichier texte afin d'y procéder à des annotations.
+pushd "%isdir%\Data"
+REM Incidents de production I&S
+Call ..\bin\IncProdIS.cmd
+REM Ventilation neuff/reconditionné
+Call ..\bin\VentileNR.cmd
+REM Age des produits déstockés
+Call ..\bin\AgeStock.cmd
+REM Durée de vie des produits en stock
+Call ..\bin\VieStock.cmd
+REM Coûts de stockage
+Call ..\bin\CoutStock.cmd
 
 REM mise en forme des donnée brutes dans le format de traitement
 call "%isdir%\bin\ISstatloop.cmd"

@@ -1,23 +1,26 @@
 # csvproj2xml.awk
 # CREE  03/12/2018 - 12:57:04 d'après csvproj2xml.awk : convertit en xml tout fichier csv
 # MODIF 11:28 21/02/2019   assouplit les conditions de validité de l'enregistrement de titre
+# BUG    14:33 11/02/2020 le remplacement des & ne marche pas. Non résolu, contourner par un sed en sortie
 
 function special2html(chaine) # convertit les caractères spéciaux en caractères html
 {
-    gensub(/\&/,"&amp;","g",chaine)
-	gensub(/á/,"&aacute;","g",chaine)
-	gensub(/á/,"&aacute;","g",chaine)
-	gensub(/â/,"&acirc;","g",chaine)
-	gensub(/â/,"&acirc;","g",chaine)
-	gensub(/à/,"&agrave;","g",chaine)
-	gensub(/é/,"&eacute;","g",chaine)
-	gensub(/ê/,"&ecirc;","g",chaine)
-	gensub(/è/,"&egrave;","g",chaine)
-	gensub(/ô/,"&ocirc;","g",chaine)
-	gensub(/ö/,"&ouml;","g",chaine)
-	gensub(/ù/,"&ugrave;","g",chaine)
+    # gensub(/\&/,"&amp;","g",chaine)
+	spx=gensub(/\\&/,"et;","g",chaine)
+	spx=spx+gensub(/á/,"&aacute;","g",chaine)
+	spx=spx+gensub(/á/,"&aacute;","g",chaine)
+	spx=spx+gensub(/â/,"&acirc;","g",chaine)
+	spx=spx+gensub(/â/,"&acirc;","g",chaine)
+	spx=spx+gensub(/à/,"&agrave;","g",chaine)
+	spx=spx+gensub(/é/,"&eacute;","g",chaine)
+	spx=spx+gensub(/ê/,"&ecirc;","g",chaine)
+	spx=spx+gensub(/è/,"&egrave;","g",chaine)
+	spx=spx+gensub(/ô/,"&ocirc;","g",chaine)
+	spx=spx+gensub(/ö/,"&ouml;","g",chaine)
+	spx=spx+gensub(/ù/,"&ugrave;","g",chaine)
     
-    return chaine
+    return chaine 
+    # return chaine " contenait " spx " speciaux"
 }
 
 function print3spacespadded(champ,chaine,     longchaine) # rajoute le nombre d'espaces nécessaires en tête de la chaine (ne l'invoquer que si elle fait moins de 3 caractères et est exclusivement numérique)
@@ -62,7 +65,9 @@ function printchamp(champ,chaine,       longchaine) # voit s'il faut imprimer en
 
 function printxml(champ,chaine) # produit la ligne correspondant à un couple champ/valeur dans la sortie xml
 {
-    print tabu tabu "<" champ ">" chaine "</" champ ">"
+    # gensub(/\\&/,"et","g",chaine)
+    # spx=gsub(/\\&/,"et",chaine)
+    print tabu tabu "<" champ ">" chaine  "</" champ ">"
 }
 
 BEGIN {

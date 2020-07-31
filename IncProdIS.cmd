@@ -17,6 +17,11 @@ PREREQUIS  requˆte IncProdIS.sql en ..\bin
                     accŠs aux utilitaires GNU
                     Ce script doit ˆtre encod‚ en OEM863 (French) pour que les accents soient rendus correctement dans le graphique en sortie
 BUG             N‚cessit‚ de prot‚ger le & de I&S ce qui a introduit celle de prot‚ger le \ qui le protŠge, puis l'apostrophe et enfin les accents circonflexes
+MODIF          G‚nŠre un fichier XML pour l'affichage des data sous forme de tableau xml+xsl
+MODIF          11:35 28/02/2020 laisse les donn‚es g‚n‚r‚es dans le r‚pertoire de travail et les recopie dans le dossier de publication, au lieu de les d‚placer
+                    Affiche le graphique et le texte d'accompagnement afin de permettre de tenir … jour l'un en fonction des ‚volutions de l'autre.
+BUG     09:44 17/07/2020 suppression d'une double-quote en trop dans l'instruction SED en pipe avec le gawk
+
 :debut
 @echo off
 :: d‚termination du dossier de travail
@@ -61,6 +66,10 @@ usort -h -o histostatincprod.csv histostatincprod.csv
 rem transposition des donn‚es pour pr‚parer la g‚n‚ration du graphique
 gawk -f ..\bin\transpose.awk histostatincprod.csv > graphdata.csv
 
+rem g‚n‚ration du fichier XML pour l'affichage web
+gawk  'NR==1{gsub(/ /,"-")}{print}' graphdata.csv |gawk -f csv2xml.awk > ..\StatsIS\quipo\incprodis\fichier.xml
+:: n‚cessit‚ de remplacer les espaces par des tirets
+
 rem d‚termination des bornes temporelles
 gawk -F; "$1 !~ /[A-z]/ {print $1}" graphdata.csv |usort |head -1 >%temp%\datedeb.tmp
 set /p datedeb=<%temp%\datedeb.tmp
@@ -74,16 +83,17 @@ rem g‚n‚ration des graphiques
 :: le SED est obligatoire en cas de pr‚sence de la lettre "–" sinon le texte est encapsul‚ par deux paires de double-quotes au lieu d'une
 :: pas propre mais pas trouv‚ moyen de faire autrement
 :: attention, ‡a empˆche d'avoir des chaines vides en sortie
-gawk -f ..\bin\genCumulaire.awk -v BU="ISI" -v titre1="Ventilation des causes d'incidents" -v titre2="de production chez I\\\&S" graphdata.csv |sed "s/\"\"/\""/g" > ISI13mois.plt
+gawk -f ..\bin\genCumulaire.awk -v BU="ISI" -v titre1="Ventilation des causes d'incidents" -v titre2="de production chez I\\\&S" graphdata.csv |sed "s/\"\"/\"/g" > ISI13mois.plt
 :: la s‚paration du titre en deux segments permet d'inserrer un saut de ligne entre les deux
 :: MAIS SURTOUT
 :: permet de g‚rer la pr‚sence … la fois d'une apostrophe dans le premier segment et d'un & dans le second (noter la maniŠre de le prot‚ger … la fois de gawk et de gnuplot)
 :: voir les commentaires dans genCumulaire.awk ainsi que dans le script .
 %gnuplot%  -c ISI13mois.plt ISI %datedeb% %datefin%  
 
+del *.plt
 
-move /y ???13mois.png ..\StatsIS\Quipo\incprodis
-for %%I in (..\StatsIS\Quipo\incprodis\???13mois.png) do %%I
+for %%I in (???13mois.???) do start %%I
+copy /y ???13mois.* ..\StatsIS\quipo\incprodis
 
  goto :fin
  :: traitement des erreurs

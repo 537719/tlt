@@ -23,7 +23,6 @@ msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
 
-if not exist %1 goto erreurdata
 
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
@@ -32,6 +31,7 @@ REM set annee=%date:~6,4%
 
 :: Extraction des données
 pushd "%isdir%\Data"
+if not exist is_stock*.csv goto :erreurdata
 REM gawk -f ..\bin\VieStock.awk is_out_%annee%??.csv > ..\work\VieStock.csv
 for /F "usebackq" %%I in (`"dir is_stock*.csv /o /b |tail -1"`) do gawk -f ..\bin\AgeStock.awk %%I > ..\work\VieStock.csv
 
@@ -55,7 +55,7 @@ cd ..\work
 sqlite3 < ..\bin\VieStock.sqlite
 set fichierdonnees=resultats.csv
 
- génération du graphique
+::génération du graphique
 set titregraphique1=Ventilation par ordre de grandeur du temps de presence
 set titregraphique2=pour les produits entrees en stock entre 
 %gnuplot% -c ..\bin\histocumul.plt %fichierdonnees%  %datedeb% %datefin% "%titregraphique1%" "%titregraphique2%"
@@ -65,6 +65,6 @@ popd
 
 goto :eof
 :erreurdata
-msg /w %username% fichier(s) %1 absent(s)
+msg /w %username% fichier(s) is_stock*.csv absent(s)
 :eof
 popd

@@ -24,16 +24,19 @@ msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
 
-if not exist %1 goto erreurdata
 
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
 :: calcul de l'année en cours
 set annee=%date:~6,4%
 
+if not exist is_out_%annee%??.csv goto :erreurdata
+
 :: Extraction des données
 pushd "%isdir%\Data"
 gawk -f ..\bin\VieStock.awk is_out_%annee%??.csv > ..\work\VieStock.csv
+
+if errorlevel 1 goto erreur
 
 :: Aggrégation des totaux par famille et statut
 cd ..\work
@@ -57,6 +60,9 @@ popd
 
 goto :eof
 :erreurdata
-msg /w %username% fichier(s) %1 absent(s)
+msg /w %username% fichier(s) is_out_%annee%??.csv absent(s)
 :eof
 popd
+
+:erreur
+msg /w %username% Le fichier %annee% comporte %errorlevel% champs alors qu'on en attendait 22

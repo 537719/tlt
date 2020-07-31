@@ -234,3 +234,8 @@ with storage as (
 -- on ne calcule pas le total cumulé
 -- select "Groupe" as BU,count(stock.tagis),"Total" as Famille, sum(couthebdo) as CoutHebdo,sum(couthebdo*nbsem) as CoutCumul from stock,stock_sidetable,familles where stock.tagis=stock_sidetable.tagis AND stock_sidetable.famille=familles.codefamille ;
 .output
+
+.header on
+.output palmares_cout.csv
+select count(ref) as Qte,nom_projet as Stock,ref as Reference,Designation, printf("%8.2f",sum(couthebdo*nbsem)) as Cumul from stock,stock_sidetable where stock.tagis=stock_sidetable.tagis group by nom_projet,ref order by Cumul desc;
+.output

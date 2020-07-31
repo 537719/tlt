@@ -4,19 +4,19 @@
                    -- produit en sortie un ventilation par "classe" de délai, la classe étant calculée par le script awk comme étant  l'arrondi au plus proche du log10 du nombre de jours passés en stock
 
 CREATE TABLE VieStock(
-classe INTEGER,
-nbjour INTEGER,
-tagis TEXT,
-etat TEXT,
-famille TEXT,
-produit TEXT,
-lib TEXT
+    classe INTEGER,
+    nbjour INTEGER,
+    tagis TEXT,
+    etat TEXT,
+    famille TEXT,
+    produit TEXT,
+    lib TEXT
 );
 
 CREATE UNIQUE INDEX tagunique ON VieStock(tagis);
 
 .separator ;
-.import VieStock.csv VieStock
+.import ../work/VieStock.csv VieStock
 
 -- UPDATE VieStock SET classe=0 WHERE classe="-inf";
 UPDATE VieStock SET classe=4 WHERE classe>4;
@@ -45,7 +45,7 @@ UPDATE Resultats SET
 update resultats set Sorties=0 where Sorties is null;
 
 .headers on
-.output resultats.csv
+.output ../work/resultats.csv
 
 select * from resultats;
 .output

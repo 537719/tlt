@@ -1,16 +1,17 @@
 # csv2xsl.awk
-# cree  06/12/2018 - 10:30:09   d'aprÃ¨s statchampscsv.awk cree  04/12/2018 - 16:22:52 
-#                               produit la feuille de style xsl d'affichage des donnÃ©es d'un fichier csv qui sera converti en xml
-#                               le fichier rÃ©sultant sera Ã  dupliquer et modifier de maniÃ¨re Ã  gÃ©rer les tris croissant et dÃ©croissant
-#                               et ce autant de fois qu'il y a de champ (en adaptant le titre et le critÃ¨re de tri Ã  chaque fois)
-# MODIF 07/12/2018 - 14:36:19   rajoute les stats sur les types de champs en commentaire en fin de sortie afin d'aider Ã  dÃ©coder de modifier le type le cas Ã©chÃ©ant.
-# MODIF 07/12/2018 - 14:36:19   modifie le calcul d'indicateur de qualitÃ© afin qu'il porte sur toutes les donnÃ©es non vide au lieu de comparer le plus fort Ã  celui qui le suit
-# MODIF 11:28 21/02/2019   assouplit les conditions de validitÃ© de l'enregistrement de titre
+# cree  06/12/2018 - 10:30:09   d'après statchampscsv.awk cree  04/12/2018 - 16:22:52 
+#                               produit la feuille de style xsl d'affichage des données d'un fichier csv qui sera converti en xml
+#                               le fichier résultant sera à  dupliquer et modifier de manière à  gérer les tris croissant et décroissant
+#                               et ce autant de fois qu'il y a de champ (en adaptant le titre et le critère de tri à  chaque fois)
+# MODIF 07/12/2018 - 14:36:19   rajoute les stats sur les types de champs en commentaire en fin de sortie afin d'aider à  décoder de modifier le type le cas échéant.
+# MODIF 07/12/2018 - 14:36:19   modifie le calcul d'indicateur de qualité afin qu'il porte sur toutes les données non vide au lieu de comparer le plus fort à  celui qui le suit
+# MODIF 11:28 21/02/2019   assouplit les conditions de validité de l'enregistrement de titre
+# MODIF 17:18 20/02/2020   assouplit les motifs de détection des types numériques (int et float) de manière à  accepter les cadrages à  droite (chiffres précédés d'espaces)
 
-# ATTENTION le fichier d'entrÃ©e doit Ãªtre filtrÃ© afin que les caractÃ¨res accentuÃ©s soient manipulables
+# ATTENTION le fichier d'entrée doit être filtré afin que les caractères accentués soient manipulables
 # typiquement : cat [fichier].csv |iconv -f CP1250 -t UTF-8 |gawk -f statchampscsv.awk
 
-function pourcent(float)    # retourne le sprint du float sous la forme d'un pourcentage Ã  deux dÃ©cimales
+function pourcent(float)    # retourne le sprint du float sous la forme d'un pourcentage à  deux décimales
 {
     return sprintf("%3i%%",((0+float)*100/nbrecords)+0.5) # attention nbrecords est une variable GLOBALE
 }
@@ -20,21 +21,21 @@ BEGIN {
     scriptname="csv2xsl.awk"
 }
 
-NR==1 { # traitement de la ligne d'en-tÃªte
-    if ($1 !~ /[^0-9][A-z]+$/) if ($1 !~ /[0-9]{4}/) { # 1Â° champ ne commence pas par un chiffre puis ne contient que des lettres ET 1Â° champ n'est pas une annÃ©e
-        print "ERREUR : Manque l'intitulÃ© des champs " NR "@" $1 "@"
+NR==1 { # traitement de la ligne d'en-tête
+    if ($1 !~ /[^0-9][A-z]+$/) if ($1 !~ /[0-9]{4}/) { # 1° champ ne commence pas par un chiffre puis ne contient que des lettres ET 1° champ n'est pas une année
+        print "ERREUR : Manque l'intitulé des champs " NR "@" $1 "@"
         exit 1
     }
 
-    nbchamps=NF # dÃ©termine le nombre de champs du fichier
+    nbchamps=NF # détermine le nombre de champs du fichier
     for (i=1;i<=NF;i++) {    # sauvegarde les noms des champs avec accents et espaces, pour affichage
         accent[i]=$i
     }
     gsub(/ /,"_") # remplace tous les espaces par des _
-    gsub(/.\251/,"e") # 251 = conversion en octal de 169 en dÃ©cimal, code ascii du Ã© - le . avant le \251 est lÃ  parce que ce caractÃ¨re est codÃ© sur 2 digits
-    for (i=1;i<=NF;i++) {    # dÃ©termine les noms des champs, sans accents ni espaces, pour traitement des donnÃ©es
+    gsub(/.\251/,"e") # 251 = conversion en octal de 169 en décimal, code ascii du é - le . avant le \251 est là  parce que ce caractère est codé sur 2 digits
+    for (i=1;i<=NF;i++) {    # détermine les noms des champs, sans accents ni espaces, pour traitement des données
         entete[i]=$i
-        if ($i !~ /./) { # cas particulier des champs dont l'en-tÃªte est vide
+        if ($i !~ /./) { # cas particulier des champs dont l'en-tête est vide
             entete[i] = "champ_" i
         }
         longmax[i]=0
@@ -43,7 +44,7 @@ NR==1 { # traitement de la ligne d'en-tÃªte
     next
 }
 
-NR>1 {  # traitement des donnÃ©es
+NR>1 {  # traitement des données
     
     for (i=1;i<=NF;i++) {
         li=length($i)
@@ -53,15 +54,15 @@ NR>1 {  # traitement des donnÃ©es
             if (li<longmin[i]) longmin[i]=li
         }
         
-        switch($i) { # dÃ©termination du type de champ
-            case /^[0-9]+$/ :
+        switch($i) { # détermination du type de champ
+            case /^ *[0-9]+$/ :
             {
             # print NR,i,"entier"
                 entier[i]++
                 break
             }
             
-            case /^[0-9]*\.[0-9]*$/ :
+            case /^ *[0-9]*\.[0-9]*$/ :
             {
             # print NR,i,"float"
                 float[i]++
@@ -103,32 +104,32 @@ NR>1 {  # traitement des donnÃ©es
     }
 }
 
-END {   #   Restitution des rÃ©sultats
-    nbrecords=NR-1 # -1 Ã  cause de la ligne d'en-tÃªte
-    for (i in entete) { # dÃ©termination du type et de la largeur de chaque champ
+END {   #   Restitution des résultats
+    nbrecords=NR-1 # -1 à  cause de la ligne d'en-tête
+    for (i in entete) { # détermination du type et de la largeur de chaque champ
         delete taux
         
         # remplissage de la table d'estimation du type de champ
-        # le % de donnÃ©es de chaque type est concatÃ©nÃ© au nom du type
+        # le % de données de chaque type est concaténé au nom du type
         taux["entier"]=pourcent(entier[i]) "entier"
         taux["float"]=pourcent(float[i]) "float"
         taux["dateheure"]=pourcent(dateheure[i]) "horodate"
         taux["date"]=pourcent(date[i]) "date"
         taux["heure"]=pourcent(heure[i]) "heure"
         taux["texte"]=pourcent(text[i]) "texte"
-        # puis triÃ© : le dernier de la liste est donc le bon
+        # puis trié : le dernier de la liste est donc le bon
         asort(taux)
         split(taux[6],taux6,"%")
         # split(taux[5],taux5,"%")
         # print taux6[1],taux5[1]
         qualite=taux6[1]/(NR-1-void[i])
-        # Ã©purÃ©
+        # épuré
 #        gsub(/.*%/,"",taux[6])
         # et mis en forme
         taux[6]=toupper(sprintf("%8s",taux[6]))
         switch (taux[6]) {
-            # px = largeur en pixels du champ de tableau concernÃ©
-            # class = classe css Ã  appliquer dans la feuille de style associÃ©e. Sert Ã  dÃ©terminer en particulier si la donnÃ©e sera cadrÃ©e Ã  droite ou Ã  gauche
+            # px = largeur en pixels du champ de tableau concerné
+            # class = classe css à  appliquer dans la feuille de style associée. Sert à  déterminer en particulier si la donnée sera cadrée à  droite ou à  gauche
             case /ENTIER/ :
             {
                  px[i]=10*longmax[i]
@@ -138,13 +139,13 @@ END {   #   Restitution des rÃ©sultats
             }
            case /DATE|HEURE/ :
             {
-                px[i]=8*long[i]/(NR-1-void[i]) # testÃ© pour les dates uniquement, pas trouvÃ© de cas de dateheure ni heure Ã  afficher
+                px[i]=8*long[i]/(NR-1-void[i]) # testé pour les dates uniquement, pas trouvé de cas de dateheure ni heure à  afficher
                 class[i]="num"
                 break
             }
             case /FLOAT/ :
             {
-                px[i]=9*longmax[i] # pas testÃ© car pas de donnÃ©es correspondantes
+                px[i]=9*longmax[i] # pas testé car pas de données correspondantes
                 class[i]="num"
                 break
             }
@@ -156,18 +157,18 @@ END {   #   Restitution des rÃ©sultats
                 break
             }
         }
-        if (px[i]>240) px[i]=240 # bornÃ© Ã  240 maxi
+        if (px[i]>240) px[i]=240 # borné à  240 maxi
         
-        # rÃ©cap des donnÃ©es vestige de statchampscsv.awk # reportÃ© en fin de fichier
-        # print sprintf("%2d",i) OFS "min:" sprintf("%3s",longmin[i]) OFS "moy:" sprintf("%6.2f",long[i]/(NR-1-void[i])) OFS "max:" sprintf("%3d",longmax[i]) OFS "int:" pourcent(entier[i]) OFS "float:" pourcent(float[i]) OFS "dateheure:" pourcent(dateheure[i]) OFS "heure:" pourcent(heure[i]) OFS "date:" pourcent(date[i]) OFS "texte:" pourcent(text[i]) OFS "vide:" pourcent(void[i]) OFS taux[6] OFS sprintf("%3i%%",(qualite*100)+.5) OFS entete[i] # car 6 types de champ Ã  analyser
+        # récap des données vestige de statchampscsv.awk # reporté en fin de fichier
+        # print sprintf("%2d",i) OFS "min:" sprintf("%3s",longmin[i]) OFS "moy:" sprintf("%6.2f",long[i]/(NR-1-void[i])) OFS "max:" sprintf("%3d",longmax[i]) OFS "int:" pourcent(entier[i]) OFS "float:" pourcent(float[i]) OFS "dateheure:" pourcent(dateheure[i]) OFS "heure:" pourcent(heure[i]) OFS "date:" pourcent(date[i]) OFS "texte:" pourcent(text[i]) OFS "vide:" pourcent(void[i]) OFS taux[6] OFS sprintf("%3i%%",(qualite*100)+.5) OFS entete[i] # car 6 types de champ à  analyser
         
         if (FILENAME == "") {
-            fichier= "fichier d'entrÃ©e " FILENAME
+            fichier= "fichier d'entrée " FILENAME
         } else {
-            fichier="flot d'entrÃ©e"
+            fichier="flot d'entrée"
         }
     }
-    { # sortie des rÃ©sultats
+    { # sortie des résultats
         print "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
         print "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
         print "	<xsl:template match=\"/\">"
@@ -182,20 +183,20 @@ END {   #   Restitution des rÃ©sultats
         print "						Tri par #criteredetri# croissant"
         print "					</caption>"
         print "					<colgroup>"
-        for (i in entete) { # Ã©criture des lignes fixant la largeur des colonnes de titre
+        for (i in entete) { # écriture des lignes fixant la largeur des colonnes de titre
             print "\t\t\t\t\t\t<col style=\"width:" px[i] "px\"  />"
         }
         print "					</colgroup>"
         print "					<tr>"
-        for (i in entete) { # Ã©criture des en-tÃªtes de colonnes
-            print "\t\t\t\t\t\t<th id=\"" entete[i] "\" abbr=\"" entete[i] "\">" gensub(/_/," ","g",accent[i]) "</th>" # gensub reste nÃ©cessire dans le cas des champs contenant dÃ©jÃ  des _
+        for (i in entete) { # écriture des en-têtes de colonnes
+            print "\t\t\t\t\t\t<th id=\"" entete[i] "\" abbr=\"" entete[i] "\">" gensub(/_/," ","g",accent[i]) "</th>" # gensub reste nécessire dans le cas des champs contenant déjà  des _
         }
         print "					</tr>"
         print "					</table>"
         print "					</div>"
         print "				<table border=\"3\"  cellspacing=\"4\" cellpadding=\"2\" align=\"center\">"
         print "					<colgroup>"
-        for (i in entete) { # Ã©criture des lignes fixant la largeur des colonnes de donnÃ©es
+        for (i in entete) { # écriture des lignes fixant la largeur des colonnes de données
             print "\t\t\t\t\t\t<col style=\"width:" px[i] "px\"  />"
         }
         print "					</colgroup>"
@@ -210,8 +211,8 @@ END {   #   Restitution des rÃ©sultats
         print "								<xsl:attribute name=\"class\">impair"
         print "								</xsl:attribute>"
         print "							</xsl:if>"
-        for (i in entete) { # Ã©criture des lignes d'affichage des donnÃ©es
-            print "\t\t\t\t\t\t\t<td class=\"" class[i] "\"><xsl:value-of select=\"" entete[i] "\"/></td> " # <!-- " longmax[i] " " long[i]/(NR-1-void[i]) " nombres de caractÃ¨res max et moyen dÃ©tectÃ©s dans les donnÃ©es -->"
+        for (i in entete) { # écriture des lignes d'affichage des données
+            print "\t\t\t\t\t\t\t<td class=\"" class[i] "\"><xsl:value-of select=\"" entete[i] "\"/></td> " # <!-- " longmax[i] " " long[i]/(NR-1-void[i]) " nombres de caractères max et moyen détectés dans les données -->"
         }
         print "						</tr>"
         print "					</xsl:for-each>"
@@ -225,10 +226,10 @@ END {   #   Restitution des rÃ©sultats
         for (i in entete) {
             print "\t<!-- " entete[i] " -->"
         }
-        print "<!-- les lignes a modifier sont repÃ©rÃ©es par le commentaire suivant : --> <!-- modifier ici -->"
-        # rÃ©cap des donnÃ©es vestige de statchampscsv.awk
-        for (i in entete) { # l'avant derniÃ¨re colonne donne un rÃ©sultat erronÃ©, Ã  corriger
-            print "<!-- " sprintf("%2d",i) OFS "min:" sprintf("%3s",longmin[i]) OFS "moy:" sprintf("%6.2f",long[i]/(NR-1-void[i])) OFS "max:" sprintf("%3d",longmax[i]) OFS "int:" pourcent(entier[i]) OFS "float:" pourcent(float[i]) OFS "dateheure:" pourcent(dateheure[i]) OFS "heure:" pourcent(heure[i]) OFS "date:" pourcent(date[i]) OFS "texte:" pourcent(text[i]) OFS "vide:" pourcent(void[i]) OFS taux[6] OFS sprintf("%3i%%",(qualite*100)+.5) OFS entete[i] " -->" # car 6 types de champ Ã  analyser
+        print "<!-- les lignes a modifier sont repérées par le commentaire suivant : --> <!-- modifier ici -->"
+        # récap des données vestige de statchampscsv.awk
+        for (i in entete) { # l'avant dernière colonne donne un résultat erroné, à  corriger
+            print "<!-- " sprintf("%2d",i) OFS "min:" sprintf("%3s",longmin[i]) OFS "moy:" sprintf("%6.2f",long[i]/(NR-1-void[i])) OFS "max:" sprintf("%3d",longmax[i]) OFS "int:" pourcent(entier[i]) OFS "float:" pourcent(float[i]) OFS "dateheure:" pourcent(dateheure[i]) OFS "heure:" pourcent(heure[i]) OFS "date:" pourcent(date[i]) OFS "texte:" pourcent(text[i]) OFS "vide:" pourcent(void[i]) OFS taux[i] OFS sprintf("%3i%%",(qualite*100)+.5) OFS entete[i] " -->" # car 6 types de champ à  analyser
         }
  
  print "<!-- creation par " scriptname " sur le " fichier " le " strftime("%c",systime()) " -->"
