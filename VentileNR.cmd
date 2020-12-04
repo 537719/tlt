@@ -1,3 +1,4 @@
+@echo off
 :: VentileNR.cmd
 goto :debut
 CREE    11:47 jeudi 26 septembre 2019 aggr‚gation de l'extraction, de l'aggr‚gation et de la repr‚sentation graphique des informations suivantes :

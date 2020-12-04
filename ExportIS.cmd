@@ -20,7 +20,12 @@ MODIF : 10:12 27/05/2020 convertit le plus r‚cent des ..\data\stock\te*.csv en T
 MODIF : 11:03 27/05/2020 enchaŒne avec l'actualisation de la BDD SQLite des donn‚es I&S
 MODIF : 11:12 27/05/2020 enchaŒne avec la liste des derniers envois r‚alis‚s par I&S vers le siŠge
 MODIF : 16:22 27/05/2020 effectue les traŒtements SQLite mˆme s'il n'y a pas de nouvelles donn‚es … exporter
-MODIF : 16:10 26/06/2020 rajoute une sortie sur 1 mois au format CSV pour alimentation du quipo
+MODIF : 16:10 26/06/2020 rajoute une sortie sur 1 mois dau format CSV des livraisons vers magnetik pour alimentation du quipo
+MODIF : 16:57 01/10/2020 rajoute la mise … jour du suivi des mouvements sous surveillance
+MODIF : 10:02 05/10/2020 rajoute temporairement la cr‚ation de dossiers pour la migration des postes maŒtres Coli, sera d‚sactiv‚ aprŠs le d‚ploiement
+MODIF : 17:49 05/11/2020 d‚sactivation de la modif du 10:02 05/10/2020 tous les dossiers "r‚gion parisienne" ayant ‚t‚ cr‚‚s
+MODIF : 09:30 19/11/2020 rajoute la mise … jour de l'‚tat des stocks et de la liste des produits exp‚di‚s depuis moins d'un mois
+MODIF : 09:57 03/12/2020 filtre les ‚ventuels signes & pr‚sents dans le fichier xml des exp‚ditions vers magnetik
 :debut
 REM @echo on
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -61,6 +66,9 @@ call ..\bin\datesynthesestock.cmd %datetemp% >nul
 copy /y ..\data\TEexport_date.csv ..\data\TEexport_dernier.csv >nul
 
 popd
+REM Actualisation de l'‚tat des stocks
+CALL ..\bin\EtatStock.cmd
+:: utilise la variable %datetemp% d‚finie juste auparavant
 
 REM uFind pr‚f‚rable … un dir /s qui ne permet pas d'avoir … la fois le chemin d'accŠs complet et le filtre sur la date
 REM mais il faut quand mˆme en ‚diter la sortie sinon le del ne marche pas
@@ -83,11 +91,24 @@ wc -l %temp%\erreurs.sql | sed "s/^ *\([0-9]*\).*/\1/"
 
 REM MODIF : 11:12 27/05/2020 enchaŒne avec la liste des derniers envois r‚alis‚s par I&S vers le siŠge
 sqlite3 sandbox.db < ..\bin\lastlivmagnetik.sql
-gawk -f ..\bin\csvproj2xml.awk livmgk.csv |sed -e "s/\[//g" -e "s/\]//g" > ..\StatsIS\quipo\LivMgk\projexped.xml
+gawk -f ..\bin\csvproj2xml.awk livmgk.csv |sed -e "s/\[//g" -e "s/\]//g" -e "s/\&/et/g" > ..\StatsIS\quipo\LivMgk\projexped.xml
 REM le SED pour rendre les numéros de colis cliquables dans Auguste
-REM Réutilisation de ce qui avait été fait pour le suvi du matériel des projets sans autres modifications que des ajustements mineurs dans la partie html/xsl
+REM R‚utilisation de ce qui avait été fait pour le suvi du matériel des projets sans autres modifications que des ajustements mineurs dans la partie html/xsl
 lastlivmagnetik.txt
+
+REM Actualisation du suivi des mouvements logistiques sous surveillance
+CALL ..\bin\SuiviMvt.cmd
+
+
+REM Actualisation de la liste des produits exp‚di‚s depuis moins d'un mois
+CALL ..\bin\SuiviSorties.cmd
+
+REM Actualisation du repository
 call ..\bin\quipoput.cmd
+
+rem call ..\bin\creedossiersPM.cmd
+rem ^^ temporairement, tant qu'il y a des dossiers … cr‚er pour ce d‚ploiement
+rem d‚sactiv‚ le 17:49 05/11/2020 aprŠs cr‚ation de tous les dossiers de la phase "R‚gion parisienne"
 
 popd
 goto :eof

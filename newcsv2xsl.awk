@@ -11,6 +11,8 @@
 # MODIF 17:08 23/10/2020   génère toutes les feuilles de style et non plus une seule, cela modifie la procédure d'appel puisqu'il n'y a plus à rediriger la sortie vers un fichier
 # MODIF 09:41 24/10/2020   remplace la chaine fixe définissant le nom du script par la récupération de la ligne de commande appelante
 # MODIF 19:17 26/10/2020 (en cours) : détermine si l'un des champs contient en général des données succeptibles de générer un lien html (typiquement : incident/demande/changement glpi et numéro de colis chronopost)
+# BUG   16:55 02/11/2020 Les espaces, tabus et sauts de lignes étaient concaténés à l'URL générés si le <xsl:attribute href n'était pas ouvert et fermé sur une seule ligne (bug chrome uniquement, ok dans firefox)
+# MODIF 19:04 06/11/2020 Le lien généré pour le suivi de colis chronopost amène désormais vers la page de détail du suivi auguste et non vers la page de preuve de distribution
 
 # ATTENTION le fichier d'entrée doit être filtré afin que les caractères accentués soient manipulables
 # typiquement : cat [fichier].csv |iconv -f CP1250 -t UTF-8 |gawk -f statchampscsv.awk
@@ -23,6 +25,12 @@ BEGIN {
     FS=";"
     OFS=" "
     antislash="\\"
+    
+    lientype[4]="dossier"
+    lientype[3]="changement"
+    lientype[2]="colis"
+    lientype[1]="divers"
+    lientype[0]="vide"    
     
     if (outputdir) outputdir=outputdir antislash # fourniture éventuelle sur la ligne de commande d'un répertoire dans lequel placer les fichiers produits
     
@@ -63,6 +71,12 @@ NR==1 { # traitement de la ligne d'en-tête
     }
     next
 }
+NR==1 {
+    for (i=1;i<=NF;i++) {
+        nom[i]=$i
+    }
+}
+
 
 NR>1 {  # traitement des données
     
@@ -72,6 +86,32 @@ NR>1 {  # traitement des données
         if (li) {
             if (li>longmax[i]) longmax[i]=li
             if (li<longmin[i]) longmin[i]=li
+        }
+        switch($i) { # Détermination du fait qu'un champ soit linkable (c'est à dire : dossier glpi, changement glpi, colis chronopost)
+            case /^ *[1-2][0-9][0-1][0-9]{7} *$/ :
+            {
+                linkable[i,4]++ # dossier glpi
+                break
+            }
+            case /^ *1[0-9]{4} *$/ :
+            {
+                linkable[i,3]++ # changement glpi
+                break
+            }
+            case /[A-Z]{2}[0-9]{9}[A-Z]{2}/ :
+            {
+                linkable[i,2]++ # colis chronopost
+                break
+            }
+            case /./ :
+            {
+                linkable[i,1]++ # non linkable
+                break
+            }
+            default :
+            {
+                linkable[i,0]++ # vide
+            }
         }
         
         switch($i) { # détermination du type de champ
@@ -126,6 +166,19 @@ NR>1 {  # traitement des données
 
 END {   #   Restitution des résultats
     nbrecords=NR-1 # -1 à  cause de la ligne d'en-tête
+    for (i in entete) { # détermination des champs linkables
+        meilleurlien[i]=0
+        tauxmeilleurlien[i]=0
+        for (j in lientype)  if (j) {
+            lientaux[i,j] = linkable[i,j] / (nbrecords - linkable[i,0]) # On ne calcule le taux que sur les enregistrements non vides
+            # print "champ No" i,entete[i] " linkable a " lientaux[i,j] " pour le type " lientype[j]
+            if (lientaux[i,j] > tauxmeilleurlien[i]) {
+                tauxmeilleurlien[i]=lientaux[i,j]
+                meilleurlien[i]=j
+            }
+        }
+        # if (meilleurlien[i]>1)         print "champ No " i,entete[i] " linkable a " tauxmeilleurlien[i] " pour le type " lientype[meilleurlien[i]]
+    }
     for (i in entete) { # détermination du type et de la largeur de chaque champ
         delete taux
         
@@ -235,7 +288,49 @@ END {   #   Restitution des résultats
             print "								</xsl:attribute>" > outfile
             print "							</xsl:if>" > outfile
             for (i in entete) { # écriture des lignes d'affichage des données
+                    # if (meilleurlien[i]>1)         print "champ No " i,entete[i] " linkable a " tauxmeilleurlien[i] " pour le type " lientype[meilleurlien[i]]
+                    switch(meilleurlien[i]) {   #si le champ a été identifié comme linkable on le produit comme tel, sinon comme normal
+                        case /4/ :  # dossier glpi
+                        {
+            print "\t\t\t\t\t\t\t<td class=\"" class[i] "\">" > outfile
+            print "\t\t\t\t\t\t\t\t<xsl:element name=\"a\">" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"target\">blank</xsl:attribute>" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"href\">http://glpi.telintrans.fr/front/ticket.form.php?id=<xsl:value-of select=\"" entete[i] "\"/></xsl:attribute>" > outfile
+            # print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"href\">http://glpi.telintrans.fr/front/ticket.form.php?id=id=<xsl:value-of select=\"" entete[i] "\"/></xsl:attribute>" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:value-of select=\"" entete[i] "\"/>" > outfile
+            print "\t\t\t\t\t\t\t\t</xsl:element>" > outfile
+            print "\t\t\t\t\t\t\t</td>" > outfile
+                            break
+                        }
+                        case /3/ :  # changement glpi
+                        {
+            print "\t\t\t\t\t\t\t<td class=\"" class[i] "\">" > outfile
+            print "\t\t\t\t\t\t\t\t<xsl:element name=\"a\">" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"target\">blank</xsl:attribute>" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"href\">https://glpi.alturing.eu/front/change.form.php?id=<xsl:value-of select=\"" entete[i] "\"/></xsl:attribute>" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:value-of select=\"" entete[i] "\"/>" > outfile
+            print "\t\t\t\t\t\t\t\t</xsl:element>" > outfile
+            print "\t\t\t\t\t\t\t</td>" > outfile
+                            break
+                        }
+                        case /2/ :  # colis
+                        {
+            print "\t\t\t\t\t\t\t<td class=\"" class[i] "\">" > outfile
+            print "\t\t\t\t\t\t\t\t<xsl:element name=\"a\">" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"target\">blank</xsl:attribute>" > outfile
+            # print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"href\">http://suivi.chronopost.fr/servletAuguste?Hrequete=afficherColis&amp;Hlangue=fr_FR&amp;numeroLT=<xsl:value-of select=\"" entete[i] "\"/>"</xsl:attribute>" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:attribute name=\"href\">http://suivi.chronopost.fr/servletAuguste?Hrequete=recherche&amp;TAlisteNumeroLT=<xsl:value-of select=\"" entete[i] "\"/>&amp;RBresultats=ecran&amp;TFNumeroLTPartiel=&amp;StypeCalcul=commun&amp;StypeRecherche=tous</xsl:attribute>" > outfile
+            print "\t\t\t\t\t\t\t\t\t<xsl:value-of select=\"" entete[i] "\"/>" > outfile
+            print "\t\t\t\t\t\t\t\t</xsl:element>" > outfile
+            print "\t\t\t\t\t\t\t</td>" > outfile
+                            break
+                        }
+                        default :
+                        {
                 print "\t\t\t\t\t\t\t<td class=\"" class[i] "\"><xsl:value-of select=\"" entete[i] "\"/></td> " > outfile # <!-- " longmax[i] " " long[i]/(NR-1-void[i]) " nombres de caractères max et moyen détectés dans les données -->"
+                        }
+                    }
+
             }
             print "						</tr>" > outfile
             print "					</xsl:for-each>" > outfile

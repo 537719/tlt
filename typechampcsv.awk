@@ -1,16 +1,5 @@
-# csv2html.awk
-# créé  11:38 02/03/2020 crée la page html permettant d'accéder aux données ajax exploitant les données issues du .csv fourni en paramètre
-#                                    s'utilise en conjonction avec csv2xml.awk et csv2xsl.awk
-# définir le titre comme valeur sur la ligne de commande (paramètre -v="titre de la page"
-# BUG   13:53 29/09/2020 le nom du fichier xml utilisé par la fonction js doit être impérativement "fichier.xml" et non dynamique en fonction du fichier traîté
-# BUG   14:08 29/09/2020 élargit la fenêtre d'affichage de la date d'actualisation + ajoute un commentaire incitant à l'enrichir
-# BUG   14:54 23/10/2020 Erreur dans le code postal du tag Geography dans le header
-# MODIF 21:15 23/10/2020 définit titre, sujet et description dans le header html comme étant le nom du fichier d'entrée
-# MODIF 09:38 24/10/2020 définit le tag generator comme étant l'intégralité de la ligne de commandes
-# MODIF 20:26 24/10/2020 détermine le champ et l'ordre à privilégier pour le premier affichage de la page selon le critère suivant :
-#                        Parmi les champs ayant le meilleur taux de cohérence dans un type unique de donnée, on choisit celui qui est du type date ou heure ou à défaut numérique (int, float, pourcentage) et on le trie par ordre décroissant
-#                        Si le champ le plus "cohére,t" est de type texte, on, le trie par ordre croissant
-# MODIF 17:53 24/11/2020 porte à 30 px (au lieu de 20) la hauteur du champ texte dévolu à l'affichage de la date des données présentées
+# typechampcsv.awk
+# CREATION  20:50 24/10/2020 DÃ©termine si chacun des champs du csv fourni en fichier d'entrÃ©e est de type date, numÃ©rique ou autre (1Â° ligne = noms des champs)
 
 BEGIN {
     IGNORECASE=1
@@ -27,7 +16,7 @@ BEGIN {
     libtype[0]="vide"
     
     generator=""
-    for (i in PROCINFO["argv"]) { generator=generator PROCINFO["argv"][i]" "} # récupère toute la ligne de commande contrairement à ARGV[]
+    for (i in PROCINFO["argv"]) { generator=generator PROCINFO["argv"][i]" "} # rÃ©cupÃ¨re toute la ligne de commande contrairement Ã  ARGV[]
     
   print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitionnal//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
   print "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"fr\" lang=\"fr\">"
@@ -41,8 +30,8 @@ BEGIN {
   print "		<link rel=stylesheet type=text/css media=screen href=\"../webresources/main.css\">"
   print "		<meta name=\"Content-Language\" content=\"fr\">"
   print "		<meta name=\"Copyright\" content=\"Alturing\">"
-  print "		<meta name=\"Author\" content=\"Gilles Métais\">"
-  print "		<meta name=\"Publisher\" content=\"Gilles Métais\">"
+  print "		<meta name=\"Author\" content=\"Gilles MÃ©tais\">"
+  print "		<meta name=\"Publisher\" content=\"Gilles MÃ©tais\">"
   print "		<meta name=\"Identifier-Url\" content=\"http://quipo.alt\">"
   print "		<meta name=\"Reply-To\" content=\"gilles.metais@alturing.eu\">"
   print "		<meta name=\"Rating\" content=\"restricted\">"
@@ -51,27 +40,27 @@ BEGIN {
   print "		<meta name=\"generator\" content=\" " generator "\" />"
   print "		<meta name=\"date\" content=\"" strftime("%Y-%m-%d",systime()) "\" scheme=\"YYYY-MM-DD\" />"
   print "		<meta name=\"Expires\" content=\"" strftime("%Y-%m-%d",systime()+3600*24*8) "\" scheme=\"YYYY-MM-DD\" />"
-  # Header non clos : il reste Ã Â  écrire le tag Keywords Ã Â  partr des en-têtes de champs et pour Ã Â§a il faut avoir lu la première ligne du fichier
+  # Header non clos : il reste ÃƒÂ Ã‚Â  Ã©crire le tag Keywords ÃƒÂ Ã‚Â  partr des en-tÃªtes de champs et pour ÃƒÂ Ã‚Â§a il faut avoir lu la premiÃ¨re ligne du fichier
 }
 
-NR==1 { # traitement de la ligne d'en-tête
+NR==1 { # traitement de la ligne d'en-tÃªte
   print "		<title>" FILENAME "</title> <!-- modifier ici -->"
   print "		<meta name=\"Description\" content=\"" FILENAME "\"> <!-- modifier ici -->"
   print "		<meta name=\"Subject\" content=\"" FILENAME "\"> <!-- modifier ici -->"
-    if ($1 !~ /[^0-9][A-z]+$/) if ($1 !~ /[0-9]{4}/) { # 1° champ ne commence pas par un chiffre puis ne contient que des lettres ET 1° champ n'est pas une année
-        print "ERREUR : Manque l'intitulé des champs " NR "@" $1 "@"
+    if ($1 !~ /[^0-9][A-z]+$/) if ($1 !~ /[0-9]{4}/) { # 1Â° champ ne commence pas par un chiffre puis ne contient que des lettres ET 1Â° champ n'est pas une annÃ©e
+        print "ERREUR : Manque l'intitulÃ© des champs " NR "@" $1 "@"
         exit 1
     }
 
-    nbchamps=NF # détermine le nombre de champs du fichier
+    nbchamps=NF # dÃ©termine le nombre de champs du fichier
     for (i=1;i<=NF;i++) {    # sauvegarde les noms des champs avec accents et espaces, pour affichage
         accent[i]=$i
     }
     gsub(/ /,"_") # remplace tous les espaces par des _
-    gsub(/.\251/,"e") # 251 = conversion en octal de 169 en décimal, code ascii du é - le . avant le \251 est là  parce que ce caractère est codé sur 2 digits
-    for (i=1;i<=NF;i++) {    # détermine les noms des champs, sans accents ni espaces, pour traitement des données
+    gsub(/.\251/,"e") # 251 = conversion en octal de 169 en dÃ©cimal, code ascii du Ã© - le . avant le \251 est lÃ Â  parce que ce caractÃ¨re est codÃ© sur 2 digits
+    for (i=1;i<=NF;i++) {    # dÃ©termine les noms des champs, sans accents ni espaces, pour traitement des donnÃ©es
         entete[i]=$i
-        if ($i !~ /./) { # cas particulier des champs dont l'en-tête est vide
+        if ($i !~ /./) { # cas particulier des champs dont l'en-tÃªte est vide
             entete[i] = "champ_" i
         }
     }
@@ -93,7 +82,7 @@ NR==1 {
 }
 
 
-NR > 1 { #MAIN - Détermine le type de chaque champ
+NR > 1 { #MAIN - DÃ©termine le type de chaque champ
     for (i=1;i<=NF;i++) {
         gsub(/^ */,"",$i)
         gsub(/ *$/,"",$i)
@@ -148,7 +137,7 @@ END {
         meilleurtaux[i]=0
         for (j=1;j<=7;j++) {
             if (type[i,j]) {
-                taux[i,j]=(type[i,j])/(NR-1-type[i,0])    # calcul de la fréquence de chaque type parmi les valeurs non nulles
+                taux[i,j]=(type[i,j])/(NR-1-type[i,0])    # calcul de la frÃ©quence de chaque type parmi les valeurs non nulles
                 if (taux[i,j] > meilleurtaux[i]) {
                     meilleurtaux[i]=taux[i,j]
                     meilleurtype[i]=j
@@ -171,9 +160,9 @@ END {
             }
        }
     }
-    print "<!-- Le meilleur index repéré est le champ No " meilleurindex " dont le nom est " entete[meilleurindex] " avec un taux de cohérence de " tauxmeilleurindex " par rapport au type '" libtype[typemeilleurindex] "' -->"
+    print "<!-- Le meilleur index repÃ©rÃ© est le champ No " meilleurindex " dont le nom est " entete[meilleurindex] " avec un taux de cohÃ©rence de " tauxmeilleurindex " par rapport au type '" libtype[typemeilleurindex] "' -->"
 
-    if (typemeilleurindex > 1) { # le meilleur index est une valeur temporelle ou numérique, on trie dessus par ordre décroissant
+    if (typemeilleurindex > 1) { # le meilleur index est une valeur temporelle ou numÃ©rique, on trie dessus par ordre dÃ©croissant
     print "	<body onload=\"init('fichier.xml', 'fam-" entete[meilleurindex] ".xsl', 'transform')\">"
   } else {
     print "	<body onload=\"init('fichier.xml', 'fam+" entete[meilleurindex] ".xsl', 'transform')\">"
@@ -189,15 +178,15 @@ END {
   print "						</td>"
   print "						<td class=\"titre\" colspan=\"3\" style=\"vertical align: middle;\">"
   print "							<h2>" FILENAME "<!-- modifier ici --> au "
-  print "								<object type=\"text/plain\" data=\"date.txt\" style=\"overflow: hidden;\" border=\"0\" height=\"30\" width=\"130\"></object>"
+  print "								<object type=\"text/plain\" data=\"date.txt\" style=\"overflow: hidden;\" border=\"0\" height=\"20\" width=\"130\"></object>"
   print "							</h2>"
   print "							<form name=\"choix\" action=\"\" style=\"text-align:center\">"
   print "								<select name=\"tri\">"
-  for (i=1;i<=nbchamps;i++) {
+  for (i=1;i<=NF;i++) {
     print "									<option value=\"" entete[i] "\">" entete[i] "</option>"
   }
   print "								</select>"
-  if (typemeilleurindex > 1) { # le meilleur index est une valeur temporelle ou numérique, on trie dessus par ordre décroissant
+  if (typemeilleurindex > 1) { # le meilleur index est une valeur temporelle ou numÃ©rique, on trie dessus par ordre dÃ©croissant
       print "								<input type=\"radio\" name=\"ordre\" value=\"+\" />Croissant&nbsp;"
       print "								<input type=\"radio\" name=\"ordre\" value=\"-\" checked=\"checked\" />D&eacute;croissant&nbsp;"
   } else {

@@ -12,12 +12,10 @@
 -- PREREQUIS fichier codeserreur.csv listant les codes d'erreur valides
 -- DIFFICULTÉ produire un résultat (0) pour les codes d'erreur n'apparaissant pas sur la période donnée.
 
--- BUG      14:55 28/02/2020 corrige la définition de champ de la base des codes erreur afin d'éviter un message d'erreur inutile à l'exécution
--- BUG      09:10 27/03/2020 erreur dans la contrainte check sur la table des codes erreur
--- MODIF    09:10 27/03/2020 adaptation au nouveau format de date utilisé par glpi
--- BUG      21:10 25/09/2020 suppression de l'export/import temporaire des résultats intermédiaires et correction d'erreurs de sortie
+-- BUG  14:55 28/02/2020 corrige la définition de champ de la base des codes erreur afin d'éviter un message d'erreur inutile à l'exécution
+-- BUG  09:10 27/03/2020 erreur dans la contrainte check sur la table des codes erreur
+-- MODIF 09:10 27/03/2020 adaptation au nouveau format de date utilisé par glpi
 
---inchangé 21:10 25/09/2020
 .separator ;
 drop table if exists IncProdIS;
 .import glpi.csv IncProdIS
@@ -40,47 +38,51 @@ CREATE TABLE codeserreur(
 alter table codeserreur add column abrege text;
 update codeserreur set abrege=substr(code,1,5);
 
-
--- nouveau 21:10 25/09/2020
-drop table if exists Resultats;
-CREATE TABLE Resultats(
-    Jour TEXT NOT NULL,
-    Code TEXT NOT NULL,
-    Nombre INTEGER NOT NULL DEFAULT 0
-    CHECK( Code like "ISI-%")
-);
-CREATE UNIQUE INDEX k_ISIr on Resultats(Jour,Code);
-
+.header on
+.output resultats.csv
 with storage as (
-    select date(max("Tâches - Date")) as maxdate 
-    from incprodis
-) 
-replace into Resultats(Jour,Code) 
-select maxdate,code
-from storage,codeserreur
-;
-
-
-with storage as (
-    select codeserreur.code,abrege,jour 
-    from codeserreur,Resultats 
-    where Resultats.code=codeserreur.code
-) 
-replace into Resultats(Jour,Code,Nombre) 
-select Jour,storage.code,count(id) 
-from storage,incprodis 
+    select code,abrege from codeserreur
+)
+select 
+    max(strftime("%Y-%m-%d","Tâches - Date"))as Jour
+    ,code
+    ,max(0,count("ID")) as Nombre 
+from incprodis,storage 
 where "Tâches - Description" LIKE ("%" || storage.abrege || "%") 
-group by storage.abrege
-;
+group by code 
+order by code
+; -- attention, on peut avoir des codes avec des dates différentes
 
---inchangé 21:10 25/09/2020
+.output
+drop table if exists resultats;
+.import resultats.csv resultats
+
+.header off
+.output resultats.csv
+with storage as (
+    select Jour from resultats group by Jour -- attention, produit un résultat par jour pour lequel on a une stat
+)
+SELECT 
+         storage.Jour,c.code,0
+FROM codeserreur c, storage
+LEFT JOIN resultats r USING(code)
+WHERE r.code IS NULL
+group by code -- on n'a plus qu'une seule date maintenant
+;
+.output
+.import resultats.csv resultats
+
+.header off
 .output resultats.csv
 select Jour, replace(code,"-",";;") as Erreur, Nombre from resultats;
 -- on remplace le "-" par deux ";;" dans les codes en sortie afin d'avoir un format compatible avec le script "transpose .awk" lancé à la suite pour mettre les lignes en colonnes.
 
--- simplifié 21:10 25/09/2020
-.header off
 .output nomresultat.txt
-select jour from resultats group by jour ;
-.output
-
+select 
+    strftime(
+        "%Y-%m-%d",
+        date( -- date des tâches reportées au dernier jour du mois
+            substr(max("Tâches - Date"),7,4) || "-" || substr(max("Tâches - Date"),4,2) || "-" || substr(max("Tâches - Date"),1,2)
+        )
+    ) as Jour
+from incprodis;

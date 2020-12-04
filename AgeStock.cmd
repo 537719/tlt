@@ -8,6 +8,7 @@ CREE    16:20 vendredi 17 janvier 2020 d'après 17/01/2020  16:18              2
                 VieStock.sqlite Ventilation par ordre de grandeur de la durée de stockage des sorties effectuées par I&S (le mêmes script s'applique ici sans modification)
                 histocumul.plt    histogramme montrant une barre par ligne de fichier comportant deux valeurs à cumuler. (on n'en utilise qu'une ici)
             Données en entrée : Le fichier is_stock_*.csv portant sur la période la plus récente
+BUG     14:23 20/11/2020 la détermination des bornes temporelles était perturbée par la présence de fichiers n'ayant pas une structure de date
                 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -41,8 +42,8 @@ del %temp%\datedeb.tmp
 del %temp%\datefin.tmp
 
 :: Délimitation des bornes pour la légende
-dir is_stock*.csv /o /b |tail -1 |sed "s/is_stock_\([0-9][0-9][0-9][0-9]\)\([0-9][0-9]\)\([0-9][0-9]\).*/\3-\2-\1/" > %temp%\datefin.tmp
-dir is_stock*.csv /o /b |tail -1 |sed "s/.*\([0-9][0-9][0-9][0-9]\)\([0-9][0-9]\)\([0-9][0-9]\).*/\3-\2-\1/" > %temp%\datedeb.tmp
+dir is_stock*-*.csv /o /b |tail -1 |sed "s/is_stock_\([0-9][0-9][0-9][0-9]\)\([0-9][0-9]\)\([0-9][0-9]\).*/\3-\2-\1/" > %temp%\datefin.tmp
+dir is_stock*-*.csv /o /b |tail -1 |sed "s/.*\([0-9][0-9][0-9][0-9]\)\([0-9][0-9]\)\([0-9][0-9]\).*/\3-\2-\1/" > %temp%\datedeb.tmp
 REM head -1 bornes.txt > %temp%\datedeb.tmp
 REM tail    -1 bornes.txt > %temp%\datefin.tmp
 

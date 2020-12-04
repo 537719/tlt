@@ -1,12 +1,15 @@
 # csvproj2xml.awk
 # CREE  03/12/2018 - 12:57:04 d'après csvproj2xml.awk : convertit en xml tout fichier csv
 # MODIF 11:28 21/02/2019   assouplit les conditions de validité de l'enregistrement de titre
-# BUG    14:33 11/02/2020 le remplacement des & ne marche pas. Non résolu, contourner par un sed en sortie
+# BUG   14:33 11/02/2020 le remplacement des & ne marche pas. Non résolu, contourner par un sed en sortie
+# BUG   15:06 26/10/2020 la fonction printchamp réduisait à "rien qu'une date" tout champ contenant une date, au mépris des textes longs contenant des dates
+# MODIF 15:10 26/10/2020 remplace le format de date en sortie de aaaa/mm/jj en aaaa-mm-jj
 
 function special2html(chaine) # convertit les caractères spéciaux en caractères html
 {
-    # gensub(/\&/,"&amp;","g",chaine)
-	spx=gensub(/\\&/,"et;","g",chaine)
+    # spx=gensub(/\&/,"&amp;","g",chaine)
+	gensub(/\&/,"&amp;","g",chaine)
+    # spx=gensub(/\\&/,"et;","g",chaine)
 	spx=spx+gensub(/á/,"&aacute;","g",chaine)
 	spx=spx+gensub(/á/,"&aacute;","g",chaine)
 	spx=spx+gensub(/â/,"&acirc;","g",chaine)
@@ -39,7 +42,7 @@ function printdate(champ,chaine,    localarray) # affiche au format aaaa/mm/jj u
 {
     if (match(chaine,"([0-3]{0,1}[0-9])/([0-1]{0,1}[0-9])/([0-9]{4})",localarray)) {
         if (localarray[3]>999) {
-            chaine=localarray[3] "/" localarray[2] "/" localarray[1]
+            chaine=localarray[3] "-" localarray[2] "-" localarray[1]
         }
     }
     printxml(champ,chaine)
@@ -55,7 +58,8 @@ function printchamp(champ,chaine,       longchaine) # voit s'il faut imprimer en
             printtexte(champ,chaine)
         }
     } else {
-       if (index(chaine,"/") >2) {  # format date supposé, on tente de l'afficher en aaaa/mm/jj au lieu de jj/mm/aa
+       # if (index(chaine,"/") >2) {  # format date supposé, on tente de l'afficher en aaaa/mm/jj au lieu de jj/mm/aa
+       if (chaine ~ /^ *[0-3]{0,1}[0-9])\/([0-1]{0,1}[0-9])\/([0-9]{4}) $/) {
             printdate(champ,chaine, localarray)
        } else {
             printtexte(champ,chaine)
@@ -97,9 +101,10 @@ NR==1 { #vérification de la structure du fichier CSV
 }
 
 NF== nbchamps   {#MAIN - on ne prend en compte que les enregistrements dont le nombre de champs colle avec l'en-tête du fichier
-    gsub(/<\/br>/,"") # les sauts de lignes ne sont pas digérés par la moulinette ajax qui traite le fichier généré
+    gsub(/<\/br>/," \r\n") # les sauts de lignes ne sont pas digérés par la moulinette ajax qui traite le fichier généré
     print tabu "<enregistrement>"
         for (i=1;i<=NF;i++) {   #boucle d'écriture des champs de données
+        # print i,entete[i],$i
             printchamp(entete[i],$i)
         }
     print tabu "</enregistrement>"

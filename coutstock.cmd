@@ -30,8 +30,8 @@ goto :fin
 :isdirok
 
 REM actualisation des donn‚es brutes
-call "%isdir%\bin\exportIS.cmd"
-
+REM call "%isdir%\bin\exportIS.cmd"
+:: Inutile ^^ car déjà fait par ailleurs
 
 REM positionnement dans le dossier de donn‚es
 pushd ..\data

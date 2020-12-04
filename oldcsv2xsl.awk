@@ -7,10 +7,8 @@
 # MODIF 07/12/2018 - 14:36:19   modifie le calcul d'indicateur de qualité afin qu'il porte sur toutes les données non vide au lieu de comparer le plus fort à  celui qui le suit
 # MODIF 11:28 21/02/2019   assouplit les conditions de validité de l'enregistrement de titre
 # MODIF 17:18 20/02/2020   assouplit les motifs de détection des types numériques (int et float) de manière à  accepter les cadrages à  droite (chiffres précédés d'espaces)
-# BUG   17:07 23/10/2020   l'oubli d'une double quote dans le "foreach" empêchait l'affichage du fichier xml lié
-# MODIF 17:08 23/10/2020   génère toutes les feuilles de style et non plus une seule, cela modifie la procédure d'appel puisqu'il n'y a plus à rediriger la sortie vers un fichier
-# MODIF 09:41 24/10/2020   remplace la chaine fixe définissant le nom du script par la récupération de la ligne de commande appelante
-# MODIF 19:17 26/10/2020 (en cours) : détermine si l'un des champs contient en général des données succeptibles de générer un lien html (typiquement : incident/demande/changement glpi et numéro de colis chronopost)
+# BUG  17:07 23/10/2020   l'oubli d'une double quote dans le "foreach" empêchait l'affichage du fichier xml lié
+# MODIF 17:08 23/10/2020    (en cours) : génère toutes les feuilles de style et non plus une seule, cela modifie la procédure d'appel puisqu'il n'y a plus à rediriger la sortie vers un fichier
 
 # ATTENTION le fichier d'entrée doit être filtré afin que les caractères accentués soient manipulables
 # typiquement : cat [fichier].csv |iconv -f CP1250 -t UTF-8 |gawk -f statchampscsv.awk
@@ -22,23 +20,7 @@ function pourcent(float)    # retourne le sprint du float sous la forme d'un pou
 BEGIN {
     FS=";"
     OFS=" "
-    antislash="\\"
-    
-    if (outputdir) outputdir=outputdir antislash # fourniture éventuelle sur la ligne de commande d'un répertoire dans lequel placer les fichiers produits
-    
-    
-    for (i in PROCINFO["argv"]) { generator=generator PROCINFO["argv"][i]" "} # récupère toute la ligne de commande contrairement à ARGV[]
-    
-    signesens[1]="+"
-    signesens[2]="-"
-    libsens[1]="croissant"
-    libsens[2]="décroissant"
-    order[1]="ascending"
-    order[2]="descending"
-}
-
-BEGINFILE {
-    nomfich=gensub(/.*\\/,vide,"g",FILENAME) # extraction du nom du fichier d'entrée proprement dit, sans son éventuel chemin d'accès
+    scriptname="csv2xsl.awk"
 }
 
 NR==1 { # traitement de la ligne d'en-tête
@@ -188,77 +170,72 @@ END {   #   Restitution des résultats
             fichier="flot d'entrée"
         }
     }
-    for (j in entete) {
-    for (k in signesens) {
-        outfile=outputdir "fam" signesens[k] entete[j] ".xsl"
-        { # sortie des résultats
-            print "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" > outfile
-            print "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">" > outfile
-            print "	<xsl:template match=\"/\">" > outfile
-            print "		<html>" > outfile
-            print "			<head>" > outfile
-            print "				<title>" nomfich " - Tri par " entete[j] " " libsens[k] "</title><!-- modifier ici -->" > outfile
-            print "			</head>" > outfile
-            print "			<body>" > outfile
-            print "					<div id=\"titre\">" > outfile
-            print "				<table border=\"3\"  cellspacing=\"4\" cellpadding=\"2\" align=\"center\">" > outfile
-            print "					<caption align=\"center\">" nomfich "<!-- modifier ici -->" > outfile
-            print "						Tri par " entete[j] " " libsens[k]  > outfile
-            print "					</caption>" > outfile
-            print "					<colgroup>" > outfile
-            for (i in entete) { # écriture des lignes fixant la largeur des colonnes de titre
-                print "\t\t\t\t\t\t<col style=\"width:" px[i] "px\"  />" > outfile
-            }
-            print "					</colgroup>" > outfile
-            print "					<tr>" > outfile
-            for (i in entete) { # écriture des en-têtes de colonnes
-                print "\t\t\t\t\t\t<th id=\"" entete[i] "\" abbr=\"" entete[i] "\">" gensub(/_/," ","g",accent[i]) "</th>"  > outfile # gensub reste nécessaire dans le cas des champs contenant déjà  des _
-            }
-            print "					</tr>" > outfile
-            print "					</table>" > outfile
-            print "					</div>" > outfile
-            print "				<table border=\"3\"  cellspacing=\"4\" cellpadding=\"2\" align=\"center\">" > outfile
-            print "					<colgroup>" > outfile
-            for (i in entete) { # écriture des lignes fixant la largeur des colonnes de données
-                print "\t\t\t\t\t\t<col style=\"width:" px[i] "px\"  />" > outfile
-            }
-            print "					</colgroup>" > outfile
-            print "					<xsl:for-each select=\"fichier/enregistrement\">" > outfile
-            print "					<xsl:sort select=\"" entete[j] "\" order=\"" order[k] "\" /><!-- modifier ici -->" > outfile
-            print "						<tr>" > outfile
-            print "							<xsl:if test=\"position() mod 2 != 1\">" > outfile
-            print "								<xsl:attribute name=\"class\">pair" > outfile
-            print "								</xsl:attribute>" > outfile
-            print "							</xsl:if>" > outfile
-            print "							<xsl:if test=\"position() mod 2 != 0\">" > outfile
-            print "								<xsl:attribute name=\"class\">impair" > outfile
-            print "								</xsl:attribute>" > outfile
-            print "							</xsl:if>" > outfile
-            for (i in entete) { # écriture des lignes d'affichage des données
-                print "\t\t\t\t\t\t\t<td class=\"" class[i] "\"><xsl:value-of select=\"" entete[i] "\"/></td> " > outfile # <!-- " longmax[i] " " long[i]/(NR-1-void[i]) " nombres de caractères max et moyen détectés dans les données -->"
-            }
-            print "						</tr>" > outfile
-            print "					</xsl:for-each>" > outfile
-            print "				</table>" > outfile
-            print "			</body>" > outfile
-            print "		</html>" > outfile
-            print "	</xsl:template>" > outfile
-            print "</xsl:stylesheet>" > outfile
-            print "<!-- penser a dupliquer ce fichier pour tenir compte de l'ordre de tri , ligne xsl:sort -->" > outfile
-            print "<!-- et a le multiplier autant de fois qu'il y a de champs soit : -->" > outfile
-            for (i in entete) {
-                print "\t<!-- " entete[i] " -->" > outfile
-            }
-            print "<!-- les lignes a modifier sont repérées par le commentaire suivant : --> <!-- modifier ici -->" > outfile
-            # récap des données vestige de statchampscsv.awk
-            for (i in entete) { # l'avant dernière colonne donne un résultat erroné, à  corriger
-                print "<!-- " sprintf("%2d",i) OFS "min:" sprintf("%3s",longmin[i]) OFS "moy:" sprintf("%6.2f",long[i]/(NR-1-void[i])) OFS "max:" sprintf("%3d",longmax[i]) OFS "int:" pourcent(entier[i]) OFS "float:" pourcent(float[i]) OFS "dateheure:" pourcent(dateheure[i]) OFS "heure:" pourcent(heure[i]) OFS "date:" pourcent(date[i]) OFS "texte:" pourcent(text[i]) OFS "vide:" pourcent(void[i]) OFS taux[i] OFS sprintf("%3i%%",(qualite*100)+.5) OFS entete[i] " -->"  > outfile # car 6 types de champ à  analyser
-            }
-     
-            print "<!-- creation par " generator " le " strftime("%c",systime()) " -->" > outfile
+    { # sortie des résultats
+        print "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
+        print "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
+        print "	<xsl:template match=\"/\">"
+        print "		<html>"
+        print "			<head>"
+        print "				<title>#titredelapage# - Tri par #criteredetri# croissant</title><!-- modifier ici -->"
+        print "			</head>"
+        print "			<body>"
+        print "					<div id=\"titre\">"
+        print "				<table border=\"3\"  cellspacing=\"4\" cellpadding=\"2\" align=\"center\">"
+        print "					<caption align=\"center\"><!-- modifier ici -->"
+        print "						Tri par #criteredetri# croissant"
+        print "					</caption>"
+        print "					<colgroup>"
+        for (i in entete) { # écriture des lignes fixant la largeur des colonnes de titre
+            print "\t\t\t\t\t\t<col style=\"width:" px[i] "px\"  />"
         }
-     }
-     }
+        print "					</colgroup>"
+        print "					<tr>"
+        for (i in entete) { # écriture des en-têtes de colonnes
+            print "\t\t\t\t\t\t<th id=\"" entete[i] "\" abbr=\"" entete[i] "\">" gensub(/_/," ","g",accent[i]) "</th>" # gensub reste nécessire dans le cas des champs contenant déjà  des _
+        }
+        print "					</tr>"
+        print "					</table>"
+        print "					</div>"
+        print "				<table border=\"3\"  cellspacing=\"4\" cellpadding=\"2\" align=\"center\">"
+        print "					<colgroup>"
+        for (i in entete) { # écriture des lignes fixant la largeur des colonnes de données
+            print "\t\t\t\t\t\t<col style=\"width:" px[i] "px\"  />"
+        }
+        print "					</colgroup>"
+        print "					<xsl:for-each select=\"fichier/enregistrement\">"
+        print "					<xsl:sort select=\"#nomduchamp#\" order=\"ascending\" /><!-- modifier ici -->"
+        print "						<tr>"
+        print "							<xsl:if test=\"position() mod 2 != 1\">"
+        print "								<xsl:attribute name=\"class\">pair"
+        print "								</xsl:attribute>"
+        print "							</xsl:if>"
+        print "							<xsl:if test=\"position() mod 2 != 0\">"
+        print "								<xsl:attribute name=\"class\">impair"
+        print "								</xsl:attribute>"
+        print "							</xsl:if>"
+        for (i in entete) { # écriture des lignes d'affichage des données
+            print "\t\t\t\t\t\t\t<td class=\"" class[i] "\"><xsl:value-of select=\"" entete[i] "\"/></td> " # <!-- " longmax[i] " " long[i]/(NR-1-void[i]) " nombres de caractères max et moyen détectés dans les données -->"
+        }
+        print "						</tr>"
+        print "					</xsl:for-each>"
+        print "				</table>"
+        print "			</body>"
+        print "		</html>"
+        print "	</xsl:template>"
+        print "</xsl:stylesheet>"
+        print "<!-- penser a dupliquer ce fichier pour tenir compte de l'ordre de tri , ligne xsl:sort -->"
+        print "<!-- et a le multiplier autant de fois qu'il y a de champs soit : -->"
+        for (i in entete) {
+            print "\t<!-- " entete[i] " -->"
+        }
+        print "<!-- les lignes a modifier sont repérées par le commentaire suivant : --> <!-- modifier ici -->"
+        # récap des données vestige de statchampscsv.awk
+        for (i in entete) { # l'avant dernière colonne donne un résultat erroné, à  corriger
+            print "<!-- " sprintf("%2d",i) OFS "min:" sprintf("%3s",longmin[i]) OFS "moy:" sprintf("%6.2f",long[i]/(NR-1-void[i])) OFS "max:" sprintf("%3d",longmax[i]) OFS "int:" pourcent(entier[i]) OFS "float:" pourcent(float[i]) OFS "dateheure:" pourcent(dateheure[i]) OFS "heure:" pourcent(heure[i]) OFS "date:" pourcent(date[i]) OFS "texte:" pourcent(text[i]) OFS "vide:" pourcent(void[i]) OFS taux[i] OFS sprintf("%3i%%",(qualite*100)+.5) OFS entete[i] " -->" # car 6 types de champ à  analyser
+        }
+ 
+ print "<!-- creation par " scriptname " sur le " fichier " le " strftime("%c",systime()) " -->"
+    }
 }
 
 

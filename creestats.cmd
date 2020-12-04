@@ -36,6 +36,7 @@ MODIF 17:21 mercredi 30 octobre 2019 utilise à la place une page de menu qui res
                                                      et s'actualise en prenant les données variables dans un fichier xml externe
 BUG     13:18 lundi 4 novembre 2019 le fichier XML externe en question n'était pas généré au bon endroit
 MODIF  12:19 28/02/2020 intègre la génération de nouvelles stats qui étaient auparavant lancées individuellement
+MODIF  10:04 15/10/2020 diffère la màj du quipo lors de l'invocation de exportis afin de ne pas l'effectuer deux fois
 
 
 :debut
@@ -53,6 +54,8 @@ goto :eof
 :isdirok
 
 REM actualisation des données brutes
+touch %temp%\differe.maj
+:: ^^ pour qu'exportIS n'embraye pas sur la mise à jour du quipo
 call "%isdir%\bin\exportIS.cmd"
 
 REM génération des stats - certains de ces scripts ouvrent une image et un fichier texte afin d'y procéder à des annotations.
@@ -68,6 +71,7 @@ Call ..\bin\VieStock.cmd
 REM Coûts de stockage
 Call ..\bin\CoutStock.cmd
 
+:sorties
 REM mise en forme des donnée brutes dans le format de traitement
 call "%isdir%\bin\ISstatloop.cmd"
 
@@ -80,7 +84,6 @@ REM ATTENTION 1 ceci n'est possible que parce que les deux fichiers ont le même 
 REM ATTENTION on se retrouve avec une colonne de titre en trop au milieu du fichier, à prendre en compte lors de la création du graphique
 
     
-:sorties
 head -1 is-data.csv |sed "s/.*_\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\..*/\1-\2-\3/" >%temp%\moisfin.tmp
 REM MODIF 11:08 mardi 17 mai 2016 utilise un format de date aaaa-mm-jj au lieu de mm/aaaa
 set /p moisfin=<%temp%\moisfin.tmp
@@ -201,6 +204,8 @@ dir ..\StatsIS\quipo|gawk -v OFS=";" 'BEGIN {print "date" OFS "dossier"} $4 ~ /[
 
 popd
 :quipoput
+del %temp%\differe.maj 2>nul
+:: désactive ^^ l'inhibition du quipo éventuellement établie
 call ..\bin\quipoput.cmd
 @echo on
 if exist %moisfin%\nul @echo Libérer le dossier "%cd%\%moisfin%"
