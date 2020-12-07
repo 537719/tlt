@@ -24,6 +24,7 @@ MODIF 10:02 15/10/2020  Ne fait rien en cas de d‚tection d'un flag demandant … n
 MODIF 10:15 15/10/2020  Force la pagecode OEM863:French afin d'afficher correctment les accents
 MODIF 09:05 23/10/2020  Affiche le texte de l'erreur en cas d'erreur WinSCP et corrige le chemin d'accès à notepad++ pour l'afficher dans son contexte
 MODIF 09:20 23/10/2020  Replace dans le dossier d'origine après exécution même en cas d'erreur
+MODIF 10:32 07/12/2020  prend les identifiants de connexion au serveur de rebond dans un fichier de paramètre au lieu de les encoder en dur dans ce script
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -46,6 +47,10 @@ if exist %temp%\differe.maj goto differemaj
 ping -n 1 jump.tlt
 if errorlevel 1 goto :noping
 
+:: récupération des paramètres d'authentification au serveur de rebond
+set /p serveur= < "%isdir%\data\rebond.par"
+set /p compte= < "%isdir%\data\jumplogin.par"
+set /p pwd= < "%isdir%\data\jumppwd.par"
 goto :genscript
 rem recherche du mdp de connexion au serveur de rebond
 set pwdold=
@@ -61,8 +66,8 @@ rem g‚n‚ration du script winscp
 @echo #place dans les donnees web a heberger dans le dossier quipo sur le serveur de rebond >>%~n0.scp
 @echo # >>%~n0.scp
 @echo echo #1 ouverture de la session >>%~n0.scp
-REM @echo open sftp://gmetais:%pwdold%@rebond.tlt >>%~n0.scp
-@echo open sftp://004796:vmmdpSO20@jump.tlt >>%~n0.scp
+REM @echo open sftp://%compte%:%pwdold%@%serveur% >>%~n0.scp
+@echo open sftp://%compte%:%pwd%@%serveur% >>%~n0.scp
 @echo echo #2 synchronisation du distant par rapport au local >>%~n0.scp
 @echo synchronize  -delete remote quipo quipo>>%~n0.scp
 @echo echo #3 recuperation des donnees de verification >>%~n0.scp
@@ -129,7 +134,7 @@ goto :fin
 
 :winscpok
 @echo winscp a pu uploader les fichiers
-rem call chpwrebond.cmd
+call chpwrebond.cmd
 goto :fin
 
 :errsize

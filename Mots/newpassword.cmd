@@ -1,4 +1,4 @@
-@echo off
+REM @echo off
 goto :debut
 newpassword.cmd
 produit un nouveau mot de passe par concaténation de 4 mots choisis aléatoirement
