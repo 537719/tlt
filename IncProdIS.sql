@@ -16,6 +16,7 @@
 -- BUG      09:10 27/03/2020 erreur dans la contrainte check sur la table des codes erreur
 -- MODIF    09:10 27/03/2020 adaptation au nouveau format de date utilisé par glpi
 -- BUG      21:10 25/09/2020 suppression de l'export/import temporaire des résultats intermédiaires et correction d'erreurs de sortie
+-- MODIF    11:36 13/01/2021 remplace la vérification de présence de "ISI-" par "ISI" car il arrive que le signe "-" ne soit pas saisi
 
 --inchangé 21:10 25/09/2020
 .separator ;
@@ -31,7 +32,7 @@ CREATE TABLE codeserreur(
     code text,
     sujet text,
     description text
-    CHECK(substr(code,1,4)="ISI-")
+    CHECK(substr(code,1,4)="ISI")
     -- le check est là pour éviter d'insérer la ligne de titre comme faisant partie des données
 );
 
@@ -47,7 +48,7 @@ CREATE TABLE Resultats(
     Jour TEXT NOT NULL,
     Code TEXT NOT NULL,
     Nombre INTEGER NOT NULL DEFAULT 0
-    CHECK( Code like "ISI-%")
+    CHECK( Code like "ISI%")
 );
 CREATE UNIQUE INDEX k_ISIr on Resultats(Jour,Code);
 

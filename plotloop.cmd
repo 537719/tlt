@@ -1,89 +1,107 @@
 @echo off
 goto :debut
 plotloop.cmd
-creation       12:53 mardi 22 janvier 2019 report dans un script externe de la boucle de création dans creestat.cmd des éléments nécessaires au tracé des graphiques
-bug             16:44 mardi 22 janvier 2019 inhibation de la vérification de la transmission de la variable d'environnement %moisdeb% parce qu'en fait elle est calculée dans ce script
+(anciennement plotloopnew.cmd)
+CREATION    16:26 12/10/2020    Remplace plotloop.cmd du 16:44 mardi 22 janvier 2019 
+            Adaptation à la nouvelle situation où les stats sont produites par sqlite et non plus par un mécanisme awk/batch
+USAGE       Invocation par creestats.new.cmd
+RELEASE     12:08 15/10/2020 première version opérationnelle
+
+PREREQUIS   Ficher de stat sfpStats.csv qui contient un en-tête puis toutes les stats de tous les produits sur les 13 derniers mois dont le mois en cours et qui a la même structure que les fichiers [nomdestat].csv précédemment utilisés
+DateStat;Incident;Demande;RMA;DEL;undef;CodeStat;OkDispo;OkReserve;SAV;Maintenance;Destruction;Alivrer;CodeStatBis;Seuil;LibStat
+2019-10-31;8;38;0;0;0;C11;8;9;0;5;0;0;C11;15;Imprimantes C11 Chronopost
+2019-11-30;6;47;0;0;0;C11;29;0;0;5;0;0;C11;15;Imprimantes C11 Chronopost
+...
+2020-03-31;35;66;26;0;0;COLPV;595;0;0;0;17;0;COLPV;200;Imprimantes Colissimo Expeditor PV
+2020-04-30;44;54;9;0;0;COLPV;592;0;0;0;19;250;COLPV;200;Imprimantes Colissimo Expeditor PV
+2020-05-31;47;101;15;0;0;COLPV;445;0;0;0;21;250;COLPV;200;Imprimantes Colissimo Expeditor PV
+...
+2020-08-31;24;75;31;0;0;ZPL;283;75;0;0;0;0;ZPL;100;Imprimantes ZPL pour Chronoship
+2020-09-30;47;113;43;0;0;ZPL;237;8;0;0;0;14;ZPL;100;Imprimantes ZPL pour Chronoship
+2020-10-05;5;27;0;0;0;ZPL;224;3;0;0;0;0;ZPL;100;Imprimantes ZPL pour Chronoship
+
+BUG     10:15 04/12/2020 les pages web produites étaient concaténées dans un fichier au lieu d'être placées dans un répertoire
+MODIF   14:18 06/01/2021 plotloopnew.cmd renommé en plotloop.cmd
 
 :debut
-REM @echo %0 %1
-:verifparams
-if @%1@==@@ goto :noargs
-if not exist %1.csv goto :nofile
-set item=%1
-for %%I in (%item%.csv) do if %%~zI==0 goto :zerofile
 
+pushd ..\Data
+sqlite3 sandbox.db ".read ../bin/SFPencours.sql" 1>..\StatsIS\sfpStats.csv 2>%temp%\erreur.sql
+Uecho -n Anomalies de traitement SQLite : 
+grep -v  "UNIQUE" %temp%\erreur.sql |wc -l
+CD ..\StatsIS
 
-if @%moisfin%@==@@ goto :moisfin
+if not exist sfpStats.csv goto :errfich
+REM for %%I in (sfpStats.csv) @echo %%I %%~zI
+for %%I in (sfpStats.csv) do if @%%~zI@==@0@ goto :errsize
 
-rem if @%moisdeb%@==@@ goto :moisdeb
-rem désactivé car moisdeb n'est pas transmis mais calculé ici
-
+REM pause
 if not exist %gnuplot% goto :gnuplot
-:: %gnuplot% est censé contenir le chemin d'accès complet à l'exécutable de gnuplot
-:: le if exist est donc plus efficace que le test de la simple existence de la variable
-:: (et en plus ce test ne marche pas pour une raison sur laquelle je ne vais pas passer plus de temps pour la déterminer)
+REM pause
 
 
-:main
-@echo traitement de %item% en cours
+REM Extraction de la liste des stats à générer
+gawk -F; "NR==1 {next} {print $7}" sfpStats.csv |usort -u -o sfpListe.txt
+:: On évite la première ligne, qui est un en-tête et dont l'utilisation gérèrerait un fichier de taille nulle
+
+REM fixation des bornes temporelles
+:: le fichier csv est calibré sur le mois en cours plus les 12 précédents, donc il n'y a pas à transmettre les dates en paramètre
+gawk -F; -v datemin="9999-99-99" -v datemax="" -v setdatemin="set datedeb=" -v setdatemax="set datefin=" "$1 ~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/ {if ($1 > datemax ) {datemax=$1};if ($1<datemin) {datemin=$1}} END {print setdatemin datemin;print setdatemax datemax}" sfpStats.csv > setbornesdates.cmd
+call setbornesdates.cmd
+
+REM Génération des fichiers de stat
+REM rd /s /q quipo/%datefin% 2>nul
+REM md quipo/%datefin%
+
+if not exist quipo\%datefin%\nul md quipo\%datefin%
+if not exist quipo\%datefin%\nul goto errdossier
+:: 10:15 04/12/2020 sans cela les pages web produites sont concaténées dans un seul fichier au lieu d'être placées dans un répertoire
+
+for /F %%I in (sfpliste.txt) do (
+    @echo Graphique au %datefin% pour %%I
 REM Construit pour chaque famille de produit les fichiers de données pour alimenter gnuplot
-  head -1 %item%.csv |sed -e "s/;/\t/g" -e "s/\\\/-/g" > %item%.tab
-  cat %item%.csv |sed -e "/^[A-z]/d" -e "s/\([0-9][0-9]\)\/\([0-9][0-9]\)\/\([0-9][0-9][0-9][0-9]\)/\3-\2-\1/" -e "/%moisfin:~0,-3%/d" -e "s/;/\t/g"|usort -u |tail -13 >> %item%.tab
-  gawk -F; -v OFS="\t" "{if (sub(/%item%/,\"%moisfin%\",$1)) print}" is-data.csv >> %item%.tab
-  REM Rajout de l'occurence actuelle pour le moisfin en cours
-
+    head -1 sfpStats.csv |sed "s/;/\t/g" > %%I.tab
+    grep %%I sfpStats.csv |sed "s/;/\t/g" >> %%I.tab
+    
   REM Reconstitue un csv à jour
-  cat %item%.csv |grep -v "%moisfin:~0,-3%" >%item%.tmp
-  sed -n "s/^%item%/%moisfin%/p" is-data.csv >>%item%.tmp
+sed -n -e "1p" -e "/%%I/p" sfpStats.csv > %%I.tmp
+  move /y %%I.csv %%I.bak.csv >nul
+  move /y %%I.tmp %%I.csv >nul
 
-  move /y %item%.csv %item%.bak.csv >nul
-  move /y %item%.tmp %item%.csv >nul
 
-  if exist %item%.tab (
-      if not exist %temp%\moisdeb.tmp gawk -F\t "{if (NR==2) if ($1 ~/[0-9]{4}-[0-9]{2}-[0-9]{2}/) print $1}" %item%.tab >%temp%\moisdeb.tmp
-      REM ^^ BUG 11:04 mardi 6 décembre 2016 n'extrait la borne de date inférieure que si elle a un format valide
+    REM Crée le graphique
+    "%gnuplot%"  -c ..\bin\genericplot.plt %%I.tab %datedeb% %datefin% >nul
+    copy /y %%I.png quipo\datefin% >nul
 
-      REM détermination de la borne temporelle inférieure pour le graphique
-      set /p moisdeb=<%temp%\moisdeb.tmp
+    move %%I.* "%moisfin%" >nul
+  copy "%moisfin%\%%I.txt" .  >nul
+  copy "%moisfin%\%%I.csv" .  >nul
 
-       REM Crée le graphique
-      "%gnuplot%"  -c ..\bin\genericplot.plt %item%.tab %moisdeb% %moisfin% >nul
-      rem redirection vers nul sinon ça affiche le chemin du répertoire en cours
-  )
+)
+REM Génération des page web correspondant à chaque stat
+gawk -f ..\bin\newgenHTMLlink.awk sfpListe.txt
+copy /y *.htm quipo\%datefin%
+REM pause
 
-pushd ..\bin
-rem repositionnemnt nécessaire sans quoi le script awk ne trouve pas le module à inclure
-  gawk -f ..\bin\genHTMLlink.awk -v fichier="%item%" -v moisfin="%moisfin%" ..\StatsIS\is-seuil.csv >..\StatsIS\%item%.htm
+
+:fin
 popd
-  REM pause
-  REM génération de la page web affichant le graphique
-  move %item%.* "%moisfin%" >nul
-  copy "%moisfin%\%item%.txt" .  >nul
-  copy "%moisfin%\%item%.csv" .  >nul
-
-:finmain
-
 goto :eof
 
-:traiteerreurs
-:noargs
-msg /w %username% fournir un item de stat en argument
-goto :eof
-:nofile
-rem si pas de fichier, pas de traitement, c'est aussi simple que ça
-rem msg /w %username% Le fichier %1.csv est absent de %cd:&=^&%
-REM nécessité de protéger le & de I&S sinon ce caractère est interprété ce qui ne convient pas dans ce contexte
-goto :eof
-:zerofile
-msg /w %username% Le fichier %item%.csv a une taille nulle
-
-:moisdeb
-msg /w %username% Le mois de debut n'est pas transmis
-goto :eof
-:moisfin
-msg /w %username% Le mois de fin n'est pas transmis
-goto :eof
+:errfich
+msg /w %username% Le fichier sfpStats.csv est absent
+:errsize
+goto fin
+msg /w %username% Le fichier sfpStats.csv a une taille nulle
+goto fin
 :gnuplot
 msg /w %username% Le chemin de gnuplot n'est pas transmis
-goto :eof
+pause
+goto fin
+:errdossier
+msg /w %username% "Impossible de créer le dossier %datefin% suis quipo"
+pause
+goto fin
 
+
+:eof

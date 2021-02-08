@@ -2,6 +2,7 @@
 # calcul du temps depuis chaque produit stocké chez I&S est présent en stock
 # D'après VieStock.awk
 # du 02/10/2019  09:53 
+# MODIF  14:18 11/01/2021 programme rendu obsolète par le portage de la stat sous sqlite
 
 # Champs du fichier d'entrée
 # 1 Qte
@@ -18,6 +19,11 @@
 
 
 BEGIN {
+    {
+        print "Script " PROCINFO["argv"][2] " obsolete, ne plus utiliser, voir code source"
+        exit 1
+    }
+
     FS=";"
     OFS=";"
     nbsecjour=24*60*60

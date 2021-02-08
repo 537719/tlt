@@ -5,6 +5,8 @@
 # CREATION  03/04/2018 - 16:41:43 en tant que nouvelle branche htmlinclude divergeant de la branche statsis
 # MODIF     21:03 12/10/2020 Rajout d'un paramètre facultatif de redirection de sortie pour les routines qui en font une
 # MODIF     21:08 12/10/2020 changement de la géographie de localisation
+# BUG	21:29 05/02/2021 le passage de gawk 4 à gawk 5 impose de remplacer \: par : dans les regexp
+
 
 function classifinfo(c,     i,x,ligne) # affiche une ligne (typiquement en bas de page) correspondant au niveau de classification de l'information
 {   # le paramètre (c) correspond au niveau de confidentialité selon la nomenclature suivante
@@ -129,7 +131,7 @@ function inittableau(ttitre,theader,tfooter,tcolgroupstring,thoptions           
 function htmllink(url,texte,cible)
 {
     switch (cible) {
-        case /^\_blank$|^_parent$|^_self$|^_top$/ :
+        case /^_blank$|^_parent$|^_self$|^_top$/ :
         {
             cible=" target=\"" cible "\""
             break

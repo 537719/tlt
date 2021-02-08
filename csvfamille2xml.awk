@@ -1,10 +1,11 @@
 # csvfamille2xml.awk
 # d'après csvproj2xml.awk 24/10/2018 - 18:23:49
 # CREE  09/11/2018 - 13:39:04 convertit en xml le fichier csv récapitulant le stock par famille de produits
+# BUG	21:29 05/02/2021 le passage de gawk 4 à gawk 5 impose de remplacer \: par : dans les regexp
 
 function special2html(chaine) # convertit les caractères spéciaux en caractères html
 {
-    gensub(/\&/,"&amp;","g",chaine)
+    gensub(/&/,"&amp;","g",chaine)
 	gensub(/á/,"&aacute;","g",chaine)
 	gensub(/á/,"&aacute;","g",chaine)
 	gensub(/â/,"&acirc;","g",chaine)

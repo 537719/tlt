@@ -1,7 +1,7 @@
 # genHTMLindex.awk
 # 12:56 vendredi 20 mai 2016
 # d'après genHTMLlink.awk 12:55 vendredi 20 mai 2016
-# MODIF 15:05 vendredi 1 juillet 2016 ajoute le nom du générateur dans le header htmp
+# MODIF 15:05 vendredi 1 juillet 2016 ajoute le nom du générateur dans le header html
 # MODIF 15:05 vendredi 1 juillet 2016 Rend cliquable l'icone de chaque ligne d'index
 # MODIF 14:35 lundi 9 janvier 2017 réécriture presque totale
 # 	sortie sous la forme de page web 3 colonnes (une par ligne de produits : COLissimo / CHRonopost / chronoSHiP) au lieu d'une seule
@@ -18,6 +18,10 @@
 # MODIF 12/10/2018 - 10:34:03 - réécriture du talon du tableau de manière à lier vers la page de suivi des projets
 # MODIF 03/12/2018 - 11:43:24 - le lien "alturing" pointe désormais vers la page du stock alturing par famille de produits
 # MODIF 15:32 02/08/2019 - Rajoute un lien vers les stats du support de proximité
+# MODIF 10:23 06/01/2021 correction de fautes d'orthographes dans les commentaires et revue du fonctionnement du script :
+#                        La ventilation selon les BU se fait en fonction du fait que le nom de la BU concernée soit présent dans le libellé associé au produit dans le fichier is-seuil.csv
+#                        Pour faire prendre en compte un nouveau produit il faut donc écrire correctement le nom de la bu dans ce fichier
+#                        et pour ne plus prendre en compte un ancien produit il suffit de supprimer sa ligne
 
 #
 # génération de l'index de toutes les pages web générées
@@ -28,7 +32,7 @@
 
 @include "IShtmlInclude.awk"
 
-function iconebu(bu) # rent une chaine html affichant l'icône liée à la bu fournie en argument
+function iconebu(bu) # rend une chaine html affichant l'icône liée à la bu fournie en argument
 {
     return "\t\t\t\t<th colspan=\"2\"><img style=\"border: 0px solid ; width: 64px;\" src=\"../webresources/" bu ".png\" alt=\"logo " bu "\"></th>"
 }

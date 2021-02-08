@@ -8,9 +8,11 @@ CREE    11:47 jeudi 26 septembre 2019 aggr‚gation de l'extraction, de l'aggr‚gat
                 ventileNR.sqlite aggr‚gation du nombre de produits sortis par famille selon qu'ils soient neufs ou reconditionn‚s
                 histocumul.plt    histogramme montrant une barre par ligne de fichier comportant deux valeurs à cumuler.
 MODIF   14:39 mercredi 2 octobre 2019 le titre du graphique est d‚sormais pass‚ en paramŠtre
-BUG      10:33 lundi 4 novembre 2019 convertit l'encodage du script en OEM:863 afin d'afficher correctement les accents dans le graphique gnuplot
+BUG     10:33 lundi 4 novembre 2019 convertit l'encodage du script en OEM:863 afin d'afficher correctement les accents dans le graphique gnuplot
 MODIF   15:49 vendredi 17 janvier 2020 prend comme fichier d'entr‚e tous les is_out_aaaamm.csv de l'ann‚e aaaa en cours
-                
+MODIF   13:37 06/01/2021 Refonte totale, utilise la bdd sqlite standard au lieu d'en cr‚er une ad hoc. Rend obsolŠtel les scripts awk et sqlite ‚ponymes
+MODIF   08:55 07/01/2021 R‚‚criture de la ligne de querysqlite en sp‚cifiant les champs … produire suite au rajout dans la vue utilis‚e du nom de la BU, qui n'est pas utilis‚ ici
+MODIF   16:33 08/01/2021 remplace la copie du graphique PNG dans le dossier de publication par un d‚placement depuis le dossier de g‚n‚ration
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
@@ -28,8 +30,11 @@ goto :eof
 
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
 
+                
 :: calcul de l'ann‚e en cours
 set annee=%date:~6,4%
+goto :skipobsolete
+:: 13:37 06/01/2021 Refonte totale, utilise la bdd sqlite standard au lieu d'en cr‚er une ad hoc. Rend obsolŠtel le traitement par awk
 
 if not exist is_out_%annee%??.csv goto :erreurdata
 
@@ -41,6 +46,13 @@ gawk -f ..\bin\ventileNR.awk is_out_%annee%??.csv > ..\work\ventileNR.csv
 :: Aggr‚gation des totaux par famille et statut
 cd ..\work
 sqlite3 < ..\bin\ventileNR.sqlite
+
+:skipobsolete
+pushd "%isdir%\Data"
+sqlite3 -separator ; -header sandbox.db "select  Annee,Produit, Neuf, Recond from v_VentileNR where BU = 'CHR' AND annee='%annee%';" > ..\work\ventilNRan.csv
+sqlite3 -separator ; -noheader sandbox.db "select min(datebl) from v_sorties where datebl LIKE '%annee%' || CHAR(37);select max(datebl) from v_sorties where datebl like '%annee%' || CHAR(37);" > ..\work\Bornes.txt
+:: CHAR(37) = caractŠre "%" qui pose des problŠme si utilis‚ tel quel dans un batch (pas des souci en ligne de commande)
+cd ..\work
 set fichierdonnees=ventilNRan.csv
 
 :: D‚limitation des bornes pour la l‚gende
@@ -55,7 +67,8 @@ set titregraphique1=R‚partition des d‚stockages selon mat‚riel neuf et reconditi
 set titregraphique2=entre 
 %gnuplot% -c ..\bin\histocumul.plt %fichierdonnees% %datedeb% %datefin% "%titregraphique1%" "%titregraphique2%"
 
-copy /y histo_%datedeb%_%datefin%.png "%isdir%\StatsIS\quipo\VentilNR\histo.png"
+ren histo_%datedeb%_%datefin%.png histo.png
+move /y histo.png "%isdir%\StatsIS\quipo\VentilNR\"
 popd
 
 goto :eof

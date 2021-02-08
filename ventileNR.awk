@@ -21,9 +21,14 @@
 #   Création 16/09/2019  11:53
 #   Modif 11:44 mardi 17 septembre 2019 agrège tous les produits "shipping" comme étant une seule famille
 #   Modif 14:20 mardi 24 septembre 2019 remplace le nom de famille "PC Fixe" par "UC Fixe" pour des raisons d'ordre de tri
+#   Modif 16:35 vendredi 8 janvier 2021 programme rendu obsolète par le portage de la stat sous sqlite
 
 
 BEGIN {
+    {
+        print "Script " PROCINFO["argv"][2] " obsolete, ne plus utiliser, voir code source"
+        exit 1
+    }
     FS=";"
     OFS=";"
     champdate=0 # dans le cas où on ne sait pas du tout où se trouve le premier champ de date

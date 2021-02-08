@@ -1,11 +1,18 @@
 -- SuiviMvt.sql
 -- CREATION 11:34 28/09/2020 Marque comme étant vus les mouvements I&S à suivre qui viennent d'être détectés.
 -- MODIF    22:32 07/10/2020 Produit un fichier texte des mouvements du dernier jour ouvrable
+-- MODIF    12:14 11/12/2020 ramène la création des index en tête de requête et active le timer pour l'exécution des requêtes
+
 -- Prérequis :
 -- -- Existence de la base TABLE SuiviMvt consignant la liste des mouvements suivis
 
 -- Mise à jour de la table des mouvements suivis
 -- Opère sur la surveillance des APT, Dossiers ou colis reçus et sur les dossiers expédiés
+
+CREATE INDEX IF NOT EXISTS k_SuiviMVT_date ON SuiviMVT(DateVu DESC);
+CREATE INDEX IF NOT EXISTS k_OFLX_RefClient ON OFLX(RefClient);
+CREATE INDEX IF NOT EXISTS k_SORTIES_glpi ON SORTIES(GLPI);
+CREATE INDEX IF NOT EXISTS k_SuiviMVT_Donnee_Datevu ON SuiviMVT(Donnee, DateVu);
 
 -- -- surveille entrées :
 -- Marque comme étant vu les dossiers/APT/colis surveillés qui apparaissent dans le matériel reçu
@@ -151,11 +158,6 @@ WHERE
 ;
 .changes off
 .print Restitution des données
-
-CREATE INDEX IF NOT EXISTS k_SuiviMVT_date ON SuiviMVT(DateVu DESC);
-CREATE INDEX IF NOT EXISTS k_OFLX_RefClient ON OFLX(RefClient);
-CREATE INDEX IF NOT EXISTS k_SORTIES_glpi ON SORTIES(GLPI);
-CREATE INDEX IF NOT EXISTS k_SuiviMVT_Donnee_Datevu ON SuiviMVT(Donnee, DateVu);
 
 
 CREATE VIEW IF NOT EXISTS v_SuiviMvt AS
@@ -364,14 +366,11 @@ CREATE VIEW IF NOT EXISTS vv_SuiviMvt_1jour AS
     WHERE   DateMvt >= QueryDate AND DateMvt like "____-__-__"
     ORDER BY DateMvt DESC,DateSurv DESC
 ;
+.timer on
 .once ../work/lastmvt.txt
 SELECT * FROM vv_SuiviMvt_1jour;
 
 .print restaure config
 .read ../bin/buildsqliteshowrestore.sql
 .read ../bin/sqliteshowrestore.sql
-CREATE INDEX IF NOT EXISTS k_SuiviMVT_date ON SuiviMVT(DateVu DESC);
-CREATE INDEX IF NOT EXISTS k_OFLX_RefClient ON OFLX(RefClient);
-CREATE INDEX IF NOT EXISTS k_SORTIES_glpi ON SORTIES(GLPI);
-CREATE INDEX IF NOT EXISTS k_SuiviMVT_Donnee_Datevu ON SuiviMVT(Donnee, DateVu);
 

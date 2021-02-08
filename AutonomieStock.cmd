@@ -12,7 +12,8 @@ PREREQUIS  requˆte AutonomieStock.sql en ..\bin
                         Stock (s‚rie de fichiers is_stock*.csv)
                     accŠs … SQLite
                     accŠs aux utilitaires GNU
-
+                    
+R‚‚criture  21:11 26/12/2020 exploite une nouvelle requˆte SQL 
 :debut
 REM @echo off
 :: d‚termination du dossier de travail
@@ -32,6 +33,16 @@ goto :fin
 
 REM positionnement dans le dossier de donn‚es
 pushd ..\Data
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: R‚‚criture  21:11 26/12/2020 exploite une nouvelle requˆte SQL ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+sqlite3 -header -separator ; sandbox.db "select * from V_Autonomie_date ;" | gawk -f ..\bin\csv2xml.awk  |sed "s/&/&amp;/g"> "..\StatsIS\quipo\AutonomieStock\fichier.xml"
+sqlite3 -noheader sandbox.db "select max(indate) from v_stock;" > "..\StatsIS\quipo\AutonomieStock\date.txt"
+:::::::::::::::::::
+:: Et c'est fini ::
+:::::::::::::::::::
+goto :fin
 
 REM v‚rification de l'existence des donn‚es
 :: existence du stock

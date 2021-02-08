@@ -20,13 +20,15 @@
 # MODIF 11:47 08/03/2019 inversion de l'ordre d'affichage des dates des bornes dans le nom de fichier de sortie
 # MODIF 11:42 01/04/2019 rajout de la prise en compte des fichiers des dossiers traités (OFLX : OFLWEBEXPEDIES) et rajout de commentaires
 # MODIF 17:47 23/06/2020 prise en compte du rajout du numéro des colis expédiés dans les OFLX
-
+# MODIF 04:50 28/01/2021 considère que  les exports de stock sans date ni tagis sont de type oldstock et non stock
+# MODIF 21:08 05/02/2021 le dossier de travail est désormais sous /ALT/ et non sous /TLT/
+# BUG	21:29 05/02/2021 le passage de gawk 4 à gawk 5 impose de remplacer \: par : dans les regexp
 BEGIN {
     FS=";"
     OFS=FS
     # outputdir="C:\\Us\\Documents\\TLT\\I&S\\Historique\\"
     # outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Historique/" # emplacement relatif constant quelque soit le compte utilisateur
-    outputdir=ENVIRON["HOME"] "/Documents/TLT/I&S/Data/" # emplacement relatif constant quelque soit le compte utilisateur
+    outputdir=ENVIRON["HOME"] "/Documents/ALT/I&S/Data/" # emplacement relatif constant quelque soit le compte utilisateur
    hzero="00 00 00"
     
 }
@@ -75,7 +77,7 @@ BEGINFILE {
                 break
             }
             case 7 : { # export du stock (jusqu'au champ vide après Num"ro de s▒"ie)
-                typefich="stock"
+                typefich="oldstock"
                 champdate=0 # pas de champ date dans cette version
                 break
             }
@@ -96,7 +98,7 @@ BEGINFILE {
         }
     } else { #run
         if (champdate) { # on ne cherche une date que si l'enregistrement est censé en contenir une
-            split($champdate,adateevent,/\/|\:| /) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure plus un autre entre la date et l'heure
+            split($champdate,adateevent,/\/|:| /) # extrait les éléments de date/heure en tenant compte du fait qu'on a deux types de séparateurs différents pour la date et l'heure plus un autre entre la date et l'heure
             datestring=adateevent[3] " " adateevent[2] " " adateevent[1] " " adateevent[4] " " adateevent[5] " " adateevent[6] " " hzero " " hzero
             #deux fois hzero car 1°) ça ne gêne pas et 2°) dans un cas on peut avoir une date-heure et dans l'autre non donc il faut la rajouter 
             # print datestring

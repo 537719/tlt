@@ -62,3 +62,15 @@ remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
 To https://github.com/537719/tlt
  * [new branch]      statsis -> statsis
 Branch 'statsis' set up to track remote branch 'statsis' from 'https://github.com/537719/tlt'.
+
+pour supprimer une branche distante
+git push origin --delete [nom_de_la_branche]
+
+pour supprimer une branche locale
+git branch -d [nom_de_la_branche]
+pour forcer la suppression si la branche n'a pas été correctement fusionnée au préalable
+git branch -D [nom_de_la_branche]
+
+pour propager la modif sur tous les autres ordis qui utilisent ce dépôt
+git fetch --all --prune
+

@@ -1,10 +1,11 @@
 # csvproj2xml.awk
 # CREE  19/10/2018 - 11:46:02 convertit en xml le fichier csv récapitulant le matériel expédié ou non sur les projets
 # BUG   24/10/2018 - 18:23:49 filtre les caractères "&" qui plantent le XML
+# BUG	21:29 05/02/2021 le passage de gawk 4 à gawk 5 impose de remplacer \& par  dans la fonction special2html
 
 function special2html(chaine) # convertit les caractères spéciaux en caractères html
 {
-    gensub(/\&/,"&amp;","g",chaine)
+    gensub(/&/,"&amp;","g",chaine)
 	gensub(/á/,"&aacute;","g",chaine)
 	gensub(/á/,"&aacute;","g",chaine)
 	gensub(/â/,"&acirc;","g",chaine)

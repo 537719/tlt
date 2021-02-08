@@ -3,11 +3,13 @@
 -- MODIF    17:06 01/12/2020    le cumul des produits expédiés est désormais calculé sur le mois écoulé et non depuis le début du mois
 -- --                           -- parce que c'est désormais possible
 -- --                           -- parce que ça donne à tout moment une vision plus lisse et plus parlante de la situation
+-- MODIF    18:04 11/01/2021    Ajout d'un champ permettant de gérer le statut d'activité de chaque famille de produit
 
 CREATE TABLE IF NOT EXISTS sfpListe(
     CodeStat    TEXT NOT NULL PRIMARY KEY,
     LibStat     TEXT NOT NULL,
     Seuil       INTEGER NOT NULL
+    Active      TEXT DEFAULT "Oui"
 );
 
 CREATE TABLE IF NOT EXISTS sfpProduits(
@@ -142,6 +144,7 @@ WHERE
         AND SFPliste.CodeStat=sfpProduits.CodeStat
     AND v_TransposeStatsSorties.CodeStat=SFPliste.CodeStat
     AND v_TEexport.Reference like sfpproduits.reference
+    AND SFPliste.Active="Oui"
 group by sfpproduits.codestat
 ;    
 
@@ -156,6 +159,7 @@ WHERE
         AND SFPliste.CodeStat=sfpProduits.CodeStat
     AND v_TransposeStatsSorties.CodeStat=SFPliste.CodeStat
     AND v_TEexport.Reference like sfpproduits.reference
+    AND SFPliste.Active="Oui"
 group by sfpproduits.codestat
 ;
 
@@ -163,14 +167,16 @@ CREATE VIEW IF NOT EXISTS v_sfpStats AS
 WITH storage AS (
     SELECT date(max(dateimport),"start of month","-1 year","-1 month") AS mindate,date(max(dateimport),"start of month","-1 day") AS maxdate,max(dateimport) AS lastdate FROM histostock
 )
-SELECT  DateStat,Incident,Demande,RMA,DEL,undef,CodeStat,OkDispo,OkReserve,SAV,Maintenance,Destruction,Alivrer,CodeStatBis,Seuil,LibStat 
-FROM    sfpstats,storage 
-WHERE   codestat IN (select codestat from sfpstats group by codestat)
+SELECT  DateStat,Incident,Demande,RMA,DEL,undef,sfpstats.CodeStat,OkDispo,OkReserve,SAV,Maintenance,Destruction,Alivrer,CodeStatBis,sfpstats.Seuil,sfpstats.LibStat 
+FROM    sfpstats,storage,sfpliste
+WHERE   sfpstats.codestat IN (select codestat from sfpstats group by codestat)
+    AND sfpstats.codestat=sfpliste.codestat
+    AND sfpliste.active="Oui"
     AND (
         datestat=lastdate 
     OR  datestat BETWEEN storage.mindate AND storage.maxdate
         )
-ORDER BY codestat ASC, datestat ASC
+ORDER BY sfpstats.codestat ASC, datestat ASC
 ;
 
 .separator ;

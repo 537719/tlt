@@ -11,6 +11,7 @@
 # MODIF       22:19 samedi 1 février 2020 simplification de la logique de la boucle d'écriture du plot
 # MODIF      En cours d'écriture : si pas de BU spécifiée, identifie les BU présente et fait une aire par BU au lieu d'une par produit de la BU spécifiée
 # MODIF     16:41 mardi 4 février 2020 rajout de "ISI" en tant que pseudo-BU afin de pouvoir générer les stats d'incident de production I&S qui utilisent le même format de fichier mais avec la valeur ISI là ou l'on a la BU
+# MODIF     10:32 14/01/2021 adaptation à d'autres intitulés de données (IN et OUT)
 
 # Exemple de format de fichier d'entrée
 # Date;CHR Ecran;CHR Imprimante;CHR PC;COL Ecran;COL Imprimante;COL PC;Total
@@ -26,11 +27,19 @@
 BEGIN {
     FS=";"
     OFS=";"
+    IGNORECASE=1
+    
+    if (finnom=="") {
+        finnom="13mois"
+    }
+    if (finnom !~ /\.png$/) {
+        finnom = finnom ".png"
+    }
    # if (BU !~ /COL|TEL/ ) BU="CHR"
     # ^^ à supprimer, si pas d'indication de BU prendre tout et faire la ventilation selon le total des données de chaque BU
 }
 
-NR==1 && BU ~ /CHR|COL|TEL|ISI/ { # seule la ligne d'en-tête sert pour générer le script
+NR==1 && BU ~ /CHR|COL|TEL|ISI|Sorties|IN/ { # seule la ligne d'en-tête sert pour générer le script
     minind=NF
     maxind=0
     for (i=2;i<=NF;i++) {# détermination du range de colonnes à utiliser
@@ -96,7 +105,11 @@ NR==1 && BU ~ /CHR|COL|TEL|ISI/ { # seule la ligne d'en-tête sert pour génére
     print "set grid noxtics"
     print "set terminal png size 1024,768"
     print "filename=\"graphdata.csv\""
-    print "set output ARG1 . \"13mois.png\""
+    # print "set output ARG1 . " finnom " x"
+    # print "set output ARG1 . \" BU \" x"
+    sortie = "set output ARG1 . "
+    sortie = sortie "\"" finnom "\""
+    print sortie
     print "# ARG1 est le nom de la BU concerné"
     print "# Attention, séquence compliquée pour l'encodage du titre"
     print "# afin de gérer le cas des titres contenant à la fois une apostrophe (comme dans \"d'incidents\" et un & comme dans \"I&S\""

@@ -8,6 +8,7 @@
 # OK       01/10/2019  16:31
 # MODIF  02/10/2019  09:53 ajoute en première colonne le log décimal de la durée calculée
 # MODIF  14:30 28/02/2020 ajoute un contrôle d'erreur sommaire sur le nombre de champs (pour limiter le risque de confusion avec AgeStock.awk)
+# MODIF  13:14 11/01/2021 programme rendu obsolète par le portage de la stat sous sqlite
 
 # Champs du fichier d'entrée
 # 1 GLPI
@@ -35,6 +36,10 @@
 
 
 BEGIN {
+    {
+        print "Script " PROCINFO["argv"][2] " obsolete, ne plus utiliser, voir code source"
+        exit 1
+    }
     FS=";"
     OFS=";"
     nbsecjour=24*60*60

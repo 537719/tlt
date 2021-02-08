@@ -9,6 +9,11 @@
 
 -- # Nécessite en entrée la sortie produite par le script ventileNR.awk postérieur du 16 septembre 2019 
 
+-- MODIF 16:43 vendredi 8 janvier 2021 script rendu obsolète par l'intégration de la stat dans la bdd sqlite générale
+
+.print "script obsolète, ne plus utiliser"
+.exit
+
 .separator ;
 CREATE TABLE VENTILENR(
     TagIS   TEXT,

@@ -4,11 +4,13 @@
 # BUG   14:33 11/02/2020 le remplacement des & ne marche pas. Non résolu, contourner par un sed en sortie
 # BUG   15:06 26/10/2020 la fonction printchamp réduisait à "rien qu'une date" tout champ contenant une date, au mépris des textes longs contenant des dates
 # MODIF 15:10 26/10/2020 remplace le format de date en sortie de aaaa/mm/jj en aaaa-mm-jj
+# BUG	21:29 05/02/2021 le passage de gawk 4 à gawk 5 impose de remplacer \& par  dans la fonction special2html
 
 function special2html(chaine) # convertit les caractères spéciaux en caractères html
 {
+return chaine
     # spx=gensub(/\&/,"&amp;","g",chaine)
-	gensub(/\&/,"&amp;","g",chaine)
+	gensub(/&/,"&amp;","g",chaine)
     # spx=gensub(/\\&/,"et;","g",chaine)
 	spx=spx+gensub(/á/,"&aacute;","g",chaine)
 	spx=spx+gensub(/á/,"&aacute;","g",chaine)

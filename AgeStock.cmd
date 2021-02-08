@@ -9,7 +9,8 @@ CREE    16:20 vendredi 17 janvier 2020 d'après 17/01/2020  16:18              2
                 histocumul.plt    histogramme montrant une barre par ligne de fichier comportant deux valeurs à cumuler. (on n'en utilise qu'une ici)
             Données en entrée : Le fichier is_stock_*.csv portant sur la période la plus récente
 BUG     14:23 20/11/2020 la détermination des bornes temporelles était perturbée par la présence de fichiers n'ayant pas une structure de date
-                
+MODIF   14:17 11/01/2021 Refonte totale, utilise la bdd sqlite standard au lieu d'en créer une ad hoc. Rend obsolŠtel le traitement par awk
+
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
@@ -29,6 +30,7 @@ set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe
 
 REM :: calcul de l'année en cours
 REM set annee=%date:~6,4%
+goto :skipobsolete
 
 :: Extraction des données
 pushd "%isdir%\Data"
@@ -47,21 +49,32 @@ dir is_stock*-*.csv /o /b |tail -1 |sed "s/.*\([0-9][0-9][0-9][0-9]\)\([0-9][0-9
 REM head -1 bornes.txt > %temp%\datedeb.tmp
 REM tail    -1 bornes.txt > %temp%\datefin.tmp
 
-set /p datedeb=<%temp%\datedeb.tmp
-set /p datefin=<%temp%\datefin.tmp
 
 ::
 :: Aggrégation des totaux par famille et statut
 cd ..\work
 sqlite3 < ..\bin\VieStock.sqlite
+
+:skipobsolete
+pushd "%isdir%\Data"
+sqlite3 -separator ; -header sandbox.db "select  Classe,LibClasse,Nb from vv_AgeStock ;" > ..\work\resultats.csv
+sqlite3 -noheader sandbox.db "select min(InDate) from v_Stock" > %temp%\datedeb.tmp
+sqlite3 -noheader sandbox.db "select max(InDate) from v_Stock" > %temp%\datefin.tmp
+
 set fichierdonnees=resultats.csv
 
+set /p datedeb=<%temp%\datedeb.tmp
+set /p datefin=<%temp%\datefin.tmp
+
 ::génération du graphique
+cd ..\work
 set titregraphique1=Ventilation par ordre de grandeur du temps de presence
 set titregraphique2=pour les produits entrees en stock entre 
 %gnuplot% -c ..\bin\histocumul.plt %fichierdonnees%  %datedeb% %datefin% "%titregraphique1%" "%titregraphique2%"
 
-copy /y histo_%datedeb%_%datefin%.png "%isdir%\StatsIS\quipo\AgeStock\histo.png"
+ren histo_%datedeb%_%datefin%.png histo.png
+move /y histo.png "%isdir%\StatsIS\quipo\AgeStock\"
+REM copy /y histo_%datedeb%_%datefin%.png "%isdir%\StatsIS\quipo\AgeStock\histo.png"
 popd
 
 goto :eof

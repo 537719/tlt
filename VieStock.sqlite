@@ -2,6 +2,10 @@
 -- CREATION    15:06 mercredi 2 octobre 2019 Ventilation par ordre de grandeur de la durée de stockage des sorties effectuées par I&S
                    -- part du fichier viestock.csv produit par le script viestock.awk
                    -- produit en sortie un ventilation par "classe" de délai, la classe étant calculée par le script awk comme étant  l'arrondi au plus proche du log10 du nombre de jours passés en stock
+-- MODIF       13:14 11/01/2021 script rendu obsolète par l'intégration de la stat dans la bdd sqlite générale
+
+.print "script obsolète, ne plus utiliser"
+.exit
 
 CREATE TABLE VieStock(
     classe INTEGER,
