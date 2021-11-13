@@ -1,5 +1,6 @@
 -- cataltstock.sql
--- 09/11/2018 - 13:03:37 traite dans sqlite le résultat produit par cataltstock.cmd de manière à avoir les quantités de tous les articles alturing du catalogue
+-- CREATION 09/11/2018 - 13:03:37 traite dans sqlite le résultat produit par cataltstock.cmd de manière à avoir les quantités de tous les articles alturing du catalogue
+-- MODIF    22:01 28/04/2021 fait la jointure avec un like plutôt qu'un égale afin de pouvoir agréger tous les écrans en une seule catégorie
 
 -- quantités par produit, sans distinction de stock d'appartenance ni de qualité de neuf ou reconditionné
 .separator ;
@@ -16,13 +17,13 @@ ORDER BY Reference ASC
 .import famillesproduits.csv Familles
 .output stockALTparfamilles.csv
 SELECT SUM(OkDispo) AS Dispo, SUM(`A Livrer`) AS Attendu
-, stock.er as Code
-,familles.famille as Famille
+, er  as Code,
+familles.famille as Famille
 FROM Stock
 ,Familles
-WHERE stock.er = Familles.Code
+WHERE stock.er LIKE Familles.Code
 
-Group by Code
-Order by Code
+Group by famille
+Order by er
 ;
 .output

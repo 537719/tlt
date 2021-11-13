@@ -2,41 +2,41 @@
 # 14:29 mardi 31 mai 2016
 # affiche le nom des champs composant le fichier csv passé en argumument, ainsi que leur longueur maximale et leur type
 # MODIF 10:27 15/02/2020 rajoute une détermination de type "dateheure"
+# MODIF 18:59 27/10/2021 teste le pattern NR au lieu de faire un if/else
 BEGIN {
     FS=";"
     OFS="\t"
 }
 
-{ #MAIN
-    if (NR==1) {
+NR==1 {
         for (i=1;i<=NF;i++) {
             champ[i]=$i
             type[i]="num"
             void[i]=0
             long[i]=0
         }
-    } else {
-        for (i=1;i<=NF;i++) {
-            currentfield=$i
-            if (length(currentfield) > long[i]) long[i]=length(currentfield)
-            if (currentfield=="") {
-                void[i]++
-            } else {
-                if (type[i]=="num") {
-                    if (currentfield + 0 != currentfield) {
-                        type[i]=""
-                        if (currentfield ~ /[0-9]*[-|\/][0-9]*[-|\/][0-9]*/) {
-                            type[i]="date"
-                        }
-                        if (currentfield ~ /[0-9]*:[0-9]*/) {
-                            type[i]=type[i] "heure"
-                        }
-                        if (type[i]=="") {
-                            type[i]="text"
-                        }
-                        if (currentfield ~ /\.|,/) {
-                            type[i]="num"
-                        }
+}
+NR > 1    {
+    for (i=1;i<=NF;i++) {
+        currentfield=$i
+        if (length(currentfield) > long[i]) long[i]=length(currentfield)
+        if (currentfield=="") {
+            void[i]++
+        } else {
+            if (type[i]=="num") {
+                if (currentfield + 0 != currentfield) {
+                    type[i]=""
+                    if (currentfield ~ /[0-9]*[-|\/][0-9]*[-|\/][0-9]*/) {
+                        type[i]="date"
+                    }
+                    if (currentfield ~ /[0-9]*:[0-9]*/) {
+                        type[i]=type[i] "heure"
+                    }
+                    if (type[i]=="") {
+                        type[i]="text"
+                    }
+                    if (currentfield ~ /\.|,/) {
+                        type[i]="num"
                     }
                 }
             }

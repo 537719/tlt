@@ -1,6 +1,7 @@
 # genMultiCourbes.awk
 # CREATION  13:16 29/01/2021 d'après GenEmpilAire.awk du 15:52 25/01/2021 génération d'un graphique à lignes multiples à abscisse mensuelle 
 # MODIF     18:24 29/01/2021 détermine le format temporel pour la génération du script gnuplot en fonction du format détecté dans le 1° champ de données
+# MODIF     17:52 09/02/2021 restriction de la plage de couleurs à +/- 96 au lieu de +/- 127 afin de ne pas être gêné par du blanc sur blanc
 
 # Usage : Depuis la ligne de commande
 # gawk -f genMultiCourbes.awk  fichierdentree.csv > nomdescriptgnuplot.plt
@@ -41,7 +42,7 @@ NR==1 {
         signeV= (modulo(ii-1,3)-1) # en fonction de la variable, rend la série  0 -1 1 0 -1 1 0 -1 1 
         signeB= -(modulo(jj,3)-1)   # en fonction de la variable, rend la série -1 -1 0 0 1 1 -1 -1 0 0 1 1
         
-        couleur[i]=sprintf("#%02X%02X%02X",127+127*signeR,127+127*signeV,127+127*signeB)
+        couleur[i]=sprintf("#%02X%02X%02X",127+96*signeR,127+96*signeV,127+96*signeB)
     }
 
 }

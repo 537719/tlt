@@ -14,7 +14,7 @@ AWK (ici dans sa version GNU Gawk 4, issu de la distrib de GIT)
 FIND unix (ici renomm‚ ufind afin de ne pas le confondre avec le find windows)
 
 MODIF : 23/02/2018 - 11:00:00 finalisation
-MODIF : 08/06/2018 - 15:20:24 r‚solution d'un conflit pour cause de présence d'un & dans le chemin du dossier défini par %isdir%
+MODIF : 08/06/2018 - 15:20:24 r‚solution d'un conflit pour cause de pr‚sence d'un & dans le chemin du dossier d‚fini par %isdir%
 MODIF : 18:25 30/03/2020 pour chaque fichier export‚, cr‚e une copie au nom statique en plus du nom horodat‚
 MODIF : 10:12 27/05/2020 convertit le plus r‚cent des ..\data\stock\te*.csv en TEexport_dernier.csv c'est … dire … l'identique + un champ indiquant la date de l'export
 MODIF : 11:03 27/05/2020 enchaŒne avec l'actualisation de la BDD SQLite des donn‚es I&S
@@ -44,7 +44,19 @@ MODIF : 18:28 04/02/2021 L'invocation du script CoutStock.cmd se fait d‚sormais 
                          Entraine la modification de l'ordre d'appel des sous scripts car la BDD est verrouill‚e
 BUG	  : 21:29 05/02/2021 le passage de gawk 4 … gawk 5 impose de remplacer \& par  dans la fonction special2html
 BUG   : 22:34 05/02/2021 coutstock.cmd et statstock.cmd sont d‚port‚es de exportis.cmd vers creestat.cmd car, longues … ex‚cuter, elles verrouillent les m…j de la bdd et donc perturbent la g‚n‚ration des stats si elles sont lanc‚es ici
-
+MODIF : 12:35 18/02/2021 g‚nŠre le lien auguste des derniers retours d'UC afin de voir v‚rifier dans leur suivi si elles ‚taient attendues (surveillance du renvoi d'UC xp)
+MODIF : 15:29 23/02/2021 remplace l'affichage texte de l'url de suivi de colis par une invocation de l'url dans chrome
+BUG   : 13:26 24f/02/2021 correction d'une erreur dans la maniŠre de passer … Chrome l'URL … ouvrir
+MODIF : 14:09 12/03/2021 l'url concerne maintenant tous les retours de r‚f‚rences "sensibles" et non juste les UC (donc inclut les serveurs)
+MODIF : 16:55 05/04/2021 met de c“t‚ les CSV servant … g‚n‚rer les xml afin de les exploiter ult‚rieuremetn
+MODIF : 10:18 16/04/2021 gŠre un signal de verrouillage afin d'‚viter que d'autres scripts essaient d'‚crire dessus en mˆme temps
+BUG   : 20:34 19/04/2021 le suivi des retours se fait via un script plut“t que par l'invocation d'une url
+MODIF : 18:33 11/05/2021 n'affiche pas le fichier des livraisons magnetik s'il n'y en a pas, mais un message d'avertissement … la place
+MODIF : 11:39 30/08/2021 actualise la liste des produits exp‚di‚s (prˆt depuis plusieurs mois mais oubli‚ d'ajouter)
+MODIF : 15:09 06/09/2021 actualisation de l'‚tat du stock non ok. Voir s'il faut le laisser ici o— l'ex‚cuter … part
+BUG   : 21:10 17/10/2021 ajout d'une clause "delims=*" dans la boucle de scan des fichiers export‚s afin de prendre en compte la pr‚sence ‚ventuelle d'espaces (si provenant de chrome par exemple)
+MODIF : 13:45 09/11/2021 ajoute la production de la liste de sites linux
+MODIF : 13:45 09/11/2021 ajoute la production de la liste de PC linux exp‚di‚s mais non enregistr‚s comme revenus au stock
 :debut
 REM @echo on
 set gnuplot=%userprofile%\bin\gnuplot\bin\gnuplot.exe  
@@ -56,7 +68,17 @@ goto isdirok
 msg /w %username% Impossible de trouver le dossier I^&S
 goto :eof
 :isdirok
-@echo off
+
+REM signal de blocage
+:testblocage
+if exist %temp%\bdd.maj (
+set /p blocagebdd=<%temp%\bdd.maj
+for %%I in ("%temp%\bdd.maj") do msg /w %username% "Un signal de blocage a ‚t‚ ‚mis … %%~tI par %blocagebdd%"
+pause
+)
+if exist %temp%\bdd.maj goto testblocage
+@echo %0 > %temp%\bdd.maj
+:: ^^ pour pr‚venir qu'il faut attendre que la bdd soit lib‚r‚e avant de pouvoir ‚crire dessus
 
 
 if not exist %userprofile%\downloads\export*.csv goto :raf
@@ -68,7 +90,7 @@ touch ..\data\derniers.cmd
 
 @echo Boucle de scan des fichiers d'export
 REM for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "%isdir%\bin\ExportIS.awk" "%%I" &&del "%%I")
-for /F %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "ExportIS.awk" "%%I" &&del "%%I")
+for /F "delims=*" %%I in ('ufind "%userprofile%\downloads" -name "expo*.csv" ^|sed "s/\\//\\\/g"') do (gawk -f "ExportIS.awk" "%%I" &&del "%%I")
 
 popd
 
@@ -92,8 +114,9 @@ copy /y ..\data\TEexport_date.csv ..\data\TEexport_dernier.csv >nul
 
 
 popd
-@echo Actualisation de l'‚tat des stocks
-CALL ..\bin\EtatStock.cmd
+REM @echo Actualisation de l'‚tat des stocks
+REM CALL ..\bin\EtatStock.cmd
+:: en commentaire car d‚sormais ex‚cut‚ dans une tƒche planifi‚e
 :: utilise la variable %datetemp% d‚finie juste auparavant
 
 
@@ -117,7 +140,9 @@ gawk -f ..\bin\stockconcat.awk utf8-is_stock_*.csv > stockarchive.csv
 REM del utf8-is_catalogue_*.csv 2>nul
 for %%I in (is_catalogue_dernier.csv) do gawk -v datefich="%%~tI" -f ..\bin\catalconcat.awk is_catalogue_dernier.csv > catarchive.csv
 
+REM @echo on
 @echo actualisation de la BDD SQLite
+REM pause
 REM MODIF : 11:03 27/05/2020 enchaŒne avec l'actualisation de la BDD SQLite des donn‚es I&S
 sqlite3 sandbox.db < ..\bin\majdbIS.sql 2> %temp%\erreurs.sql
 uecho -n -e Nombre de conflit d\x27import :\x20
@@ -125,21 +150,29 @@ uecho -n -e Nombre de conflit d\x27import :\x20
 :: -e pour interpr‚ter le \xHH comme des caractŠres dont le code est donn‚ en hexad‚cimal
 
 wc -l %temp%\erreurs.sql | sed "s/^ *\([0-9]*\).*/\1/"
+REM pause
+@echo Suivi des retours d'UC
+:: pour retra‡age des retours d'UC XP attendus
+del %temp%\Suivi_Dernier_Retour_UC.txt 2>nul
+sqlite3 -noheader sandbox.db "select * from v_Suivi_Dernier_Retour_Sensible_CMD;" > %temp%\Suivi_Dernier_Retour.cmd
+CALL %temp%\Suivi_Dernier_Retour.cmd
 
 @echo Actualisation du suivi des mouvements logistiques sous surveillance
 CALL ..\bin\SuiviMvt.cmd
 
-
 sqlite3 sandbox.db "select max(indate) from v_stock;" > ..\StatsIS\quipo\CumulCoutStockage\date.txt
-sqlite3 -header -separator ; sandbox.db "select * from vvvvv_CoutStockageProduit;" |gawk -f ..\bin\csv2xml.awk  |sed "s/&/&amp;/g"> ..\StatsIS\quipo\CumulCoutStockage\fichier.xml
+sqlite3 -header -separator ; sandbox.db "select * from vvvvv_CoutStockageProduit;" > "..\StatsIS\quipo\SQLite\CumulCoutStockage.csv"
+gawk -f ..\bin\csv2xml.awk "..\StatsIS\quipo\SQLite\CumulCoutStockage.csv" |sed "s/&/&amp;/g"> ..\StatsIS\quipo\CumulCoutStockage\fichier.xml
 
 @Echo liste des derniers envois r‚alis‚s vers le siŠge
 REM MODIF : 11:12 27/05/2020 enchaŒne avec la liste des derniers envois r‚alis‚s par I&S vers le siŠge
 sqlite3 sandbox.db < ..\bin\lastlivmagnetik.sql
+xcopy /y livmgk.csv ..\StatsIS\quipo\SQLite
 gawk -f ..\bin\csvproj2xml.awk livmgk.csv |sed -e "s/\[//g" -e "s/\]//g" -e "s/&/et/g" > ..\StatsIS\quipo\LivMgk\projexped.xml
-REM le SED pour rendre les numéros de colis cliquables dans Auguste
-REM R‚utilisation de ce qui avait été fait pour le suvi du matériel des projets sans autres modifications que des ajustements mineurs dans la partie html/xsl
-lastlivmagnetik.txt
+REM le SED pour rendre les num‚ros de colis cliquables dans Auguste
+REM R‚utilisation de ce qui avait ‚t‚ fait pour le suvi du mat‚riel des projets sans autres modifications que des ajustements mineurs dans la partie html/xsl
+for %%I in (lastlivmagnetik.txt) do if %%~zI GTR 0 start lastlivmagnetik.txt
+for %%I in (lastlivmagnetik.txt) do if %%~zI == 0 msg %username% pas de d'envoi vers Magnetik aujourd'hui
 
 @echo V‚rification de la coh‚rence de la date des tables mises … jour
 sqlite3 -line sandbox.db  "select * from v_synchrotables;"| msg %username%
@@ -148,11 +181,32 @@ sqlite3 -line sandbox.db  "select * from v_synchrotables;"| msg %username%
 @echo surveillance de l'apparition de nouvelles r‚f‚rences
 sqlite3 -line sandbox.db "select * from v_nouvref;" |msg /w %username%
 
+@echo actualisation de la liste des produits exp‚di‚s
+call SuiviSorties.cmd
+xcopy /y ..\work\SuiviSorties.csv ..\StatsIS\quipo\SQLite
+
+@echo actualisation de la liste des sites Linux
+sqlite3 -separator ; -header sandbox.db "select * from vvv_SitesLinux;" > ..\work\SitesLinux.csv
+xcopy /y ..\work\SitesLinux.csv ..\StatsIS\quipo\SQLite
+
+@echo actualisation du parc Linux
+sqlite3 -separator ; -header sandbox.db "select * from vv_ParcLinux;" > ..\work\ParcLinux.csv
+xcopy /y ..\work\ParcLinux.csv ..\StatsIS\quipo\SQLite
+
+@echo actualisation de la liste des ýnum‚ros de s‚rie revenus au stock
+sqlite3 -separator ; -header sandbox.db "select * from v_SN_Retours;" > ..\work\SNRetours.csv
+xcopy /y ..\work\SNRetours.csv ..\StatsIS\quipo\SQLite
+
+@echo actualisation de l'‚tat du stock non ok
+sqlite3 ..\Data\sandbox.db < ..\bin\Stock_NonOK.sql
+xcopy /y ..\work\Stock_NonOK.csv ..\StatsIS\quipo\SQLite
+
 REM @echo stat sur la surveillance de l'‚tat des produits en stocks
 REM sqlite3 sandbox.db < ..\bin\genstatstockgraphs.sql
 
-@echo Calcul de l'autonomie du stock
-CALL ..\bin\autonomieStock.cmd
+REM @echo Calcul de l'autonomie du stock
+REM CALL ..\bin\autonomieStock.cmd
+:: ^^ en commentaire car d‚sormais ex‚cut‚ au travers d'une tƒche planifi‚e
 
 @echo mise … jour des histogrammes
 call ..\bin\VentileNR.cmd
@@ -160,7 +214,9 @@ call ..\bin\VieStock.cmd
 call ..\bin\AgeStock.cmd
 REM pause
 
-@echo on
+REM @echo on
+@echo actualisation de la BDD de publication des stats
+call quipoDBupdate.cmd
 @echo Actualisation du repository
 call ..\bin\quipoput.cmd
 
@@ -169,4 +225,7 @@ rem ^^ temporairement, tant qu'il y a des dossiers … cr‚er pour ce d‚ploiement
 rem d‚sactiv‚ le 17:49 05/11/2020 aprŠs cr‚ation de tous les dossiers de la phase "R‚gion parisienne"
 
 popd
+del %temp%\bdd.maj 2>nul
+:: d‚sactive ^^ le signal de blocage de la bdd
+
 goto :eof

@@ -1,17 +1,19 @@
 @echo off
 goto :debut
 cataltstock.cmd
-CREE    08/11/2018 - 11:43:19 - produit la liste des rÃ©fÃ©rences connues du catalogue Alturing, nettoyÃ©es des notions de neuf/reconditionnÃ© et projet/fil de l'eau
-MODIF   28/11/2018 - 15:43:47 - utilise un fichier d'entrÃ©e dont le nom est de la forme is_catalogue* au lieu de catalogue* afin de coller avec le produti de exportis.awk
+CREE    08/11/2018 - 11:43:19 - produit la liste des r‚f‚rences connues du catalogue Alturing, nettoy‚es des notions de neuf/reconditionn‚ et projet/fil de l'eau
+MODIF   28/11/2018 - 15:43:47 - utilise un fichier d'entr‚e dont le nom est de la forme is_catalogue* au lieu de catalogue* afin de coller avec le produti de exportis.awk
+MODIF       16:48 05/04/2021    met de c“t‚ le csv afin de l'exploiter ult‚rieurement
+BUG         09:17 07/04/2021    convertit le csv au format utf8 (pas d'int‚raction avec le xml qui doit rester en Latin 1)
 
 PREREQUIS :
     utilitaires GNU dans le path (inclus dans git)
     dont    GAWK (gnu awk)
-            SORT (ici renommÃ© en usort)
+            SORT (ici renomm‚ en usort)
     SQLITE dans le path (ici dans sa version 3)
     
-    PrÃ©sence dans le dossier ..\Data du catalogue des produits rÃ©fÃ©rencÃ©s I&S (exportÃ© de l'extranet I&S) sous un nom de la forme catalogue*.csv
-    PrÃ©sence dans le dossier ..\bin du script cataltstock.sql
+    Pr‚sence dans le dossier ..\Data du catalogue des produits r‚f‚renc‚s I&S (export‚ de l'extranet I&S) sous un nom de la forme catalogue*.csv
+    Pr‚sence dans le dossier ..\bin du script cataltstock.sql
     
 PRODUIT :
     Fichier stockparfamilles.csv
@@ -34,8 +36,11 @@ popd
 
 pushd ..\work
 sqlite3 <..\bin\cataltstock.sql
+cat ..\work\stockALTparfamilles.csv |iconv -f L1 -t UTF-8 > ..\StatsIS\quipo\SQLite\stockALTparfamilles.csv
+:: n‚cessit‚ de convertir le codepage au passage
+
 gawk -f csvfamille2xml.awk stockALTparfamilles.csv >stockfamille.xml
-@uecho -n le rÃ©sultat est dans  
+@uecho -n le r‚sultat est dans  
 for %%I in (stockfamille.xml) do @echo  %%~dI%%~pI%%I du %%~tI taille : %%~zI octets
 popd
 

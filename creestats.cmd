@@ -49,6 +49,13 @@ MODIF 13:16 11/01/2021 vieStock.cmd désormais lancé au niveau de l'exportIS.cmd
 MODIF 18:00 11/01/2021 complément à la génération des pages de stats par famille de produit (SFP) avec l'ajout d'un filtre sur le statut d'activité de chaque famille de produit
 MODIF 11:34 29/01/2021 Désactivation de l'appel à incprodis.cmd cette stat étant désormais obsolète (remplacée par escalis.cmd)
 BUG   22:34 05/02/2021 coutstock.cmd et statstock.cmd sont déportées de exportis.cmd vers creestat.cmd car, longues à exécuter, elles verrouillent les màj de la bdd et donc perturbent la génération des stats si elles sont lancées ici
+MODIF 14:56 26/03/2021 Copie des dernières stats dans un dossier dédié et fixé en plus d'un dossier lié à la date
+MODIF 18:11 26/03/2021 Désactivation de l'invocation de coutstock et statstock désormais lancées via le planificateur de tâches
+MODIF 11:12 16/04/2021 gère un signal de verrouillage afin d'éviter que d'autres scripts essaient d'écrire dessus en même temps
+MODIF 09:55 10/05/2021 place la log des stats dans le dossier de sqlite afin de l'intégrer à la BDD
+MODIF 14:58 18/06/2021 met à jour les graphiques dans la BDD après leur vérification au lieu de le faire dès leur génération comme précédemment
+BUG   17:24 18/06/2021 une faute d'orthographe empêchait la mise à jour de la log de l'historique des faits marquants
+MODIF 11:32 21/06/2021 désactivation de la gestion en ajax de la liste des faits marquants
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -123,7 +130,20 @@ rem for /F "delims=;" %%I in (.\is-data.csv) do call ..\bin\plotloop.cmd %%I
 rem rem 14:31 mardi 22 janvier 2019 le code de génération des graphiques a été remplacé par un sous-programme externe
 rem remplacé par MODIF 12:06 13/10/2020 par un nouveau système qui utilise sqlite en one shot et non plus dans une boucle
 echo génération des stats par produit
+:testblocage
+if exist %temp%\bdd.maj (
+set /p blocagebdd=<%temp%\bdd.maj
+for %%I in ("%temp%\bdd.maj") do msg /w %username% "Un signal de blocage a été émis à %%~tI par %blocagebdd%"
+pause
+)
+if exist %temp%\bdd.maj goto testblocage
+@echo %0 > %temp%\bdd.maj
+:: ^^ pour prévenir qu'il faut attendre que la bdd soit libérée avant de pouvoir écrire dessus
+:: géré ici plutôt que dans plotloop afin de bloquer la base pendant toute la durée de màj de toutes les stats
 call ..\bin\plotloop.cmd
+del %temp%\bdd.maj
+
+:: lève le blocage de la bdd
 
 REM tout ce qui concerne nblgn est détecté comme étant inutile lors de la MODIF 12:06 13/10/2020
 REM wc -l is-seuil.csv >%temp%\wc-l.txt
@@ -202,16 +222,16 @@ rem @echo off
 
 :: placée ici car longue à établir donc pas gênant de le faire pendant qu'on vérifie et corrige les commentaires de la stat précédente
 REM call ..\bin\StatStock.cmd reporté maintenant au niveau de l'exportis
-@echo Calcul du coût de stockage cumulé des articles en stock
-start /ABOVENORMAL "coût de stockage hebdomadaire des articles en stock" CMD.EXE /C ..\bin\CoutStock.cmd
+REM @echo Calcul du coût de stockage cumulé des articles en stock
+REM start /ABOVENORMAL "coût de stockage hebdomadaire des articles en stock" CMD.EXE /C ..\bin\CoutStock.cmd
 :: utilisation d'un start afin de ne pas bloquer le script appelant par l'exécution du script appelé qui est très longue
 :: invocation via un cmd /c car sinon ça se comporte comme un cmd /k donc sans fermeture de la fenêtre de commande ouverte à l'occasion
 :: le résultat ne sera pas donné avant la fin d'exécution de ce script mais c'est pas grave ce sera actualisé au prochain passage
 :: se termine une quarantaine de secondes après l'exécution du script appelant
 
-@echo stat de suivi de l'état du matériel en stock
-:: utilisation d'un start afin de ne pas bloquer le script appelant par l'exécution du script appelé qui est très longue
-start /ABOVENORMAL  "suivi de l'état du matériel en stock" CMD.EXE /C  ..\bin\StatStock.cmd
+REM @echo stat de suivi de l'état du matériel en stock
+REM :: utilisation d'un start afin de ne pas bloquer le script appelant par l'exécution du script appelé qui est très longue
+REM start /ABOVENORMAL  "suivi de l'état du matériel en stock" CMD.EXE /C  ..\bin\StatStock.cmd
 :: se termine une vingtaine de secondes après l'exécution du script appelant
 
 
@@ -224,7 +244,10 @@ msg %username% Vérifier et corriger les commentaires texte dans le dossier %mois
 REM MODIF 10:57 lundi 29 août 2016 implémentation de la vérification manuelle des commentaires textuels
 
 pushd %moisfin%
-for %%I in (*.txt *.png) do start %%I
+REM 12:11 18/06/2021 nouvelle formulation pour exclure les minitextes de titre et de description
+REM for %%I in (*.txt *.png) do start %%I
+for %%I in (*.png) do start %%I
+for /f %%I in ('dir /b *.txt ^|find /v "_"') do start %%I
 pause
 xcopy /y /I . "%web%\%moisfin%\*.*"
 xcopy *.txt .. /y
@@ -236,15 +259,26 @@ rem déplacement des données produites vers le dossier web
 del %temp%\erreur.txt 2>nul
 pushd "%isdir%\StatsIS\%moisfin%"
 md ..\quipo\%moisfin% 2>%temp%\erreur.txt
-move /y *.* ..\quipo\%moisfin% 2>>%temp%\erreur.txt
-cd ..
-rd %moisfin%
+md ..\quipo\DernierEtat 2>nul
+xcopy /y *.* ..\quipo\DernierEtat
+:: copie ^^ dans le dossier de référence
+move  /y *.* ..\quipo\%moisfin% 2>>%temp%\erreur.txt
+@echo %moisfin%> ..\quipo\DernierEtat\datemaj.txt
+rem mise-à-jour des graphiques dans la bdd
+REM Attention, ne prend pas en compte un éventuel ajout de nouveau code de stat, qui devra être fait à la main
+cd ..\quipo\SQLite
+REM sqlite3 quipo.db ".tables"
+REM pause
+sqlite3 quipo.db "update SFPFluxStock set image=readfile('../DernierEtat/' || code || '.png'),    Designation=readfile('../DernierEtat/' || code || '_Designation.txt'),    Commentaire=readfile('../DernierEtat/' || code || '_Commentaire.txt'),    Mise_a_jour=readfile('../DernierEtat/datemaj.txt');"
+REM pause
 popd
+rd %moisfin%
+REM pause
 if not exist %temp%\erreur.txt goto :genindex
 if exist quipo\%moisfin%\nul goto :genindex
 @echo Libérer le dossier "%cd%\%moisfin%" >>%temp%\erreur.txt
 cat %temp%\erreur.txt |msg /W %username% 
-pause
+
 goto :movedata
 :genindex
 pushd "%isdir%\bin"
@@ -254,21 +288,28 @@ dir  ..\StatsIS\quipo |gawk -f genDateIndex.awk >..\StatsIS\quipo\dateindex.html
 REM simple liste des dates triée par ordre décroissant
 
 rem génération du fichier xml servant à mettre à jour les données variables dans le nouveau système de menus
-dir ..\StatsIS\quipo|gawk -v OFS=";" 'BEGIN {print "date" OFS "dossier"} $4 ~ /[0-9]{4}-[0-9]{2}-[0-9]{2}/ {split($4,tdate,"-");print tdate[3] "-" tdate[2] "-" tdate[1] OFS $4}' |usort -t; -k2 -r  |gawk -f csv2xml.awk > ..\StatsIS\quipo\data.xml
+rem inutile depuis le passage sous sqlite
+REM dir ..\StatsIS\quipo|gawk -v OFS=";" 'BEGIN {print "date" OFS "dossier"} $4 ~ /[0-9]{4}-[0-9]{2}-[0-9]{2}/ {split($4,tdate,"-");print tdate[3] "-" tdate[2] "-" tdate[1] OFS $4}' |usort -t; -k2 -r  |gawk -f csv2xml.awk > ..\StatsIS\quipo\data.xml
 
 popd
 :quipoput
 
 REM élaboration de la liste des nouveautés pour le mail de reporting
+REM pause
+REM @echo on
 @echo Modifications du %date% >> whatsnew.log
-for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do cat %%I >>whatsnew.log
+del sfpListe.txt 2>nul
+:: ^^ fichier non signigficatif pour la log
+for /F "tokens=4" %%I in ('dir  /o *.txt ^|find /v "_" ^|find "%date%"') do cat %%I >>whatsnew.log
 sed -i "/^%moisfin%/d" SFPlog.csv
-for /F "tokens=4" %%I in ('dir  /o *.txt ^|find "%date%"') do gawk -v datestat=%moisfin% -f ..\bin\TXT2CSV.awk %%I >> SFPlog.csv
-gawk -f ..\bin\csv2xml.awk SFPlog.csv > fichier.xml
-convertcp 65001 28591 /i fichier.xml /o quipo\SFPlog\fichier.xml
+for /F "tokens=4" %%I in ('dir  /o *.txt ^|find /v "_" ^|find "%date%"') do gawk -v datestat=%moisfin% -f ..\bin\TXT2CSV.awk %%I >> "%isdir%\StatsIS\quipo\SQLite\SFPlog.csv"
+REM gawk -f ..\bin\csv2xml.awk "%sidir%\StatsIS\quipo\SQLite\SFPlog.csv" > fichier.xml
+REM convertcp 65001 28591 /i fichier.xml /o quipo\SFPlog\fichier.xml
+:: ^^ fichier.xml inutile depuis que la log est gérée sous sqlite
 :: traduit les accents de manière à ce qu'ils soient lisibles puis place le fichier à son emplacement de publication
 @echo %moisfin%>quipo\SFPlog\date.txt
 :: ^^ produit une log au format xml pour affichage en ajax
+REM pause
 
 del %temp%\differe.maj 2>nul
 :: désactive ^^ l'inhibition du quipo éventuellement établie
@@ -278,4 +319,5 @@ if exist %moisfin%\nul @echo Libérer le dossier "%cd%\%moisfin%"
 
 
 "C:\Program Files\Notepad++\notepad++.exe" whatsnew.log
+popd
 popd

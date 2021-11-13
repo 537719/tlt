@@ -26,7 +26,7 @@ MODIF 09:05 23/10/2020  Affiche le texte de l'erreur en cas d'erreur WinSCP et c
 MODIF 09:20 23/10/2020  Replace dans le dossier d'origine après exécution même en cas d'erreur
 MODIF 10:32 07/12/2020  prend les identifiants de connexion au serveur de rebond dans un fichier de paramètre au lieu de les encoder en dur dans ce script
 BUG   21:14 19/01/2021 la disponibilité du lien réseau se faisait en pingant toujours jump.tlt et non le serveur défini comme étant celui auquel il fallait accéder. Bug révélé par la nécessité inopinée de remplacer jump par wallaby
-
+MODIF 19:31 08/02/2021 adaptation au nouvel emplacement de winscp suite à changement de pc et … la syntaxe de la nouvelle version de winscp (/console obligatoire avant /script en ligne de commande)
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -80,8 +80,9 @@ rem un ^ avant le > pour le prot‚ger car il fait partie de la ligne … produire, 
 @echo exit >>%~n0.scp
 
 @echo invocation du script winscp
-set winscp=%userprofile%\bin\winscp\winscp.exe
-%winscp% /script=%~n0.scp /log=..\%~n0.log
+REM set winscp=%userprofile%\bin\winscp\winscp.exe
+set winscp="c:\Program Files (x86)\WinSCP\WinSCP.exe"
+%winscp% /console /script=%~n0.scp /log=..\%~n0.log
 @echo partie winscp terminee
 if errorlevel 1 (
 set erreur=%errorlevel%

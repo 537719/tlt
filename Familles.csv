@@ -1,0 +1,79 @@
+Code;Famille
+10;PC - Fixe
+11;PC - Portable
+12;PC - Tablette
+13;PC - Linutop
+20;Ecran - CRT
+21;Ecran - TFT 15"
+22;Ecran - TFT 17"
+23;Ecran - TFT 19"
+24;Ecran - TFT 21"
+25;Ecran - TFT 22"
+26;Ecran - TFT 24"
+30;Imprimantes - Imprimante jet d'encre N&B
+31;Imprimantes - Imprimante jet d'encre Couleurs
+32;Imprimantes - Imprimante Laser N&B
+33;Imprimantes - Imprimante Laser Couleurs
+34;Imprimantes - Imprimante Thermique
+35;Imprimantes - CLP consommables
+36;Imprimantes - CLP Accessoires
+37;Imprimantes - N/D
+38;Imprimantes - N/D
+39;Imprimantes - CHR Accessoires et consommables
+40;Reseau - Carte réseau
+41;Reseau - Adaptateur réseau (=> pas une carte)
+42;Reseau - Geobox ?
+43;Reseau - Switch
+44;Reseau - Hub
+45;Reseau - firewall
+46;Reseau - Routeur
+47;Reseau - Borne wifi et antennes
+48;Reseau - Serveurs
+49;Reseau - compléments serveurs : KVM + baie
+50;Accessoires - Barrette memoire
+51;Accessoires - Souris
+52;Accessoires - Clavier
+53;Accessoires - Doc Station
+54;Accessoires - Alimentation
+55;Accessoires - Batterie
+56;Accessoires - Saccoche
+57;Accessoires - HDD
+58;Accessoires - Audio
+59;Accessoires - Keypad
+5A;Accessoires - Consommables Scanner
+5B;Accessoires - Casques Audio
+60;Périphérique - Balance + Lecteurs externes
+61;Périphérique - Scanner
+62;Périphérique - Modem
+63;Périphérique - Flasheurs + PSM
+64;Périphérique - Embase
+65;Périphérique - Pack embase + Flasheur
+66;Périphérique - Terminaux (Axel)
+67;Périphérique - Embase
+68;Périphérique - Sondes
+69;Périphérique - Vidéo
+70;Cable - USB
+71;Cable - parallele + série
+72;Cable - SCSI
+73;Cable - RJ45
+74;Cable - Fibre
+75;Cable - téléphonie
+76;Cable - Vidéo
+77;Cable - Electrique
+78;Cable - Sécurité
+79;Cable - Specifique
+80;Logiciel - Licence
+81;Logiciel - papier
+82;Logiciel - Media
+83;Logiciel - Boite
+84;Logiciel - N/D
+90;Divers - Boitier
+91;Divers - viserie
+92;Divers - Electrique
+93;Divers - Onduleurs
+94;Divers - garantie electronique
+95;Divers - garantie Papier
+96;Divers - Carte Video
+97;Divers - Carte raid
+98;Divers - Encombrants
+99;Divers - Consommables

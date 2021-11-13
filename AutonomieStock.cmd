@@ -4,7 +4,7 @@ goto :debut
 D'aprŠs 11:35 28/02/2020 IncProdIS.cmd
 Positionne les donn‚es et r‚pertoires pour le calcul d'autonomie des stocks I&S
 
-script de pilotage de la requˆte AutonomieStock.sql visant … calculer, pour chaque article en stock combien d'ann‚es il faudrait pour l'‚puiser s'il continuait … ˆtre d‚stock‚ au mˆme rythme que durant l'ann‚e ‚coul‚e
+script de pilotage de2 la requˆte AutonomieStock.sql visant … calculer, pour chaque article en stock combien d'ann‚es il faudrait pour l'‚puiser s'il continuait … ˆtre d‚stock‚ au mˆme rythme que durant l'ann‚e ‚coul‚e
 CREATION    19:14 28/02/2020
 PREREQUIS  requˆte AutonomieStock.sql en ..\bin
                    Pr‚sence en ..\Data des extractions au format CSV des exports de l'extranet I&S
@@ -14,8 +14,9 @@ PREREQUIS  requˆte AutonomieStock.sql en ..\bin
                     accŠs aux utilitaires GNU
                     
 R‚‚criture  21:11 26/12/2020 exploite une nouvelle requˆte SQL 
+MODIF       16:48 05/04/2021 met de c“t‚ le csv jusqu'alors consomm‚ dans un pipe afin de l'exploiter ult‚rieurement
 :debut
-REM @echo off
+@echo off
 :: d‚termination du dossier de travail
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
@@ -37,7 +38,8 @@ pushd ..\Data
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: R‚‚criture  21:11 26/12/2020 exploite une nouvelle requˆte SQL ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-sqlite3 -header -separator ; sandbox.db "select * from V_Autonomie_date ;" | gawk -f ..\bin\csv2xml.awk  |sed "s/&/&amp;/g"> "..\StatsIS\quipo\AutonomieStock\fichier.xml"
+sqlite3 -header -separator ; sandbox.db "select * from V_Autonomie_date ;" > "..\StatsIS\quipo\SQLite\AutonomieStock.csv"
+gawk -f ..\bin\csv2xml.awk "..\StatsIS\quipo\SQLite\AutonomieStock.csv" |sed "s/&/&amp;/g">"..\StatsIS\quipo\AutonomieStock\fichier.xml"
 sqlite3 -noheader sandbox.db "select max(indate) from v_stock;" > "..\StatsIS\quipo\AutonomieStock\date.txt"
 :::::::::::::::::::
 :: Et c'est fini ::

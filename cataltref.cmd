@@ -1,7 +1,6 @@
 @echo off
 goto :debut
-cataltstock.cmd
-d'après cataltref.cmd 08/11/2018 - 11:43:19 produit la liste des références connues du catalogue Alturing, nettoyées des notions de neuf/reconditionné et projet/fil de l'eau
+ataltref.cmd 08/11/2018 - 11:43:19 produit la liste des références connues du catalogue Alturing, nettoyées des notions de neuf/reconditionné et projet/fil de l'eau
 09/11/2018 - 11:24:14 produit les quantités en stock et attendues de tous les articles en stock ayant une référence alturing
 
 PREREQUIS :

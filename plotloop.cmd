@@ -22,9 +22,11 @@ DateStat;Incident;Demande;RMA;DEL;undef;CodeStat;OkDispo;OkReserve;SAV;Maintenan
 
 BUG     10:15 04/12/2020 les pages web produites étaient concaténées dans un fichier au lieu d'être placées dans un répertoire
 MODIF   14:18 06/01/2021 plotloopnew.cmd renommé en plotloop.cmd
+BUG     11:14 17/06/2021 un \ en trop dans le chemin d'accès empêchait la màj de la bdd des graphiques
+BUG     12:05 18/06/2021 Erreur de logique : les graphiques ne doivent être mis à jour dans la bdd qu'après avoir été vérifiés donc pas ici mais dans creestats.cmd
 
 :debut
-
+REM @echo on
 pushd ..\Data
 sqlite3 sandbox.db ".read ../bin/SFPencours.sql" 1>..\StatsIS\sfpStats.csv 2>%temp%\erreur.sql
 Uecho -n Anomalies de traitement SQLite : 
@@ -76,16 +78,30 @@ sed -n -e "1p" -e "/%%I/p" sfpStats.csv > %%I.tmp
     move %%I.* "%moisfin%" >nul
   copy "%moisfin%\%%I.txt" .  >nul
   copy "%moisfin%\%%I.csv" .  >nul
-
+  
+sed -n "1p" %%I.txt > %%I_Designation.txt
+sed -n "3,$p" %%I.txt > %%I_Commentaire.txt
+copy %%I_*.txt quipo\%datefin%
+REM @echo on
+REM @echo mise à jour du graphique %%I
+REM @echo code '%%I'
+REM @echo Sujet %~n0
+dir /-c ..\StatsIS\%%I* |grep %date%
+rem c'est pas ici qu'on doit intégrer les graphiques dans la bdd car cela empêche d'annuler en cas de détection d'anomalie lors de la vérification
+rem sqlite3 "%userprofile%\Documents\ALT\I&S\StatsIS\quipo\SQLite\quipo.db" "insert or replace into SFPFluxStock(code,Image,Designation,Sujet,Commentaire) values('%%I',readfile('%%I.png'),readfile('%%I_Designation.txt'),'%~n0',readfile('%%I_Commentaire.txt')) ;"
+REM pause
+@echo off
 )
 REM Génération des page web correspondant à chaque stat
-gawk -f ..\bin\newgenHTMLlink.awk sfpListe.txt
-copy /y *.htm quipo\%datefin%
+rem inutile depuis que les graphiques sont gérés sous sqlite
+REM gawk -f ..\bin\newgenHTMLlink.awk sfpListe.txt
+REM copy /y *.htm quipo\%datefin%
 REM pause
 
 
 :fin
 popd
+REM pause
 goto :eof
 
 :errfich

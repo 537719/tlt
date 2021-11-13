@@ -13,6 +13,9 @@ MODIF   15:49 vendredi 17 janvier 2020 prend comme fichier d'entr‚e tous les is_
 MODIF   13:37 06/01/2021 Refonte totale, utilise la bdd sqlite standard au lieu d'en cr‚er une ad hoc. Rend obsolŠtel les scripts awk et sqlite ‚ponymes
 MODIF   08:55 07/01/2021 R‚‚criture de la ligne de querysqlite en sp‚cifiant les champs … produire suite au rajout dans la vue utilis‚e du nom de la BU, qui n'est pas utilis‚ ici
 MODIF   16:33 08/01/2021 remplace la copie du graphique PNG dans le dossier de publication par un d‚placement depuis le dossier de g‚n‚ration
+MODIF   21:21 12/04/2021 archive l'image dans la table de graphiques de la bdd de stats
+MODIF   10:51 22/04/2021 le graphique est d‚sormais archib‚ dans la BDD de stat sous le nom du mill‚sime au lieu de juste "histogramme"
+BUG     10:53 22/04/2021 un mauvais graphique ‚tait publi‚ et archiv‚ pour cause d'homonymie, corrig‚ en rempla‡ant un "ren" par un "move /y"
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
 if exist ..\bin\getisdir.cmd (
@@ -67,8 +70,9 @@ set titregraphique1=R‚partition des d‚stockages selon mat‚riel neuf et reconditi
 set titregraphique2=entre 
 %gnuplot% -c ..\bin\histocumul.plt %fichierdonnees% %datedeb% %datefin% "%titregraphique1%" "%titregraphique2%"
 
-ren histo_%datedeb%_%datefin%.png histo.png
-move /y histo.png "%isdir%\StatsIS\quipo\VentilNR\"
+move /y  histo_%datedeb%_%datefin%.png histo.png
+copy /y histo.png "%isdir%\StatsIS\quipo\VentilNR\"
+sqlite3 "%userprofile%\Documents\ALT\I&S\\StatsIS\quipo\SQLite\quipo.db" "insert or replace into graphiques(code,Image,Designation,Sujet) values('%annee%',readfile('histo.png'),'Ventilation selon la qualit‚ de neuf ou de reconditionn‚ des produits d‚stock‚s par I&S stock‚s par famille','%~n0') ;"
 popd
 
 goto :eof

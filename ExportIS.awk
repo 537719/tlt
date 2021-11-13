@@ -23,6 +23,7 @@
 # MODIF 04:50 28/01/2021 considère que  les exports de stock sans date ni tagis sont de type oldstock et non stock
 # MODIF 21:08 05/02/2021 le dossier de travail est désormais sous /ALT/ et non sous /TLT/
 # BUG	21:29 05/02/2021 le passage de gawk 4 à gawk 5 impose de remplacer \: par : dans les regexp
+# MODIF 19:33 08/04/2021 prise en compte du rajout des colis retour dans les oflx
 BEGIN {
     FS=";"
     OFS=FS
@@ -87,6 +88,11 @@ BEGINFILE {
                 break
             }
             case 17 : { # export des OFLWEBEXPEDIES "nouvelle formule" avec le(s) numéro(s) de colis 
+                typefich="OFLX"
+                champdate=14 # Date Notification - autres choix possibles : 6 (création), 7 (expédition), 13 (souhaité)
+                break
+            }
+            case 18 : { # export des OFLWEBEXPEDIES "nouvelle nouvelle formule" avec le(s) numéro(s) de colis retour
                 typefich="OFLX"
                 champdate=14 # Date Notification - autres choix possibles : 6 (création), 7 (expédition), 13 (souhaité)
                 break

@@ -2,6 +2,14 @@
 -- CREATION 11:34 28/09/2020 Marque comme étant vus les mouvements I&S à suivre qui viennent d'être détectés.
 -- MODIF    22:32 07/10/2020 Produit un fichier texte des mouvements du dernier jour ouvrable
 -- MODIF    12:14 11/12/2020 ramène la création des index en tête de requête et active le timer pour l'exécution des requêtes
+-- MODIF	18:41 08/02/2021 rajoute puis supprime un indicateur de progression sur la requête SQLite
+-- MODIF    14:13 12/03/2021 Inversion de l'ordre de sortie entre CSV et TXT afin de permettre de pouvoir lire le TXT pendant que le CSV travaille
+-- MODIF    14:15 12/03/2021 active la trace afin de permettre de voir qu'il se passe qqch pendant l'exécution des requêtes longues
+-- BUG      15:53 17/03/2021 la modif précédente oubliait de quitter le mode box
+-- MODIF    15:23 28/04/2021 considère comme étant à suivre les dossiers projets ou spx présents dans la backlog I&S
+-- MODIF    15:29 27/05/2021 rajout du rattrapage des dossiers créés puis clos avant que leur passage dans la backlog I&S ne soit détecté
+-- MODIF    14:12 18/06/2021 détecte aussi les dossiers de production de serveur, déloc ou PMCTRIG même si pas demandés par un chef de projet
+-- MODIF    14:26 01/09/2021 détection des PC Linux 
 
 -- Prérequis :
 -- -- Existence de la base TABLE SuiviMvt consignant la liste des mouvements suivis
@@ -14,9 +22,69 @@ CREATE INDEX IF NOT EXISTS k_OFLX_RefClient ON OFLX(RefClient);
 CREATE INDEX IF NOT EXISTS k_SORTIES_glpi ON SORTIES(GLPI);
 CREATE INDEX IF NOT EXISTS k_SuiviMVT_Donnee_Datevu ON SuiviMVT(Donnee, DateVu);
 
+.changes on
+
+-- 5:23 28/04/2021 Actualisation de la backlog I&S
+-- suppose qu'un export de la vue glpi des dossiers affectés à I&S_DEPART soit présent
+.print Backlog I&S
+DELETE FROM Backlog;
+.separator ;
+.print .import --skip 1 ../data/glpi.csv Backlog
+.import --skip 1 ../data/glpi.csv Backlog
+.print backlog to suivimvt
+WITH storage AS (
+-- dossiers projets et SPX
+-- La liste des personnes dont la création de dossier est à surveiler se tient dans la table trigrammes
+    SELECT ID,Titre,TRG,
+    trim(substr(Emplacement,1,instr(Emplacement,">")-1)) as TypeSite,
+    CASE
+        WHEN instr(substr(Emplacement,instr(Emplacement,">")+1)," - ") = 0 THEN trim( substr(Emplacement,instr(Emplacement,">")+1))
+        ELSE trim(substr(Emplacement,instr(Emplacement,">")+1,instr(substr(Emplacement,instr(Emplacement,">")+1)," - ")-1))
+    END Lieu
+    from Backlog,Trigrammes WHERE type="Demande" and Demandeur = Nom
+)
+INSERT INTO SuiviMvt(Donnee,Valeur,DateSurv,Motif) 
+    SELECT "Dossier",id,CURRENT_DATE,
+    CASE
+        WHEN Titre LIKE "%" || Lieu || "%" THEN TRG || " " || Titre
+        ELSE TRG || " " || Lieu || " " || Titre
+    END Motif
+    FROM storage
+    WHERE ((select count(*) FROM SuiviMvt WHERE Valeur=storage.ID )=0)
+ORDER BY Id
+;
+WITH storage AS (
+-- serveurs, delocs, PMCTRIG hors scanners
+-- 14:26 01/09/2021 détection des PC Linux
+    SELECT ID,Titre,
+    trim(substr(Emplacement,1,instr(Emplacement,">")-1)) as TypeSite,
+    CASE
+        WHEN instr(substr(Emplacement,instr(Emplacement,">")+1)," - ") = 0 THEN trim( substr(Emplacement,instr(Emplacement,">")+1))
+        ELSE trim(substr(Emplacement,instr(Emplacement,">")+1,instr(substr(Emplacement,instr(Emplacement,">")+1)," - ")-1))
+    END Lieu
+    FROM Backlog WHERE description like "%DELOC%" or description like "%SERVEUR%" or description like "%TRIG%" OR description like "%CHRMETL%" or description like "%LINUX%"
+      OR Titre LIKE "%LINUX%"
+     AND titre not like "%scanner%" -- sans quoi on a aussi les demandes de scanners
+)
+INSERT INTO SuiviMvt(Donnee,Valeur,DateSurv,Motif) 
+    SELECT "Dossier",id,CURRENT_DATE,
+    CASE
+        WHEN Titre LIKE "%" || Lieu || "%" THEN  Titre
+        ELSE  Lieu || " " || Titre
+    END Motif
+    FROM storage
+    WHERE ((select count(*) FROM SuiviMvt WHERE Valeur=storage.ID )=0)
+ORDER BY Id
+;
+
+.changes off
+.print .read ../bin/backlogsuivi.sql
+.read ../bin/backlogsuivi.sql
+.changes on
+
+.print surveille entrées :
 -- -- surveille entrées :
 -- Marque comme étant vu les dossiers/APT/colis surveillés qui apparaissent dans le matériel reçu
-.changes on
 .print Mise à jour
 -- -- -- dossiers
 WITH storage AS -- -- -- Vérification si un numéro de dossier surveillé apparait dans la liste des réceptions
@@ -57,6 +125,7 @@ FROM
        storage
 ;
 
+.print -- -- -- APT
 -- -- -- APT
 WITH storage AS -- -- -- Vérification si un numéro d'APT surveillé apparait dans la liste des réceptions
      (
@@ -96,6 +165,7 @@ FROM
        storage
 ;
 
+.print -- -- -- Colis
 -- -- -- Colis
 WITH storage AS -- -- -- Vérification si un numéro de colis surveillé apparait dans la liste des réceptions
      (
@@ -135,6 +205,7 @@ FROM
        storage
 ;
 
+.print -- -- surveille sortie
 -- -- surveille sortie
 -- Marque comme étant vu les dossiers surveillés qui apparaissent dans le matériel expédiés
 
@@ -322,24 +393,15 @@ GROUP BY
 ;
 
 .print configure
+.print  .read ../bin/sqliteshowsauve.sql
 .read ../bin/sqliteshowsauve.sql
-
-.separator ;
-.header on
-.print Sortie CSV
-
-CREATE VIEW IF NOT EXISTS vv_SuiviMvt_1mois AS
-    SELECT  * 
-    FROM    v_SuiviMvt
-    WHERE   DateMvt >= DATE("now","-1 month") 
-    OR      DateMvt="N/A"
-    ORDER BY DateMvt DESC,DateSurv DESC
-;
-.once ../work/suivimvt.csv
-SELECT * FROM vv_SuiviMvt_1mois;
 
 .print Sortie TXT
 .mode box
+-- .trace stderr
+-- .progress 6000000 --reset
+-- .progress désactivé car dirigé vers le fichier de sortie et non vers la console
+-- le .progress 6000000 est calibré pour avoir une dizaines d'étapes de l'indicateur de progression à la date de sa mise en place
 
 CREATE VIEW IF NOT EXISTS vv_SuiviMvt_1jour AS
     WITH STORAGE AS ( -- Détermination de la date à partir de laquelle on recherche les mouvements
@@ -369,6 +431,22 @@ CREATE VIEW IF NOT EXISTS vv_SuiviMvt_1jour AS
 .timer on
 .once ../work/lastmvt.txt
 SELECT * FROM vv_SuiviMvt_1jour;
+
+.mode list
+.separator ;
+.header on
+.print Sortie CSV
+
+CREATE VIEW IF NOT EXISTS vv_SuiviMvt_1mois AS
+    SELECT  * 
+    FROM    v_SuiviMvt
+    WHERE   DateMvt >= DATE("now","-1 month") 
+    OR      DateMvt="N/A"
+    ORDER BY DateMvt DESC,DateSurv DESC
+;
+.once ../work/suivimvt.csv
+SELECT * FROM vv_SuiviMvt_1mois;
+.trace off
 
 .print restaure config
 .read ../bin/buildsqliteshowrestore.sql

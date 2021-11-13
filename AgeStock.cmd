@@ -10,6 +10,9 @@ CREE    16:20 vendredi 17 janvier 2020 d'après 17/01/2020  16:18              2
             Données en entrée : Le fichier is_stock_*.csv portant sur la période la plus récente
 BUG     14:23 20/11/2020 la détermination des bornes temporelles était perturbée par la présence de fichiers n'ayant pas une structure de date
 MODIF   14:17 11/01/2021 Refonte totale, utilise la bdd sqlite standard au lieu d'en créer une ad hoc. Rend obsolŠtel le traitement par awk
+MODIF   21:21 12/04/2021 archive l'image dans la table de graphiques de la bdd de stats
+MODIF   11:05 16/04/2021 s'assure de ne pas copier des graphiques vides (on garde alors l'ancienne version)
+MODIF   10:51 22/04/2021 le graphique est désormais archibé dans la BDD de stat sous le nom du millésime au lieu de juste "histogramme"
 
 :debut
 if "@%isdir%@" NEQ "@@" goto isdirok
@@ -72,9 +75,12 @@ set titregraphique1=Ventilation par ordre de grandeur du temps de presence
 set titregraphique2=pour les produits entrees en stock entre 
 %gnuplot% -c ..\bin\histocumul.plt %fichierdonnees%  %datedeb% %datefin% "%titregraphique1%" "%titregraphique2%"
 
-ren histo_%datedeb%_%datefin%.png histo.png
-move /y histo.png "%isdir%\StatsIS\quipo\AgeStock\"
-REM copy /y histo_%datedeb%_%datefin%.png "%isdir%\StatsIS\quipo\AgeStock\histo.png"
+:: s'assure de ne pas copier des graphiques vides (on garde alors l'ancienne version)
+for %%I in (histo_%datedeb%_%datefin%.png) do if %%~zI GTR 0 (
+move /y %%I histo.png
+copy /y histo.png "%isdir%\StatsIS\quipo\AgeStock\"
+sqlite3 "%userprofile%\Documents\ALT\I&S\\StatsIS\quipo\SQLite\quipo.db" "insert or replace into graphiques(code,Image,Sujet) values('%date:~6,4%',readfile('histo.png'),'%~n0') ;"
+)
 popd
 
 goto :eof

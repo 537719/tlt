@@ -7,6 +7,7 @@ PREREQUIS   : suivrefiltre.awk script awk
             : sandbox.db bdd de suivi de l'activité I&S
             : aSuivre.sql intégration des données à suivre dans la bdd
 Exploitation : Après usage de ce script puis importation des nouvelles données d'activité dans la base, exécuter le script SuiviMvt.cmd
+MODIF       11:28 16/04/2021 gère un signal de verrouillage afin d'éviter que d'autres scripts essaient d'écrire dessus en même temps
 
 :debut
 REM @echo on
@@ -21,8 +22,19 @@ set filtre=;%filtre%;%date:~6,10%-%date:~3,2%-%date:~0,2%;%0 %1 %2 %3 %4 %5 %6 %
 rem Le texte saisi à la console est en codepage 850 mais dois être importé dans sqlite qui travaille en UTF
 convertcp 850 65001 /i ..\work\SuivreFiltre.txt /o ..\work\aSuivre.csv
 rem 65001 = code de l'utf-8 pour convertcp
-sqlite3 ../data/sandbox.db < ../bin/aSuivre.sql
 
+:testblocage
+if exist %temp%\bdd.maj (
+set /p blocagebdd=<%temp%\bdd.maj
+for %%I in ("%temp%\bdd.maj") do msg /w %username% "Un signal de blocage a été émis à %%~tI par %blocagebdd%"
+pause
+)
+if exist %temp%\bdd.maj goto testblocage
+@echo %0 > %temp%\bdd.maj
+:: ^^ pour prévenir qu'il faut attendre que la bdd soit libérée avant de pouvoir écrire dessus
+sqlite3 ../data/sandbox.db < ../bin/aSuivre.sql
+del %temp%\bdd.maj
+:: lève le blocage
 goto :eof
 
 

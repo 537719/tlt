@@ -2,6 +2,8 @@
 # CREATION  10:58 24/01/2021 génération d'un graphique à aires empilées à abscisse mensuelle via un script plus lisible que genCumulAire.awk et sans rechercher un critère de groupage à l'intérieur des titres
 # MODIF     15:52 25/01/2021 fignolage de la présentation du graphique : positionnement de la légende, bornage automatique de l'axe des abscisses
 # MODIF     18:24 29/01/2021 détermine le format temporel pour la génération du script gnuplot en fonction du format détecté dans le 1° champ de données
+# MODIF     11:32 29/03/2021 Suite à changement de comportement de gnuplot depuis la v5.4, suppression du paramètre "x1" dans l'écriture de la commande plot
+# MODIF     12:00 29/03/2021 Suite à changement de comportement de gnuplot depuis la v5.4, modification de l'écriture de la 1° commande plot
 
 # Usage : Depuis la ligne de commande
 # gawk -f GenEmpilAire.awk  fichierdentree.csv > nomdescriptgnuplot.plt
@@ -119,13 +121,13 @@ END {
         for (i=2;i<=NF;i++) {
             if (i==2) {
                 {
-                    commande = "  filename using 1:2 title columnhead(" i ") with filledcurves x1 lt rgb \"" couleur[i] "\"\\" 
+                    commande = "  filename using 1:($2-$2):2 title columnhead(" i ") with filledcurves lt rgb \"" couleur[i] "\"\\" 
                     # break
                 }
             }
             if (i==3) {
                 {
-                    commande = ", filename using 1:($2):($2+$3) title columnhead(" i ") with filledcurves x1 lt rgb \"" couleur[i] "\"\\" 
+                    commande = ", filename using 1:($2):($2+$3) title columnhead(" i ") with filledcurves lt rgb \"" couleur[i] "\"\\" 
                     # break
                 }
             }
@@ -139,7 +141,7 @@ END {
                         for (j=3;j<=i;j++) {
                              commande=commande "+$" j
                         }
-                    commande=commande ") title columnhead(" i ") with filledcurves x1 lt rgb \"" couleur[i]  
+                    commande=commande ") title columnhead(" i ") with filledcurves lt rgb \"" couleur[i]  
                 }
                 if (i<NF) {
                     commande=commande "\"\\" 
